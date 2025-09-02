@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PRD Smart-TAG — Production vs Customer</title>
-  <meta name="x-build" content="2025-09-01 r38-fix-live-typing + strict-cust + persist-idb">
+  <meta name="x-build" content="2025-09-02 r40-scan-confirm-chain-auto + fixlist">
   <style>
     :root{
       --bg:#f7f9fc; --card:#ffffff; --text:#1f2a44; --muted:#6b7280;
@@ -13,7 +13,7 @@
       --btnborder:#d1d5db; --toast:#111827; --toast-text:#f9fafb;
       --focus-bg:#fff7cc; --prd:#d60000; --smart:#042157;
       --side-bg:#ffffff; --side-text:#1f2937; --side-hover:#f3f4f6;
-      --topbar-bg:#ffffff;
+      --topbar-bg:#ffffff; --fixed:#fef9c3;
     }
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
@@ -53,22 +53,18 @@
     .submenu button{ padding:8px 12px; font-size:13px; border-radius:10px; }
 
     /* Main area */
-    .wrap{max-width:1200px;margin:0 auto;padding:24px}
-
-    /* Compare full width */
-    #view-checker.wrap{max-width:100%!important;margin:0;padding-left:32px;padding-right:32px}
-    .layout.collapsed #view-checker.wrap{max-width:100%!important;padding-left:32px;padding-right:32px}
+    .wrap{max-width:100%;margin:0 auto;padding:24px}
 
     .howto{border:1px solid #f1d36a;background:var(--focus-bg);border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:center;margin:12px 0 18px}
     .howto .focus-msg{font-weight:900;color:#111;text-align:center;white-space:pre-line}
 
-    /* compare grid */
     .cmp-top-grid{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
     .cmp-bottom{margin-top:16px}
     .card{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.03)}
     .card h3{margin:0 0 8px;font-size:16px}
     .card.compact{padding:10px}
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .muted{color:#6b7280}
 
     input[type=text], input[type=date], input[type=password]{flex:1;min-width:220px;padding:10px 12px;border-radius:10px;border:1px solid var(--btnborder);background:#fff;color:#2b364d;outline:none}
     input::placeholder{color:#9ca3af}
@@ -76,11 +72,6 @@
     button{padding:10px 14px;border-radius:12px;border:1px solid var(--btnborder);background:#fff;color:#1f2a44;cursor:pointer}
     button.primary{background:var(--accent);color:#fff;border-color:transparent}
     button[disabled]{opacity:.5;cursor:not-allowed}
-
-    .filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-    .filters input[type=date]{padding:6px 8px}
-    .filters button{padding:6px 10px;border-radius:10px}
-
     .icon-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border-radius:10px;border:1px solid var(--btnborder);background:#fff}
     .icon-btn.small{padding:6px 8px;font-size:12px}
     .icon-btn:active{transform:translateY(1px)}
@@ -94,6 +85,7 @@
     .cmp th{background:#f8fafc; color:#475569; text-align:left}
     .ok-row{ background:var(--ok-bg) !important; color:var(--ok) !important; font-weight:800; }
     .ng-row{ background:var(--ng-bg) !important; color:#b91c1c !important; font-weight:800; }
+    .fix-row{ background:var(--fixed) !important; }
 
     /* totals summary */
     #log-totals{display:flex;gap:14px;align-items:center;font-size:13px;padding:8px 10px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;margin-bottom:8px}
@@ -118,22 +110,22 @@
     .login-panel .foot{ padding:12px 18px; border-top:1px solid #e5e7eb; display:flex; gap:8px; justify-content:flex-end }
     .mutewarn{background:#fffbeb;color:#b45309;border:1px solid #fcd34d;padding:8px 10px;border-radius:10px;font-size:12px}
     #login-cam{display:none}
-    /* กลับด้านภาพเฉพาะตอนใช้กล้องหน้า */
     #login-cam.mirror video{ transform: scaleX(-1) !important; }
+    #login-last{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px}
 
-    /* QR overlay (สแกนให้ทุกหน้า) */
+    /* QR overlay */
     .qr-overlay{position:fixed; inset:0; z-index:9800; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; padding:16px}
     .qr-panel{width:min(92vw,520px); background:#fff; border-radius:16px; border:1px solid var(--line); box-shadow:0 24px 80px rgba(0,0,0,.4); overflow:hidden}
     .qr-panel header{padding:12px 14px; border-bottom:1px solid var(--line); background:#f8fafc; font-weight:800}
     .qr-body{padding:12px 14px}
-    .qr-foot{padding:12px 14px; border-top:1px solid var(--line); display:flex; gap:8px; align-items:center}
+    .qr-foot{padding:12px 14px; border-top:1px solid var(--line); display:flex; gap:8px; align-items:center; flex-wrap:wrap}
     #qr-region{width:100%; min-height:320px}
+    #qr-last{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; color:#374151}
 
     @media (max-width: 960px){
       .layout{grid-template-columns: 0 1fr;}
       .side{transform:translateX(-100%); opacity:0; pointer-events:none;}
       .wrap{padding-left:16px; padding-right:16px;}
-      #view-checker.wrap{padding-left:16px; padding-right:16px;}
       .cmp-top-grid{ grid-template-columns: 1fr; }
     }
   </style>
@@ -165,6 +157,7 @@
         </div>
         <div id="submenu-checker" class="submenu show">
           <button id="nav-checker" onclick="switchView('checker')" class="active">Tag Check</button>
+          <button id="nav-fix" onclick="switchView('fix')">แก้ไขงาน NG</button>
           <button id="nav-logs" onclick="switchView('logs')">Scan Logs</button>
         </div>
         <button id="nav-print" onclick="switchView('print')">Print Tag</button>
@@ -173,17 +166,25 @@
       <div style="margin-top:auto; font-size:12px; opacity:.7">© Paradise Plastic</div>
     </aside>
 
-    <!-- Compare view -->
+    <!-- Tag Check -->
     <main id="view-checker" class="wrap" aria-hidden="true">
-      <div class="howto"><div id="focus-msg" class="focus-msg"></div></div>
+      <div class="howto">
+        <div id="focus-msg" class="focus-msg"></div>
+      </div>
+
+      <div class="card" id="fix-banner" style="display:none;margin-bottom:12px">
+        <div class="row" style="justify-content:space-between">
+          <div><b>โหมดแก้ไขงาน NG</b> — อ้างอิง: <span id="fix-ref"></span></div>
+          <div><button class="icon-btn small" onclick="cancelFixMode()">ยกเลิก</button></div>
+        </div>
+      </div>
 
       <div class="cmp-top-grid">
         <div class="card">
           <h3>แท็กผลิต (Production Tag)</h3>
           <div class="row">
             <input id="in-prod" type="text" placeholder="กำลังรอการสแกน Qr-code ที่แท็กฝ่ายผลิต" readonly />
-            <button class="primary" id="btn-prod" onclick="parseProduction()" disabled>แปลง</button>
-            <button class="icon-btn small" onclick="openScanner('prod')" title="เปิดกล้องสแกน"><span>📷</span> สแกน</button>
+            <button class="icon-btn small" onclick="openScanner('prod', {chainNext:true})" title="เปิดกล้องสแกน"><span>📷</span> สแกน</button>
           </div>
         </div>
 
@@ -191,7 +192,6 @@
           <h3>แท็กลูกค้า (Customer Tag)</h3>
           <div class="row">
             <input id="in-cust" type="text" placeholder="กำลังรอการสแกน Qr-code ที่แท็กลูกค้า" readonly />
-            <button class="primary" id="btn-cust" onclick="parseCustomer()" disabled>แปลง</button>
             <button class="icon-btn small" onclick="openScanner('cust')" title="เปิดกล้องสแกน"><span>📷</span> สแกน</button>
           </div>
         </div>
@@ -212,11 +212,29 @@
           </table>
         </div>
       </div>
-
-      <div class="muted" style="color:#6b7280;margin-top:10px"></div>
     </main>
 
-    <!-- Logs view -->
+    <!-- Fix NG view -->
+    <main id="view-fix" class="wrap" style="display:none">
+      <h2>รายการงาน NG ที่ต้องแก้ไข <span class="muted">|</span>
+        <span class="muted">ยังไม่แก้ไข: <b id="fix-todo">0</b> แก้ไขแล้ว: <b id="fix-done">0</b></span>
+      </h2>
+
+      <div class="card">
+        <div class="logs" style="margin-top:10px">
+          <table id="fix-table">
+            <thead>
+              <tr>
+                <th>เวลา/วันที่</th><th>รหัสพนักงาน</th><th>Material</th><th>Prod PN</th><th>Part Name</th><th>Qty</th><th>Cust PN</th><th>Cust Qty</th><th>ดำเนินการ</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- Logs -->
     <main id="view-logs" class="wrap" style="display:none">
       <h2>Scan Logs</h2>
 
@@ -256,7 +274,7 @@
               <tr>
                 <th>เวลา/วันที่</th><th>รหัสพนักงาน</th>
                 <th>Material</th><th>Part Number</th><th>Part Name</th><th>Qty.</th>
-                <th>Part Number</th><th>Qty.</th><th>Status</th>
+                <th>Part Number</th><th>Qty.</th><th>Status</th><th>FixedBy</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -292,6 +310,14 @@
           <button id="btn-login-flip" class="icon-btn small" onclick="loginFlipCamera()" style="display:none">สลับกล้อง</button>
         </div>
         <div id="login-cam" style="margin-top:10px; display:none"></div>
+
+        <div class="row" id="login-scan-controls" style="display:none; align-items:center">
+          <span class="muted">ล่าสุด:</span>
+          <span id="login-last"></span>
+          <button id="btn-login-accept" class="icon-btn small" onclick="acceptLoginScan()">ยืนยันอ่าน</button>
+          <button class="icon-btn small" onclick="clearLoginPending()">อ่านใหม่</button>
+        </div>
+
         <div class="row" style="margin-top:10px">
           <input id="login-raw" type="text" placeholder="104XXXXXXX หรือ URL ที่มี ?PersonCode=" style="flex:1" />
         </div>
@@ -309,10 +335,13 @@
       <header>สแกน Qr-code — <span id="qr-target-name">—</span></header>
       <div class="qr-body">
         <div id="qr-region"></div>
+        <div style="margin-top:8px"><span class="muted">ล่าสุด:</span> <span id="qr-last">—</span></div>
       </div>
       <div class="qr-foot">
-        <button class="icon-btn" id="btn-flip" onclick="flipScanner()">สลับกล้อง</button>
+        <button class="icon-btn" id="btn-accept" onclick="acceptScan()">ยืนยันอ่าน</button>
+        <button class="icon-btn" onclick="resumeScan()">อ่านใหม่</button>
         <div class="spacer"></div>
+        <button class="icon-btn" id="btn-flip" onclick="flipScanner()">สลับกล้อง</button>
         <button onclick="closeScanner()">ปิดกล้อง</button>
       </div>
     </div>
@@ -321,7 +350,7 @@
 <script>
 /* ===================== MENU / VIEWS ===================== */
 function switchView(name){
-  for(const id of ['checker','logs','print','create']){
+  for(const id of ['checker','fix','logs','print','create']){
     const main = document.getElementById('view-'+id);
     const btn  = document.getElementById(id==='checker'?'nav-checker':('nav-'+id));
     if(main) main.style.display = (id===name)?'block':'none';
@@ -330,10 +359,12 @@ function switchView(name){
   const parent = document.getElementById('parent-checker');
   if(parent){
     const anyActive = document.getElementById('nav-checker').classList.contains('active')
+                   || document.getElementById('nav-fix').classList.contains('active')
                    || document.getElementById('nav-logs').classList.contains('active');
     parent.classList.toggle('active', anyActive);
   }
   if(name==='logs'){ renderLogsView(); }
+  if(name==='fix'){ renderFixList(); }
 }
 function toggleSubmenu(key){
   const sub = document.getElementById('submenu-'+key);
@@ -356,15 +387,17 @@ let MAT_COL = null, PN_COL = null, NAME_COL = null;
 let PROD = { mat:"", pn:"", name:"", qty:null };
 let CUST = { pn:"", qty:null, name:"", mat:"" };
 
-let LOGIN_QR = { inst:null, active:false, cameras:[], idx:0 };
+let LOGIN_QR = { inst:null, active:false, cameras:[], idx:0, last:null };
 let USER = { code:null };
 
 let SESSION_LOCK = false;
 let BUSY = false;
 let EXPECT = 'prod';
 
+let FIX_MODE = { active:false, refTs:null }; // โหมดแก้ไข
+
 /* =========== QR Overlay (ส่วนกลาง) =========== */
-let SCAN_QR = { inst:null, active:false, cameras:[], idx:0, target:null };
+let SCAN_QR = { inst:null, active:false, cameras:[], idx:0, target:null, lastDecoded:null, paused:false, chainNext:false };
 const TARGET_LABEL = { prod:"แท็กผลิต", cust:"แท็กลูกค้า", login:"เข้าสู่ระบบ" };
 
 /* ======================== HELPERS ========================== */
@@ -398,7 +431,7 @@ function synthBell(){
 
 /* ========= ไฟล์เสียง mp3 ========= */
 const SOUND_BASE = 'sound/';
-let audioOK=null, audioNG=null, audioInvalidProd=null, audioInvalidCust=null, audioInvalidLogin=null, audioBell=null;
+let audioOK=null, audioNG=null, audioInvalidProd=null, audioInvalidCust=null, audioInvalidLogin=null, audioBell=null, audioFixOK=null;
 
 function initAudioFiles(){
   try{
@@ -408,14 +441,15 @@ function initAudioFiles(){
     audioInvalidCust  = new Audio(SOUND_BASE + 'invalid_cust.mp3');
     audioInvalidLogin = new Audio(SOUND_BASE + 'invalid_login.mp3');
     audioBell         = new Audio(SOUND_BASE + 'bell.mp3');
-    [audioOK, audioNG, audioInvalidProd, audioInvalidCust, audioInvalidLogin, audioBell].forEach(a=>{
+    audioFixOK        = new Audio(SOUND_BASE + 'ok_fix.mp3'); // เสียง OK แบบพิเศษสำหรับโหมดแก้ไข
+    [audioOK, audioNG, audioInvalidProd, audioInvalidCust, audioInvalidLogin, audioBell, audioFixOK].forEach(a=>{
       if(a){ a.preload='auto'; a.crossOrigin='anonymous'; }
     });
   }catch{}
 }
 function unlockAudio(){
   try{
-    [audioOK, audioNG, audioInvalidProd, audioInvalidCust, audioInvalidLogin, audioBell].forEach(a=>{
+    [audioOK, audioNG, audioInvalidProd, audioInvalidCust, audioInvalidLogin, audioBell, audioFixOK].forEach(a=>{
       if(!a) return;
       const v=a.volume; a.volume=0;
       const p=a.play();
@@ -437,7 +471,7 @@ async function playMp3WithFallback(audioEl, fallbackFn){
     try{ if(typeof fallbackFn==='function') fallbackFn(); }catch{}
   }
 }
-function playOK(){ playMp3WithFallback(audioOK, synthBell); }
+function playOK(){ playMp3WithFallback(FIX_MODE.active? audioFixOK : audioOK, synthBell); }
 function playNG(){ playMp3WithFallback(audioNG, synthBell); }
 function playInvalidProd(){ playMp3WithFallback(audioInvalidProd, synthBell); }
 function playInvalidCust(){ playMp3WithFallback(audioInvalidCust, synthBell); }
@@ -453,9 +487,10 @@ function notify(msg, ms=5000){ playBell(); showToast(msg, ms); }
 
 function formatDateTime(dt){ const p=n=>String(n).padStart(2,'0'); return `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())} ${p(dt.getHours())}:${p(dt.getMinutes())}:${p(dt.getSeconds())}`; }
 function updateFocusBanner(){
+  const suffix = FIX_MODE.active ? " (โหมดแก้ไข NG)" : "";
   $_("focus-msg").textContent = EXPECT==='prod'
-    ? `กรุณาสแกนแท็กฝ่ายผลิต Please scan the Production TAG.`
-    : `กรุณาสแกนแท็กลูกค้า Please scan the Customer TAG.`;
+    ? `กรุณาสแกนแท็กฝ่ายผลิต Please scan the Production TAG${suffix}.`
+    : `กรุณาสแกนแท็กลูกค้า Please scan the Customer TAG${suffix}.`;
 }
 
 /* ========================= CSV (BOM) ========================= */
@@ -518,24 +553,9 @@ function classifyTag(raw){
 function enforceExpectUI(){
   const prodOK = EXPECT==='prod';
   const prodIn = $_("in-prod"), custIn = $_("in-cust");
-  const prodBtn = $_("btn-prod"), custBtn=$_("btn-cust");
   prodIn.readOnly = !prodOK;  custIn.readOnly = prodOK;
-  prodBtn.disabled = !prodOK; custBtn.disabled = prodOK;
   if(prodOK){ prodIn.focus(); } else { custIn.focus(); }
   updateFocusBanner();
-}
-
-/* กันสลับช่องเฉย ๆ */
-function guardInputChannel(el, must){
-  el.addEventListener("beforeinput", e=>{
-    if(EXPECT!==must){ e.preventDefault(); notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’"); enforceExpectUI(); }
-  });
-  el.addEventListener("paste", e=>{
-    if(EXPECT!==must){ e.preventDefault(); notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’"); enforceExpectUI(); }
-  });
-  el.addEventListener("focus", ()=>{
-    if(EXPECT!==must){ notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’"); enforceExpectUI(); }
-  });
 }
 
 /* ========================= SESSION RESET ========================= */
@@ -639,6 +659,19 @@ async function compareNow(){
   $_("cmp-mat").classList.add(matOk? "ok-row" : "ng-row");
 
   await saveLog(ok);
+
+  // ถ้าเป็นโหมดแก้ไข: ok = เพิ่ม log FIXED และกลับไปลิสต์
+  if(FIX_MODE.active){
+    if(ok){
+      await saveFixLog(FIX_MODE.refTs);
+      FIX_MODE={active:false,refTs:null};
+      notify("การแก้ไขเสร็จสมบูรณ์");
+      switchView('fix');
+    }else{
+      notify("แก้ไขยังไม่สำเร็จ: กรุณาตรวจสอบอีกครั้ง");
+    }
+  }
+
   prepNextCycleAfterCompare();
   SESSION_LOCK = true;
 }
@@ -661,14 +694,15 @@ async function renderLogsView(){
     const tb = $_("log-table-view").querySelector("tbody");
     tb.innerHTML="";
     for(const r of list){
-      const cls = (r.result||"").toUpperCase()==="OK" ? "ok-row" : "ng-row";
+      const s = (r.result||"").toUpperCase();
+      const cls = s==="OK" ? "ok-row" : (s==="NG" ? "ng-row" : "fix-row");
       tb.insertAdjacentHTML("beforeend", `<tr class="${cls}">
         <td>${esc(r.ts||"")}</td><td>${esc(r.emp||"")}</td>
         <td>${esc(r.mat||"")}</td><td>${esc(r.prodPN||"")}</td><td>${esc(r.name||"")}</td><td>${esc(r.prodQty??"")}</td>
-        <td>${esc(r.custPN||"")}</td><td>${esc(r.custQty??"")}</td><td>${esc(r.result||"")}</td>
+        <td>${esc(r.custPN||"")}</td><td>${esc(r.custQty??"")}</td><td>${esc(r.result||"")}</td><td>${esc(r.fixedBy||"")}</td>
       </tr>`);
     }
-    const {total, ok, ng} = summarizeLogs(list);
+    const {total, ok, ng} = summarizeLogs(list.filter(r=>r.result!=="FIXED"));
     $_("sum-total").textContent = total;
     $_("sum-ok").textContent = ok;
     $_("sum-ng").textContent = ng;
@@ -744,12 +778,24 @@ async function saveLog(ok){
   };
   try{ await addLog(rowObj); }catch(e){ console.error(e); notify("บันทึกลง IndexedDB ไม่สำเร็จ"); }
 }
+async function saveFixLog(refTs){
+  const now = new Date();
+  const rowObj = {
+    ts: formatDateTime(now),
+    emp: USER.code || "",
+    mat: PROD.mat,
+    prodPN: PROD.pn, name: PROD.name, prodQty: PROD.qty,
+    custPN: CUST.pn, custQty: CUST.qty,
+    result: "FIXED", refTs, fixedBy: USER.code || ""
+  };
+  try{ await addLog(rowObj); }catch(e){ console.error(e); notify("บันทึกสถานะแก้ไขไม่สำเร็จ"); }
+}
 async function exportFilteredLogs(){
   const rows = filterLogs(await getAllLogs());
-  const header = ["timestamp","employee_code","material","prod_part_number","part_name","prod_qty","cust_part_number","cust_qty","status"];
+  const header = ["timestamp","employee_code","material","prod_part_number","part_name","prod_qty","cust_part_number","cust_qty","status","fixedBy","refTs"];
   const lines = [header.join(",")];
   for(const r of rows){
-    const vals = [r.ts,r.emp,r.mat,r.prodPN,r.name,r.prodQty,r.custPN,r.custQty,r.result].map(csvEscape);
+    const vals = [r.ts,r.emp,r.mat,r.prodPN,r.name,r.prodQty,r.custPN,r.custQty,r.result,r.fixedBy||"",r.refTs||""].map(csvEscape);
     lines.push(vals.join(","));
   }
   const blob = new Blob([`\ufeff${lines.join("\n")}`], {type:"text/csv;charset=utf-8"});
@@ -762,6 +808,42 @@ async function handleClearLogs(){
   if(pass!=="adminpe"){ notify("รหัสผ่านไม่ถูกต้อง"); return; }
   try{ await clearAllLogs(); $_("admin-pass").value=""; renderLogsView(); notify("ล้าง Logs ทั้งหมดแล้ว"); }
   catch(e){ console.error(e); notify("ล้าง Logs ไม่สำเร็จ"); }
+}
+
+/* ==================== FIX LIST ==================== */
+async function renderFixList(){
+  const all = await getAllLogs();
+  // งาน NG ที่ยังไม่ถูกอ้างอิงด้วย FIXED
+  const fixedRefs = new Set(all.filter(r=>r.result==="FIXED").map(r=>r.refTs));
+  const todo = all.filter(r=>r.result==="NG" && !fixedRefs.has(r.ts));
+  const done = all.filter(r=>r.result==="FIXED");
+
+  $_('fix-todo').textContent = todo.length;
+  $_('fix-done').textContent = done.length;
+
+  const tb = $_('fix-table').querySelector('tbody');
+  tb.innerHTML = '';
+  for(const r of todo){
+    tb.insertAdjacentHTML('beforeend', `<tr class="ng-row">
+      <td>${esc(r.ts||"")}</td><td>${esc(r.emp||"")}</td>
+      <td>${esc(r.mat||"")}</td><td>${esc(r.prodPN||"")}</td><td>${esc(r.name||"")}</td><td>${esc(r.prodQty??"")}</td>
+      <td>${esc(r.custPN||"")}</td><td>${esc(r.custQty??"")}</td>
+      <td><button class="icon-btn small" onclick="startFix('${r.ts}')">แก้ไข</button></td>
+    </tr>`);
+  }
+}
+function startFix(refTs){
+  FIX_MODE = {active:true, refTs};
+  $_('fix-banner').style.display='block';
+  $_('fix-ref').textContent = refTs;
+  switchView('checker');
+  hardReset();
+  openScanner('prod', {chainNext:true}); // เริ่มสแกนผลิต แล้วต่อด้วยลูกค้าอัตโนมัติ
+}
+function cancelFixMode(){
+  FIX_MODE = {active:false, refTs:null};
+  $_('fix-banner').style.display='none';
+  switchView('fix');
 }
 
 /* =========================== BOOT ========================== */
@@ -783,14 +865,12 @@ function hookKeyboard(){
   prodIn.addEventListener("keydown", e=>{
     if(EXPECT!=='prod'){ e.preventDefault(); notify("ตอนนี้ต้องสแกน ‘แท็กลูกค้า’"); enforceExpectUI(); return; }
     if(e.key!=="Enter" && SESSION_LOCK){ maybeResetBeforeProdScan(); }
-    if(e.key==="Enter"){ e.preventDefault(); parseProduction(); }
+    if(e.key==="Enter"){ e.preventDefault(); /* ปิดใช้ Enter: ต้องกดยืนยันหน้ากล้องเท่านั้น */ }
   });
   custIn.addEventListener("keydown", e=>{
     if(EXPECT!=='cust'){ e.preventDefault(); notify("กรุณาสแกน ‘แท็กผลิต’ ก่อน"); enforceExpectUI(); return; }
-    if(e.key==="Enter"){ e.preventDefault(); parseCustomer(); }
+    if(e.key==="Enter"){ e.preventDefault(); /* ปิดใช้ Enter */ }
   });
-  guardInputChannel(prodIn,'prod'); 
-  guardInputChannel(custIn,'cust');
 
   // login field
   const loginInput = $_('login-raw');
@@ -805,7 +885,6 @@ function hookKeyboard(){
     if(e.key==='Enter'){ e.preventDefault(); tryAutoLoginFromRaw(loginInput.value, true); }
   });
 
-  // คลิกครั้งแรกเพื่อปลดล็อกเสียง/mp3
   document.body.addEventListener('click', ()=>{ ensureAudio(); unlockAudio(); }, {once:true});
 }
 
@@ -825,7 +904,6 @@ function parseEmployeePayload(raw){
 function tryAutoLoginFromRaw(val, force=false){
   const emp=parseEmployeePayload(val);
   fillEmployeeUI(emp);
-
   if(emp.code && (force || /^[A-Za-z0-9\-_]{5,}$/.test(emp.code))){
     confirmLogin(true);
     return;
@@ -833,7 +911,6 @@ function tryAutoLoginFromRaw(val, force=false){
   if(force){
     playInvalidLogin();
     notify("ไม่พบรหัสพนักงานใน Qr-code / รูปแบบไม่ถูกต้อง");
-    // เจตนา: หน้า Login "ไม่ลบค่าที่พิมพ์" เมื่อรูปแบบไม่ถูกต้อง
   }
 }
 function isFrontCam(cam){ return /front|user|face|自拍|內建|built.?in/i.test(cam?.label||""); }
@@ -855,32 +932,51 @@ async function toggleLoginCamera(){
     const cams=await Html5Qrcode.getCameras(); 
     if(!cams?.length){ camDiv.textContent="ไม่พบกล้อง"; return; }
     LOGIN_QR.cameras=cams; 
-    // พยายามเลือกกล้องหลังก่อน
+    // เริ่มที่กล้องหลัง (ถ้ามี) ไม่งั้นตัวแรก
     const env = cams.find(c=>/back|rear|environment/i.test(c.label));
     LOGIN_QR.idx = env ? cams.indexOf(env) : 0;
-    const camId = cams[LOGIN_QR.idx].id;
-    await LOGIN_QR.inst.start(camId,{fps:10,qrbox:250}, onLoginScan);
-    LOGIN_QR.active=true;
 
+    const startCam = async (idx)=>{
+      await LOGIN_QR.inst.start(cams[idx].id,{fps:10,qrbox:250}, onLoginScan);
+      LOGIN_QR.idx = idx;
+    };
+    try{ await startCam(LOGIN_QR.idx); }
+    catch{ // ลองตัวอื่น (เช่น กล้องหน้า)
+      const alt = (LOGIN_QR.idx+1) % cams.length;
+      await startCam(alt);
+    }
+
+    LOGIN_QR.active=true;
     flip.style.display = "inline-flex";
-    flip.disabled = cams.length<=1; // แสดงเสมอ แต่ปิดถ้ามีตัวเดียว
-    applyLoginMirror(); // <<— mirror ถ้าเป็นกล้องหน้า
+    flip.disabled = cams.length<=1;
+    applyLoginMirror();
+
+    $_('login-scan-controls').style.display='flex';
+    $_('login-last').textContent='—';
+    LOGIN_QR.last=null;
   }catch(err){ $_('login-cam').textContent="เปิดกล้องไม่ได้: "+(err?.message||err); }
 }
 async function loginFlipCamera(){
   if(!LOGIN_QR.active || !LOGIN_QR.cameras.length) return;
   try{
-    LOGIN_QR.idx = (LOGIN_QR.idx + 1) % LOGIN_QR.cameras.length;
+    const next = (LOGIN_QR.idx + 1) % LOGIN_QR.cameras.length;
     await LOGIN_QR.inst.stop();
-    await LOGIN_QR.inst.start(LOGIN_QR.cameras[LOGIN_QR.idx].id,{fps:10,qrbox:250}, onLoginScan);
-    applyLoginMirror(); // <<— mirror ตามกล้องใหม่
+    await LOGIN_QR.inst.start(LOGIN_QR.cameras[next].id,{fps:10,qrbox:250}, onLoginScan);
+    LOGIN_QR.idx = next;
+    applyLoginMirror();
   }catch(err){ $_('login-cam').textContent="สลับกล้องไม่ได้: "+(err?.message||err); }
 }
 function onLoginScan(txt){
   const clean = sanitizeScan(txt);
-  $_('login-raw').value=clean; 
-  tryAutoLoginFromRaw(clean, true);
+  LOGIN_QR.last = clean;
+  $_('login-last').textContent = clean;
 }
+function acceptLoginScan(){
+  if(!LOGIN_QR.last){ notify("ยังไม่พบข้อมูลจากกล้อง"); return; }
+  $_('login-raw').value = LOGIN_QR.last;
+  tryAutoLoginFromRaw(LOGIN_QR.last, true);
+}
+function clearLoginPending(){ LOGIN_QR.last=null; $_('login-last').textContent='—'; }
 function fillEmployeeUI(emp){ $_('emp-id').textContent=emp.code||'—'; }
 function confirmLogin(auto=false){
   const code=$_('emp-id').textContent.trim(); 
@@ -901,16 +997,18 @@ async function logout(){
 }
 function enableUI(on){
   $_("in-prod").readOnly = !on; $_("in-cust").readOnly = !on;
-  $_("btn-prod").disabled = !on; $_("btn-cust").disabled = !on;
   if(on) enforceExpectUI();
 }
 
 /* ==================== QR OVERLAY ส่วนกลาง ==================== */
-async function openScanner(target){
+async function openScanner(target, opts={}){
   SCAN_QR.target = target;
+  SCAN_QR.chainNext = !!opts.chainNext && target==='prod'; // เฉพาะแรกให้ต่อไปลูกค้า
+  SCAN_QR.lastDecoded = null;
+  SCAN_QR.paused = false;
   $_('qr-target-name').textContent = TARGET_LABEL[target] || '—';
-  const overlay = $_('qr-overlay');
-  overlay.style.display = 'flex';
+  $_('qr-last').textContent = '—';
+  $_('qr-overlay').style.display = 'flex';
 
   if(!SCAN_QR.inst) SCAN_QR.inst = new Html5Qrcode('qr-region');
 
@@ -919,21 +1017,52 @@ async function openScanner(target){
     if(!cams?.length){ $_('qr-region').textContent="ไม่พบกล้อง"; return; }
     SCAN_QR.cameras = cams; 
     const env = cams.find(c=>/back|rear|environment/i.test(c.label));
-    const camId = (env || cams[0]).id;
-    SCAN_QR.idx = env ? cams.indexOf(env) : 0;
-    await SCAN_QR.inst.start(camId, {fps:10, qrbox:250}, onOverlayScan);
+    let idx = env ? cams.indexOf(env) : 0;
+
+    const startIdx = async (i)=>{
+      await SCAN_QR.inst.start(cams[i].id, {fps:10, qrbox:250}, onOverlayScan);
+      SCAN_QR.idx = i;
+    };
+    try{ await startIdx(idx); }
+    catch{
+      const alt = (idx+1)%cams.length;
+      await startIdx(alt);
+    }
+
     SCAN_QR.active = true;
     $_('btn-flip').disabled = cams.length<=1;
   }catch(err){
     $_('qr-region').textContent = "เปิดกล้องไม่ได้: " + (err?.message || err);
   }
 }
+function onOverlayScan(decodedText){
+  if(SCAN_QR.paused) return;
+  const clean = sanitizeScan(decodedText);
+  SCAN_QR.lastDecoded = clean;
+  $_('qr-last').textContent = clean;
+}
+function resumeScan(){ SCAN_QR.paused=false; SCAN_QR.lastDecoded=null; $_('qr-last').textContent='—'; }
+async function acceptScan(){
+  if(!SCAN_QR.lastDecoded){ notify("ยังไม่พบข้อมูลจากกล้อง"); return; }
+  const text = SCAN_QR.lastDecoded;
+  SCAN_QR.paused=true;
+  await closeScanner();
+  if(SCAN_QR.target==='prod'){
+    $_('in-prod').value = text; parseProduction();
+    if(SCAN_QR.chainNext){ openScanner('cust'); }
+  }else if(SCAN_QR.target==='cust'){
+    $_('in-cust').value = text; parseCustomer();
+  }else if(SCAN_QR.target==='login'){
+    $_('login-raw').value = text; tryAutoLoginFromRaw(text, true);
+  }
+}
 async function flipScanner(){
   if(!SCAN_QR.active || !SCAN_QR.cameras.length) return;
   try{
-    SCAN_QR.idx = (SCAN_QR.idx + 1) % SCAN_QR.cameras.length;
+    const next = (SCAN_QR.idx + 1) % SCAN_QR.cameras.length;
     await SCAN_QR.inst.stop();
-    await SCAN_QR.inst.start(SCAN_QR.cameras[SCAN_QR.idx].id, {fps:10, qrbox:250}, onOverlayScan);
+    await SCAN_QR.inst.start(SCAN_QR.cameras[next].id, {fps:10, qrbox:250}, onOverlayScan);
+    SCAN_QR.idx = next;
   }catch(err){
     notify("สลับกล้องไม่ได้: "+(err?.message||err));
   }
@@ -942,21 +1071,6 @@ async function closeScanner(){
   try{ if(SCAN_QR.active && SCAN_QR.inst){ await SCAN_QR.inst.stop(); } }catch{}
   SCAN_QR.active=false;
   $_('qr-overlay').style.display='none';
-}
-function onOverlayScan(decodedText){
-  const clean = sanitizeScan(decodedText);
-  closeScanner();
-
-  if(SCAN_QR.target==='prod'){
-    $_('in-prod').value = clean;
-    parseProduction();
-  }else if(SCAN_QR.target==='cust'){
-    $_('in-cust').value = clean;
-    parseCustomer();
-  }else if(SCAN_QR.target==='login'){
-    $_('login-raw').value = clean;
-    tryAutoLoginFromRaw(clean, true);
-  }
 }
 </script>
 </body>
