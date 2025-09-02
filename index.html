@@ -118,6 +118,8 @@
     .login-panel .foot{ padding:12px 18px; border-top:1px solid #e5e7eb; display:flex; gap:8px; justify-content:flex-end }
     .mutewarn{background:#fffbeb;color:#b45309;border:1px solid #fcd34d;padding:8px 10px;border-radius:10px;font-size:12px}
     #login-cam{display:none}
+    /* กลับด้านภาพเฉพาะตอนใช้กล้องหน้า */
+    #login-cam.mirror video{ transform: scaleX(-1) !important; }
 
     /* QR overlay (สแกนให้ทุกหน้า) */
     .qr-overlay{position:fixed; inset:0; z-index:9800; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; padding:16px}
@@ -375,7 +377,7 @@ const normPN = s => norm(s).replace(/\s+/g,"").toUpperCase();
 const normPNNoDash = s => normPN(s).replace(/-/g,"");
 function cleanMat(s){ const t=norm(s).replace(/\s+/g,""); const n=Number(t); if(Number.isFinite(n)) return String(Math.trunc(n)); const d=t.match(/\d+/g); return d?d.join(""):t; }
 function normName(x){ return norm(x).replace(/\s+/g,' ').trim().toUpperCase(); }
-function esc(s){ return (s??"").toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&gt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function esc(s){ return (s??"").toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 let toastTimer=null,audioCtx=null;
 function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
 function resumeAudio(){ try{ if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch{} }
@@ -395,7 +397,7 @@ function synthBell(){
 }
 
 /* ========= ไฟล์เสียง mp3 ========= */
-const SOUND_BASE = 'sound/';  // ที่อยู่โฟลเดอร์เสียง
+const SOUND_BASE = 'sound/';
 let audioOK=null, audioNG=null, audioInvalidProd=null, audioInvalidCust=null, audioInvalidLogin=null, audioBell=null;
 
 function initAudioFiles(){
@@ -831,8 +833,14 @@ function tryAutoLoginFromRaw(val, force=false){
   if(force){
     playInvalidLogin();
     notify("ไม่พบรหัสพนักงานใน Qr-code / รูปแบบไม่ถูกต้อง");
-    // ไม่ลบค่า login-raw ตามที่คุณขอให้ "ล็อกอินผิดไม่ลบข้อมูล"
+    // เจตนา: หน้า Login "ไม่ลบค่าที่พิมพ์" เมื่อรูปแบบไม่ถูกต้อง
   }
+}
+function isFrontCam(cam){ return /front|user|face|自拍|內建|built.?in/i.test(cam?.label||""); }
+function applyLoginMirror(){
+  const cam = LOGIN_QR.cameras[LOGIN_QR.idx];
+  const mirror = isFrontCam(cam);
+  $_('login-cam').classList.toggle('mirror', !!mirror);
 }
 async function toggleLoginCamera(){
   try{
@@ -846,12 +854,17 @@ async function toggleLoginCamera(){
     if(!LOGIN_QR.inst) LOGIN_QR.inst=new Html5Qrcode(camDiv.id);
     const cams=await Html5Qrcode.getCameras(); 
     if(!cams?.length){ camDiv.textContent="ไม่พบกล้อง"; return; }
-    LOGIN_QR.cameras=cams; LOGIN_QR.idx=0;
+    LOGIN_QR.cameras=cams; 
+    // พยายามเลือกกล้องหลังก่อน
     const env = cams.find(c=>/back|rear|environment/i.test(c.label));
-    const camId = (env||cams[0]).id;
+    LOGIN_QR.idx = env ? cams.indexOf(env) : 0;
+    const camId = cams[LOGIN_QR.idx].id;
     await LOGIN_QR.inst.start(camId,{fps:10,qrbox:250}, onLoginScan);
     LOGIN_QR.active=true;
-    flip.style.display = cams.length>1 ? "inline-flex" : "none";
+
+    flip.style.display = "inline-flex";
+    flip.disabled = cams.length<=1; // แสดงเสมอ แต่ปิดถ้ามีตัวเดียว
+    applyLoginMirror(); // <<— mirror ถ้าเป็นกล้องหน้า
   }catch(err){ $_('login-cam').textContent="เปิดกล้องไม่ได้: "+(err?.message||err); }
 }
 async function loginFlipCamera(){
@@ -860,6 +873,7 @@ async function loginFlipCamera(){
     LOGIN_QR.idx = (LOGIN_QR.idx + 1) % LOGIN_QR.cameras.length;
     await LOGIN_QR.inst.stop();
     await LOGIN_QR.inst.start(LOGIN_QR.cameras[LOGIN_QR.idx].id,{fps:10,qrbox:250}, onLoginScan);
+    applyLoginMirror(); // <<— mirror ตามกล้องใหม่
   }catch(err){ $_('login-cam').textContent="สลับกล้องไม่ได้: "+(err?.message||err); }
 }
 function onLoginScan(txt){
@@ -893,7 +907,6 @@ function enableUI(on){
 
 /* ==================== QR OVERLAY ส่วนกลาง ==================== */
 async function openScanner(target){
-  // target: 'prod' | 'cust' | 'login' (เผื่อใช้ต่อ)
   SCAN_QR.target = target;
   $_('qr-target-name').textContent = TARGET_LABEL[target] || '—';
   const overlay = $_('qr-overlay');
@@ -932,7 +945,6 @@ async function closeScanner(){
 }
 function onOverlayScan(decodedText){
   const clean = sanitizeScan(decodedText);
-  // ปิด overlay ก่อนส่งข้อมูลเข้าช่อง
   closeScanner();
 
   if(SCAN_QR.target==='prod'){
@@ -949,4 +961,3 @@ function onOverlayScan(decodedText){
 </script>
 </body>
 </html>
-
