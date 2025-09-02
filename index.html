@@ -1,0 +1,1160 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PRD Smart-TAG — Production vs Customer</title>
+  <meta name="x-build" content="2025-09-02 r42-alert+mp3-simultaneous-all-scans">
+  <style>
+    :root{
+      --bg:#f7f9fc; --card:#ffffff; --text:#1f2a44; --muted:#6b7280;
+      --line:#e5e7eb; --accent:#2563eb; --accent-weak:#eef2ff;
+      --ok:#0f7a3a; --ok-bg:#e8f7ee; --ng:#b91c1c; --ng-bg:#fde8e8;
+      --btnborder:#d1d5db; --toast:#111827; --toast-text:#f9fafb;
+      --focus-bg:#fff7cc; --prd:#d60000; --smart:#042157;
+      --side-bg:#ffffff; --side-text:#1f2937; --side-hover:#f3f4f6;
+      --topbar-bg:#ffffff; --fixed-bg:#FEF9C3; --fixed-text:#92400e;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
+
+    /* Topbar */
+    .topbar{position:sticky; top:0; z-index:1000; display:flex; align-items:center; gap:12px;
+      padding:10px 14px; background:var(--topbar-bg); border-bottom:1px solid var(--line);}
+    .menu-btn{display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px;
+      border-radius:10px; border:1px solid var(--line); background:#fff; cursor:pointer; font-size:18px;}
+    .menu-btn:active{ transform:translateY(1px); }
+    .brand-inline{display:flex; align-items:baseline; gap:10px; line-height:1; user-select:none;}
+    .brand-prd{font-family:"LilyUPC","Tahoma","Noto Sans Thai",sans-serif;font-weight:800;font-style:italic;color:var(--prd);font-size:32px;letter-spacing:.5px}
+    .brand-smart{font-family:"LilyUPC","Tahoma","Noto Sans Thai",sans-serif;font-weight:800;color:var(--smart);font-size:28px;letter-spacing:.3px}
+    .spacer{flex:1}
+    .topbar-right{display:flex; align-items:center; gap:10px}
+    .badge{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:12px}
+
+    /* Layout + sidebar */
+    .layout{display:grid; grid-template-columns: 260px 1fr; min-height:calc(100vh - 62px); transition:grid-template-columns .2s ease}
+    .layout.collapsed{grid-template-columns: 0 1fr;}
+    .side{background:var(--side-bg); color:var(--side-text); padding:18px 14px; position:sticky; top:62px; height:calc(100vh - 62px);
+      border-right:1px solid var(--line); display:flex; flex-direction:column; gap:14px; transition:transform .2s ease, opacity .2s ease;}
+    .layout.collapsed .side{ transform:translateX(-100%); opacity:0; pointer-events:none; }
+
+    .nav{display:flex; flex-direction:column; gap:6px; margin-top:10px}
+    .nav button{ text-align:left; width:100%; padding:10px 12px; border-radius:10px; border:1px solid transparent;
+      background:transparent; color:var(--side-text); cursor:pointer; font-size:14px;}
+    .nav button:hover{ background:var(--side-hover); }
+    .nav button.active{ background:var(--accent-weak); border-color:#dbeafe; }
+
+    .parent{display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:10px; cursor:pointer}
+    .parent:hover{ background:var(--side-hover); }
+    .caret{font-size:12px; opacity:.8; transition:transform .2s}
+    .parent.expanded .caret{ transform:rotate(90deg); }
+    .submenu{display:none; flex-direction:column; gap:6px; padding-left:10px; margin-top:2px;}
+    .submenu.show{display:flex;}
+    .submenu button{ padding:8px 12px; font-size:13px; border-radius:10px; }
+
+    /* Main area: full width on every page */
+    .wrap{max-width:100% !important; margin:0; padding:24px 32px;}
+
+    .howto{border:1px solid #f1d36a;background:var(--focus-bg);border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:center;margin:12px 0 18px}
+    .howto .focus-msg{font-weight:900;color:#111;text-align:center;white-space:pre-line}
+
+    /* compare grid */
+    .cmp-top-grid{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+    .cmp-bottom{margin-top:16px}
+    .card{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.03)}
+    .card h3{margin:0 0 8px;font-size:16px}
+    .card.compact{padding:10px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+    input[type=text], input[type=date], input[type=password]{flex:1;min-width:220px;padding:10px 12px;border-radius:10px;border:1px solid var(--btnborder);background:#fff;color:#2b364d;outline:none}
+    input::placeholder{color:#9ca3af}
+    input[readonly]{background:#f3f4f6}
+    button{padding:10px 14px;border-radius:12px;border:1px solid var(--btnborder);background:#fff;color:#1f2a44;cursor:pointer}
+    button.primary{background:var(--accent);color:#fff;border-color:transparent}
+    button[disabled]{opacity:.5;cursor:not-allowed}
+
+    .filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .filters input[type=date]{padding:6px 8px}
+    .filters button{padding:6px 10px;border-radius:10px}
+
+    .result-banner{display:none;align-items:center;justify-content:center;border-radius:14px;padding:18px;font-weight:900;letter-spacing:.5px;text-align:center;margin-bottom:10px;font-size:60px}
+    .banner-ok{background:var(--ok-bg);color:var(--ok);border:1px solid #86efac}
+    .banner-ng{background:var(--ng-bg);color:#b91c1c;border:1px solid #fca5a5}
+
+    .cmp{width:100%; border-collapse:collapse; margin-top:10px; font-size:13px}
+    .cmp th,.cmp td{padding:10px 12px; border:1px solid var(--line)}
+    .cmp th{background:#f8fafc; color:#475569; text-align:left}
+    .ok-row{ background:var(--ok-bg) !important; color:var(--ok) !important; font-weight:800; }
+    .ng-row{ background:var(--ng-bg) !important; color:#b91c1c !important; font-weight:800; }
+    .fixed-row{ background:var(--fixed-bg) !important; color:var(--fixed-text) !important; font-weight:800; }
+
+    /* totals summary */
+    #log-totals{display:flex;gap:14px;align-items:center;font-size:13px;padding:8px 10px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;margin-bottom:8px}
+    #log-totals .dot{width:8px;height:8px;border-radius:999px;display:inline-block;margin-right:6px;background:#9ca3af}
+    #log-totals .ok .dot{background:var(--ok)}
+    #log-totals .ng .dot{background:#b91c1c}
+    #log-totals .fixed .dot{background:#d97706}
+    #log-totals b{font-size:14px}
+
+    .toast{position:fixed;right:18px;top:72px;z-index:9999;background:#111827;color:#f9fafb;border:1px solid #374151;border-radius:12px;padding:10px 14px;box-shadow:0 10px 28px rgba(0,0,0,.25);opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .18s,transform .18s;max-width:80vw}
+    .toast.show{opacity:1;transform:translateY(0)}
+
+    .logs{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:auto;max-height:420px}
+    table{width:100%;border-collapse:collapse;font-size:12px}
+    th,td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+    th{position:sticky;top:0;background:#f8fafc;text-align:left;color:#475569}
+
+    /* Login overlay */
+    .login-screen{position:fixed; inset:0; z-index:10000; background:#0b1220; display:flex; align-items:center; justify-content:center;}
+    .login-panel{width:min(92vw,560px); background:#ffffff; border-radius:18px; border:1px solid #e5e7eb; box-shadow:0 30px 100px rgba(0,0,0,.45); overflow:hidden;}
+    .login-panel header{background:#f8fafc; border-bottom:1px solid #e5e7eb; padding:16px 18px; font-weight:800;}
+    .login-panel .body{ padding:16px 18px; }
+    .login-panel .foot{ padding:12px 18px; border-top:1px solid #e5e7eb; display:flex; gap:8px; justify-content:flex-end }
+    .mutewarn{background:#fffbeb;color:#b45309;border:1px solid #fcd34d;padding:8px 10px;border-radius:10px;font-size:12px}
+    #login-cam{display:none}
+
+    .rw-title{display:flex; gap:14px; align-items:baseline; flex-wrap:wrap}
+    .rw-title .stat{color:var(--muted); font-weight:600}
+    .rw-title .stat b{color:#111}
+
+    @media (max-width: 960px){
+      .layout{grid-template-columns: 0 1fr;}
+      .side{transform:translateX(-100%); opacity:0; pointer-events:none;}
+      .wrap{padding-left:16px; padding-right:16px;}
+      .cmp-top-grid{ grid-template-columns: 1fr; }
+    }
+  </style>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+  <!-- Topbar -->
+  <div class="topbar">
+    <button id="btn-menu" class="menu-btn" aria-label="สลับเมนู">☰</button>
+    <div class="brand-inline">
+      <div class="brand-prd">PRD</div>
+      <div class="brand-smart">Smart-TAG</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="topbar-right">
+      <span id="user-pill" class="badge" style="display:none"></span>
+      <button id="btn-logout" onclick="logout()" style="display:none">ออกจากระบบ</button>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div id="app-layout" class="layout">
+    <!-- Sidebar -->
+    <aside class="side" id="sidebar">
+      <nav class="nav">
+        <div id="parent-checker" class="parent" onclick="toggleSubmenu('checker')">
+          <span>Tag Match Checker</span><span class="caret">▶</span>
+        </div>
+        <div id="submenu-checker" class="submenu show">
+          <button id="nav-checker" onclick="switchView('checker')" class="active">Tag Check</button>
+          <button id="nav-logs" onclick="switchView('logs')">Scan Logs</button>
+          <button id="nav-rework" onclick="switchView('rework')">แก้ไขงาน NG</button>
+        </div>
+        <button id="nav-print" onclick="switchView('print')">Print Tag</button>
+        <button id="nav-create" onclick="switchView('create')">Create Tag</button>
+      </nav>
+      <div style="margin-top:auto; font-size:12px; opacity:.7">© Paradise Plastic</div>
+    </aside>
+
+    <!-- Compare view -->
+    <main id="view-checker" class="wrap" aria-hidden="true">
+      <div class="howto"><div id="focus-msg" class="focus-msg"></div></div>
+
+      <div class="cmp-top-grid">
+        <div class="card">
+          <h3>แท็กผลิต (Production Tag)</h3>
+          <div class="row">
+            <input id="in-prod" type="text" placeholder="กำลังรอการสแกน Qr-code ที่แท็กฝ่ายผลิต" readonly />
+            <button class="primary" id="btn-prod" onclick="parseProduction()" disabled>แปลง</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>แท็กลูกค้า (Customer Tag)</h3>
+          <div class="row">
+            <input id="in-cust" type="text" placeholder="กำลังรอการสแกน Qr-code ที่แท็กลูกค้า" readonly />
+            <button class="primary" id="btn-cust" onclick="parseCustomer()" disabled>แปลง</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cmp-bottom">
+        <div class="card result-card">
+          <h3>ผลการตรวจสอบ</h3>
+          <div id="banner" class="result-banner"></div>
+          <table class="cmp" id="cmp-table" aria-label="รายละเอียดผลการตรวจสอบ">
+            <thead><tr><th>หัวข้อ</th><th>ผลิต</th><th>ลูกค้า</th></tr></thead>
+            <tbody>
+              <tr id="cmp-pn"><td>Part Number</td><td id="cmp-pn-prod">—</td><td id="cmp-pn-cust">—</td></tr>
+              <tr id="cmp-name"><td>Part Name</td><td id="cmp-name-prod">—</td><td id="cmp-name-cust">—</td></tr>
+              <tr id="cmp-qty"><td>Qty.</td><td id="cmp-qty-prod">—</td><td id="cmp-qty-cust">—</td></tr>
+              <tr id="cmp-mat"><td>Material</td><td id="cmp-mat-prod">—</td><td id="cmp-mat-cust">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- Logs view -->
+    <main id="view-logs" class="wrap" style="display:none">
+      <h2>Scan Logs</h2>
+
+      <div class="card">
+        <div class="row" style="gap:12px; align-items:flex-end">
+          <div class="muted"></div>
+          <div style="margin-left:auto; display:flex; gap:8px; align-items:center">
+            <label>กรอกรหัสผ่านเพื่อลบข้อมูล</label>
+            <input id="admin-pass" type="password" placeholder="Password">
+            <button onclick="handleClearLogs()" style="background:#b91c1c;color:#fff;border-color:#b91c1c">ล้าง Logs ทั้งหมด</button>
+            <button onclick="exportFilteredLogs()">ดาวน์โหลดข้อมูล (ตามตัวกรอง)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card compact">
+        <h3>ตัวกรอง</h3>
+        <div class="filters">
+          <input type="date" id="flt-start"> <span>—</span> <input type="date" id="flt-end">
+          <button onclick="applyFilters()">กรอง</button>
+          <button onclick="clearFilters()">ล้าง</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>รายการสแกน</h3>
+
+        <div id="log-totals" aria-live="polite">
+          <span class="all">รวมทั้งหมด: <b id="sum-total">0</b></span>
+          <span class="ok"><span class="dot"></span>OK: <b id="sum-ok">0</b></span>
+          <span class="ng"><span class="dot"></span>NG: <b id="sum-ng">0</b></span>
+          <span class="fixed"><span class="dot"></span>แก้ไขแล้ว: <b id="sum-fixed">0</b></span>
+          <span class=""><span class="dot"></span>ยังไม่แก้ไข: <b id="sum-unfixed">0</b></span>
+        </div>
+
+        <div class="logs" style="margin-top:10px">
+          <table id="log-table-view">
+            <thead>
+              <tr>
+                <th>เวลา/วันที่</th><th>รหัสพนักงาน</th>
+                <th>Material</th><th>Part Number</th><th>Part Name</th><th>Qty.</th>
+                <th>Part Number</th><th>Qty.</th><th>Status</th><th>ผู้แก้ไข</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- Rework NG view -->
+    <main id="view-rework" class="wrap" style="display:none">
+      <h2>แก้ไขงาน NG</h2>
+
+      <!-- รายการงาน (ซ่อนเมื่อกดแก้ไข) -->
+      <div id="rw-list-card" class="card">
+        <h3 class="rw-title">
+          <span>รายการงาน NG ที่ต้องแก้ไข</span>
+          <span class="stat">ยังไม่แก้ไข: <b id="rw-unfixed">0</b></span>
+          <span class="stat">แก้ไขแล้ว: <b id="rw-fixed">0</b></span>
+        </h3>
+        <div class="logs" style="margin-top:10px">
+          <table id="rw-table">
+            <thead>
+              <tr>
+                <th>เวลา/วันที่</th><th>รหัสพนักงาน</th>
+                <th>PN(ผลิต)</th><th>Qty(ผลิต)</th>
+                <th>PN(ลูกค้า)</th><th>Qty(ลูกค้า)</th>
+                <th>จัดการ</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- แผงสแกนแก้ไข (แสดงเมื่อกดแก้ไข) -->
+      <div id="rw-panel" class="card" style="display:none; margin-top:12px">
+        <h3>ยืนยันการแก้ไข</h3>
+        <div class="howto"><div id="rw-focus" class="focus-msg"></div></div>
+
+        <div class="cmp-top-grid">
+          <div class="card" style="padding:12px">
+            <h3 style="margin:0 0 8px">สแกนแท็กผลิต (Production Tag)</h3>
+            <div class="row">
+              <input id="rw-in-prod" type="text" placeholder="สแกนแท็กผลิต" />
+              <button class="primary" id="rw-btn-prod" onclick="rwParseProduction()">แปลง</button>
+            </div>
+          </div>
+          <div class="card" style="padding:12px">
+            <h3 style="margin:0 0 8px">สแกนแท็กลูกค้า (Customer Tag)</h3>
+            <div class="row">
+              <input id="rw-in-cust" type="text" placeholder="สแกนแท็กลูกค้า" />
+              <button class="primary" id="rw-btn-cust" onclick="rwParseCustomer()">แปลง</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px; gap:8px">
+          <button onclick="rwCancel()">ยกเลิก</button>
+          <span class="muted">ระบบจะตรวจอัตโนมัติเมื่อสแกนครบทั้งสองแท็ก</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- Placeholders -->
+    <main id="view-print" class="wrap" style="display:none">
+      <h2>Print Tag</h2>
+      <div class="card">พื้นที่นี้เตรียมไว้สำหรับระบบพิมพ์แท็ก</div>
+    </main>
+    <main id="view-create" class="wrap" style="display:none">
+      <h2>Create Tag</h2>
+      <div class="card">พื้นที่นี้เตรียมไว้สำหรับสร้าง/ออกแบบแท็ก</div>
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- Login Overlay -->
+  <div id="login-screen" class="login-screen" aria-modal="true" role="dialog">
+    <div class="login-panel">
+      <header>เข้าสู่ระบบ</header>
+      <div class="body">
+        <div class="mutewarn" style="margin-bottom:10px">
+          เข้าสู่ระบบด้วยการสแกน Qr-code ที่บัตรพนักงาน (สแกนเนอร์ USB หรือกด “เปิดกล้องสแกนบัตร”)
+        </div>
+        <div class="row">
+          <button id="btn-login-cam" onclick="toggleLoginCamera()">เปิดกล้องสแกนบัตร</button>
+        </div>
+        <div id="login-cam" style="margin-top:10px; display:none"></div>
+        <div class="row" style="margin-top:10px">
+          <input id="login-raw" type="text" placeholder="104XXXXXXX หรือ URL ที่มี ?PersonCode=" style="flex:1" />
+        </div>
+        <div class="row" style="margin-top:10px">
+          <span class="badge">รหัสพนักงาน: <b id="emp-id">—</b></span>
+        </div>
+      </div>
+      <div class="foot"><span class="muted">ระบบล็อกอินอัตโนมัติเมื่ออ่านรหัสพนักงานได้</span></div>
+    </div>
+  </div>
+
+<script>
+/* ===================== MENU / VIEWS ===================== */
+function switchView(name){
+  for(const id of ['checker','logs','rework','print','create']){
+    const main = document.getElementById('view-'+id);
+    const btn  = document.getElementById(id==='checker'?'nav-checker':('nav-'+id));
+    if(main) main.style.display = (id===name)?'block':'none';
+    if(btn)  btn.classList.toggle('active', id===name);
+  }
+  const parent = document.getElementById('parent-checker');
+  if(parent){
+    const anyActive = document.getElementById('nav-checker').classList.contains('active')
+                   || document.getElementById('nav-logs').classList.contains('active')
+                   || document.getElementById('nav-rework').classList.contains('active');
+    parent.classList.toggle('active', anyActive);
+  }
+  if(name==='logs'){ renderLogsView(); }
+  if(name==='rework'){ renderReworkView(); }
+}
+function toggleSubmenu(key){
+  const sub = document.getElementById('submenu-'+key);
+  const parent = document.getElementById('parent-'+key);
+  if(!sub||!parent) return;
+  sub.classList.toggle('show');
+  parent.classList.toggle('expanded');
+}
+function toggleSidebar(force){
+  const layout = document.getElementById('app-layout');
+  const want = (typeof force==='boolean') ? force : !layout.classList.contains('collapsed');
+  layout.classList.toggle('collapsed', want);
+}
+document.addEventListener('DOMContentLoaded', ()=>document.getElementById('btn-menu').addEventListener('click', ()=>toggleSidebar()));
+
+let CSV_ROWS = [];
+let MAT_COL = null, PN_COL = null, NAME_COL = null;
+
+let PROD = { mat:"", pn:"", name:"", qty:null };
+let CUST = { pn:"", qty:null, name:"", mat:"" };
+
+let LOGIN_QR = { inst:null, active:false };
+let USER = { code:null };
+
+let SESSION_LOCK = false;
+let BUSY = false;
+let EXPECT = 'prod';
+
+/* Rework state */
+let RW_EXPECT='prod', RW_PROD={mat:"", pn:"", name:"", qty:null}, RW_CUST={pn:"", qty:null, name:"", mat:""};
+let RW_TARGET=null; // {key, row}
+
+/* Global lock กันสแกนระหว่างเล่นเสียง */
+let SOUND_BUSY=false;
+
+/* ======================== HELPERS ========================== */
+const $_ = id => document.getElementById(id);
+const setText = (id, v)=>($_(id).textContent = v);
+const norm = s => (s??"").toString().trim();
+function sanitizeScan(s){ return (s??"").replace(/[\u200B-\u200D\u2060\uFEFF]/g,'').replace(/[\u0000-\u001F\u007F]/g,'').trim(); }
+const toNum = x => { if(x===null||x===undefined||x==="") return null; const n=parseFloat((x+"").replace(/,/g,"")); return Number.isFinite(n)?n:null; };
+const normPN = s => norm(s).replace(/\s+/g,"").toUpperCase();
+const normPNNoDash = s => normPN(s).replace(/-/g,"");
+function cleanMat(s){ const t=norm(s).replace(/\s+/g,""); const n=Number(t); if(Number.isFinite(n)) return String(Math.trunc(n)); const d=t.match(/\d+/g); return d?d.join(""):t; }
+function normName(x){ return norm(x).replace(/\s+/g,' ').trim().toUpperCase(); }
+function esc(s){ return (s??"").toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+let toastTimer=null,audioCtx=null;
+function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
+function resumeAudio(){ try{ if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch{} }
+
+/* ========= กระดิ่งสังเคราะห์ (fallback) ========= */
+function synthBell(durationMs=600){
+  ensureAudio(); resumeAudio();
+  const c = audioCtx, t = c.currentTime;
+  const g = c.createGain(); g.gain.setValueAtTime(0.0001, t);
+  const o1 = c.createOscillator(); o1.type='sine'; o1.frequency.setValueAtTime(1500, t);
+  const o2 = c.createOscillator(); o2.type='sine'; o2.frequency.setValueAtTime(2000, t); o2.detune.setValueAtTime(6, t);
+  g.gain.exponentialRampToValueAtTime(0.9, t+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+durationMs/1000);
+  o1.connect(g); o2.connect(g); g.connect(c.destination);
+  o1.start(t); o2.start(t);
+  o1.stop(t+durationMs/1000); o2.stop(t+durationMs/1000);
+}
+
+/* ========= ไฟล์เสียง mp3 ========= */
+const SOUND_BASE = 'sound/';
+let audioOK=null, audioNG=null, audioInvalidProd=null, audioInvalidCust=null, audioInvalidLogin=null, audioBell=null,
+    audioMismatchPN=null, audioMismatchQty=null;
+
+function initAudioFiles(){
+  try{
+    audioOK           = new Audio(SOUND_BASE + 'ok.mp3');
+    audioNG           = new Audio(SOUND_BASE + 'ng.mp3');
+    audioInvalidProd  = new Audio(SOUND_BASE + 'invalid_prod.mp3');
+    audioInvalidCust  = new Audio(SOUND_BASE + 'invalid_cust.mp3');
+    audioInvalidLogin = new Audio(SOUND_BASE + 'invalid_login.mp3');
+    audioBell         = new Audio(SOUND_BASE + 'bell.mp3'); // ใช้เฉพาะ notify() ทั่วไป
+    audioMismatchPN   = new Audio(SOUND_BASE + 'mismatch_pn.mp3');
+    audioMismatchQty  = new Audio(SOUND_BASE + 'mismatch_qty.mp3');
+    [audioOK, audioNG, audioInvalidProd, audioInvalidCust, audioInvalidLogin, audioBell, audioMismatchPN, audioMismatchQty]
+      .forEach(a=>{ if(a){ a.preload='auto'; a.crossOrigin='anonymous'; }});
+  }catch{}
+}
+
+function unlockAudio(){
+  try{
+    [audioOK, audioNG, audioInvalidProd, audioInvalidCust, audioInvalidLogin, audioBell, audioMismatchPN, audioMismatchQty].forEach(a=>{
+      if(!a) return;
+      const v=a.volume; a.volume=0;
+      const p=a.play();
+      if(p && typeof p.then==='function'){
+        p.then(()=>{ a.pause(); a.currentTime=0; a.volume=v; }).catch(()=>{ a.volume=v; });
+      }else{ a.pause(); a.currentTime=0; a.volume=v; }
+    });
+  }catch{}
+}
+
+/* ========== ยูทิลล็อกสแกนขณะเล่นเสียง ========== */
+function setScanLock(on){
+  SOUND_BUSY = !!on;
+  // Main
+  const prodIn=$_("in-prod"), custIn=$_("in-cust");
+  const prodBtn=$_("btn-prod"), custBtn=$_("btn-cust");
+  if(prodIn) prodIn.readOnly = on || (EXPECT!=='prod');
+  if(custIn) custIn.readOnly = on || (EXPECT!=='cust');
+  if(prodBtn) prodBtn.disabled = on || (EXPECT!=='prod');
+  if(custBtn) custBtn.disabled = on || (EXPECT!=='cust');
+  // Rework
+  const rpi=$_("rw-in-prod"), rci=$_("rw-in-cust");
+  const rpb=$_("rw-btn-prod"), rcb=$_("rw-btn-cust");
+  if(rpi) rpi.readOnly = on || (RW_EXPECT!=='prod');
+  if(rci) rci.readOnly = on || (RW_EXPECT!=='cust');
+  if(rpb) rpb.disabled = on || (RW_EXPECT!=='prod');
+  if(rcb) rcb.disabled = on || (RW_EXPECT!=='cust');
+  // Login
+  const li=$_("login-raw"); if(li) li.readOnly = on ? true : false;
+}
+
+/* เล่น mp3 (พร้อม fallback กระดิ่ง) แล้วรอจนจบ */
+function playAudioAwait(audioEl, fallbackMs=700){
+  return new Promise((resolve)=>{
+    try{
+      if(!audioEl) throw new Error('no audio element');
+      audioEl.currentTime = 0;
+      const done = ()=>{ audioEl.removeEventListener('ended', done); resolve(); };
+      audioEl.addEventListener('ended', done, {once:true});
+      const p = audioEl.play();
+      if(p && typeof p.then==='function'){
+        p.catch(()=>{ audioEl.removeEventListener('ended', done); synthBell(fallbackMs); setTimeout(resolve, fallbackMs); });
+      }else{
+        // ถ้าบราวเซอร์ไม่คืน Promise ให้ตั้ง safety timer
+        setTimeout(resolve, 900);
+      }
+    }catch{
+      synthBell(fallbackMs); setTimeout(resolve, fallbackMs);
+    }
+  });
+}
+
+/* แสดง toast + เล่น mp3 พร้อมกัน + ล็อกระหว่างเล่น + โฟกัสช่องเดิมเมื่อจบ */
+async function toastMp3Lock(message, audioEl, focusEl, fallbackMs=700){
+  setScanLock(true);
+  showToast(message);
+  await playAudioAwait(audioEl, fallbackMs);
+  setScanLock(false);
+  try{ focusEl?.focus(); }catch{}
+}
+
+/* Toast ทั่วไป (ยังมีเสียงกระดิ่งเบา ๆ สำหรับแจ้งทั่วไป; ไม่ล็อก) */
+function notify(msg, ms=5000){
+  try{ audioBell && audioBell.play().catch(()=>synthBell(300)); }catch{ synthBell(300); }
+  showToast(msg, ms);
+}
+
+function showToast(msg, ms=2200){
+  const t=$_("toast");
+  t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),ms);
+}
+
+function formatDateTime(dt){ const p=n=>String(n).padStart(2,'0'); return `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())} ${p(dt.getHours())}:${p(dt.getMinutes())}:${p(dt.getSeconds())}`; }
+function updateFocusBanner(){
+  $_("focus-msg").textContent = EXPECT==='prod'
+    ? `กรุณาสแกนแท็กฝ่ายผลิต Please scan the Production TAG.`
+    : `กรุณาสแกนแท็กลูกค้า Please scan the Customer TAG.`;
+}
+function updateRwFocus(){
+  $_("rw-focus").textContent = RW_EXPECT==='prod'
+    ? `กรุณาสแกนแท็กผลิต (โหมดแก้ไขงาน NG)`
+    : `กรุณาสแกนแท็กลูกค้า (โหมดแก้ไขงาน NG)`;
+}
+
+/* ========================= CSV (BOM) ========================= */
+function loadCSV(){ return new Promise((resolve,reject)=>{ Papa.parse("bom_export.csv",{download:true,header:true,skipEmptyLines:true,complete:res=>resolve(res),error:err=>reject(err)}); }); }
+function detectColumns(rows){
+  const cols = Object.keys(rows[0]||{});
+  MAT_COL  = cols.find(c=>/check[_\s]?material|(^|[^a-z])mat(erial)?([^a-z]|$)|material|code/i.test(c)) || cols[0];
+  PN_COL   = cols.find(c=>/customermaterial|part[\s_]?number|^pn$|partno/i.test(c)) || cols[1] || cols[0];
+  NAME_COL = cols.find(c=>/customer[_\s]?description|part[\s_]?name|description|desc/i.test(c)) || cols[2] || cols[0];
+}
+
+/* ===================== LOOKUPS ===================== */
+function mapMatToPart(mat){
+  if(!CSV_ROWS.length || !MAT_COL || !PN_COL || !NAME_COL) return {pn:null,name:null};
+  const key = cleanMat(mat);
+  let hit = CSV_ROWS.find(r => cleanMat(r[MAT_COL]) === key);
+  if(!hit){
+    const target = Number(key);
+    if(Number.isFinite(target)) hit = CSV_ROWS.find(r => Number(cleanMat(r[MAT_COL])) === target);
+  }
+  return hit ? { pn:norm(hit[PN_COL]), name:norm(hit[NAME_COL]) } : {pn:null, name:null};
+}
+function mapPnToDetails(pn){
+  const target = normPNNoDash(pn);
+  if(!CSV_ROWS.length || !PN_COL) return {mat:null, name:null};
+  const row = CSV_ROWS.find(r => normPNNoDash(r[PN_COL]||"") === target);
+  if(!row) return {mat:null, name:null};
+  return { mat: norm(row[MAT_COL]||""), name: norm(row[NAME_COL]||"") };
+}
+
+/* ===================== TAG CLASSIFIER ===================== */
+function isLikelyProd(raw){
+  const s = norm(raw); const parts = s.split("|");
+  if(parts.length!==2) return false;
+  const mat = parts[0].trim(), qty = parts[1].trim();
+  return /^[A-Za-z0-9._-]{3,}$/.test(mat) && /^\d+(\.\d+)?$/.test(qty);
+}
+function isLikelyCust(raw){
+  const s = norm(raw);
+  const t = s.split("|");
+  if(t.length < 3) return false;
+  const pnBase = (t[1]||"").trim();
+  const pnSfx  = (t[2]||"").trim();
+  const qty3   = (t[3]||"").trim();
+  const qty4   = (t[4]||"").trim();
+  const pnCandidate = pnBase + pnSfx;
+  const pnLooksOk = /[A-Za-z]/.test(pnCandidate) && /^[A-Za-z0-9-]{3,}$/.test(pnCandidate);
+  const hasQty = (/^\d+(\.\d+)?$/.test(qty3)) || (/^\d+(\.\d+)?$/.test(qty4));
+  return pnLooksOk && hasQty;
+}
+function classifyTag(raw){
+  const p = isLikelyProd(raw);
+  const c = isLikelyCust(raw);
+  if(p && !c) return 'prod';
+  if(c && !p) return 'cust';
+  return 'unknown';
+}
+
+/* ========================= UI ENFORCERS ========================= */
+function enforceExpectUI(){
+  const prodOK = EXPECT==='prod';
+  const prodIn = $_("in-prod"), custIn = $_("in-cust");
+  const prodBtn = $_("btn-prod"), custBtn=$_("btn-cust");
+  prodIn.readOnly = SOUND_BUSY || !prodOK;  custIn.readOnly = SOUND_BUSY || prodOK;
+  prodBtn.disabled = SOUND_BUSY || !prodOK; custBtn.disabled = SOUND_BUSY || prodOK;
+  if(!SOUND_BUSY){ if(prodOK){ prodIn.focus(); } else { custIn.focus(); } }
+  updateFocusBanner();
+}
+function enforceRwUI(){
+  const prodOK = RW_EXPECT==='prod';
+  const prodIn = $_("rw-in-prod"), custIn = $_("rw-in-cust");
+  const prodBtn = $_("rw-btn-prod"), custBtn=$_("rw-btn-cust");
+  prodIn.readOnly = SOUND_BUSY || !prodOK;  custIn.readOnly = SOUND_BUSY || prodOK;
+  prodBtn.disabled = SOUND_BUSY || !prodOK; custBtn.disabled = SOUND_BUSY || prodOK;
+  if(!SOUND_BUSY){ if(prodOK){ prodIn.focus(); } else { custIn.focus(); } }
+  updateRwFocus();
+}
+
+/* ========================= SESSION RESET ========================= */
+function hardReset(){
+  $_("in-prod").value = ""; $_("in-cust").value = "";
+  PROD = {mat:"",pn:"",name:"",qty:null}; CUST={pn:"",qty:null,name:"",mat:""};
+  $_("banner").style.display="none";
+  for(const id of ["cmp-pn","cmp-qty","cmp-name","cmp-mat"]){ $_(id).classList.remove("ok-row","ng-row"); }
+  for(const id of ["cmp-pn-prod","cmp-pn-cust","cmp-name-prod","cmp-name-cust","cmp-qty-prod","cmp-qty-cust","cmp-mat-prod","cmp-mat-cust"]){ setText(id,"—"); }
+  SESSION_LOCK=false; EXPECT='prod'; enforceExpectUI();
+}
+function maybeResetBeforeProdScan(){ if(SESSION_LOCK) hardReset(); }
+
+/* ========================= PARSERS (Main) ========================= */
+async function parseProduction(){
+  if(BUSY || SOUND_BUSY) return;
+  if(!USER.code){ notify("กรุณาเข้าสู่ระบบก่อนใช้งาน"); return; }
+  if(EXPECT!=='prod'){ notify("ต้องสแกน ‘แท็กผลิต’ ก่อน"); enforceExpectUI(); return; }
+  maybeResetBeforeProdScan();
+
+  const el = $_("in-prod");
+  const raw = el.value.trim();
+  const type = classifyTag(raw);
+  if(type!=='prod'){
+    el.value="";
+    await toastMp3Lock("Qr code ไม่ถูกต้อง: โปรดสแกนแท็ก ‘ผลิต’", audioInvalidProd, el);
+    enforceExpectUI();
+    return;
+  }
+
+  BUSY=true;
+  const [mat, qty] = raw.split("|");
+  PROD.mat = norm(mat||""); 
+  PROD.qty = toNum(qty||"");
+  const m = mapMatToPart(PROD.mat); 
+  PROD.pn=m.pn||""; 
+  PROD.name=m.name||"";
+
+  setText("cmp-pn-prod",  PROD.pn || "—");
+  setText("cmp-name-prod",PROD.name || "—");
+  setText("cmp-qty-prod", PROD.qty ?? "—");
+  setText("cmp-mat-prod", PROD.mat || "—");
+
+  EXPECT='cust'; 
+  enforceExpectUI();
+  BUSY=false;
+}
+
+async function parseCustomer(){
+  if(BUSY || SOUND_BUSY) return;
+  if(!USER.code){ notify("กรุณาเข้าสู่ระบบก่อนใช้งาน"); return; }
+  if(EXPECT!=='cust'){ notify("ต้องสแกน ‘แท็กลูกค้า’ ถัดจากแท็กผลิต"); enforceExpectUI(); return; }
+
+  const el = $_("in-cust");
+  const raw = el.value.trim();
+  const type = classifyTag(raw);
+  if(type!=='cust'){
+    el.value="";
+    await toastMp3Lock("Qr code ไม่ถูกต้อง: โปรดสแกนแท็ก ‘ลูกค้า’", audioInvalidCust, el);
+    enforceExpectUI();
+    return;
+  }
+
+  BUSY=true;
+  const t = raw.split("|");
+  const base = (t[1]||"").trim(); 
+  const sfx  = (t[2]||"").trim();
+  const qty  = (t[4]||"").trim() || (t[3]||"").trim();
+  CUST.pn  = norm(base + sfx); 
+  CUST.qty = toNum(qty);
+
+  const det = mapPnToDetails(CUST.pn);
+  CUST.name = det.name || ""; 
+  CUST.mat  = det.mat  || "";
+
+  setText("cmp-pn-cust",  CUST.pn  || "—");
+  setText("cmp-name-cust",CUST.name|| "—");
+  setText("cmp-qty-cust", CUST.qty ?? "—");
+  setText("cmp-mat-cust", CUST.mat || "—");
+
+  await compareNow(); 
+  BUSY=false;
+}
+
+/* ========================= COMPARE & RESULT (Main) ========================= */
+function showBanner(ok){ const b=$_("banner"); b.className="result-banner "+(ok?"banner-ok":"banner-ng"); b.textContent=ok?"OK":"NG"; b.style.display="flex"; }
+function clearMainInputsForNext(){ $_("in-prod").value=""; $_("in-cust").value=""; EXPECT='prod'; enforceExpectUI(); }
+
+async function compareNow(){
+  const pnOk   = (!!PROD.pn && !!CUST.pn) && (normPN(PROD.pn)===normPN(CUST.pn) || normPNNoDash(PROD.pn)===normPNNoDash(CUST.pn));
+  const qtyOk  = toNum(PROD.qty)!=null && toNum(CUST.qty)!=null && toNum(PROD.qty)===toNum(CUST.qty);
+  const nameOk = !!PROD.name && !!CUST.name && (normName(PROD.name)===normName(CUST.name));
+  const matOk  = !!PROD.mat  && !!CUST.mat  && (cleanMat(PROD.mat)===cleanMat(CUST.mat));
+  const ok = pnOk && qtyOk;
+
+  showBanner(ok);
+
+  for(const id of ["cmp-pn","cmp-qty","cmp-name","cmp-mat"]){ const tr=$_(id); tr.classList.remove("ok-row","ng-row"); }
+  $_("cmp-pn").classList.add(pnOk ? "ok-row" : "ng-row");
+  $_("cmp-qty").classList.add(qtyOk ? "ok-row" : "ng-row");
+  $_("cmp-name").classList.add(nameOk? "ok-row" : "ng-row");
+  $_("cmp-mat").classList.add(matOk ? "ok-row" : "ng-row");
+
+  if(ok){
+    setScanLock(true);
+    await playAudioAwait(audioOK, 500);
+    setScanLock(false);
+    await saveLog(true);
+    clearMainInputsForNext();
+  }else{
+    let msg="", snd=null;
+    if(!pnOk){ msg="แท็กไม่ตรงกัน"; snd=audioMismatchPN; }
+    else if(!qtyOk){ msg="จำนวนชิ้นงานไม่ตรงกัน"; snd=audioMismatchQty; }
+
+    clearMainInputsForNext(); // ล้างข้อมูลและกลับไปเริ่มที่ผลิต
+    await toastMp3Lock(msg||"NG", snd||audioNG, $_("in-prod"));
+    await saveLog(false);
+  }
+
+  SESSION_LOCK = false;
+}
+
+/* ==================== LOGS (UI + สรุป) ==================== */
+function summarizeLogs(list){
+  const total = list.length;
+  let ok=0, ng=0, fixed=0;
+  for(const r of list){
+    const s = (r.result||"").toUpperCase();
+    if(s==="OK") ok++;
+    else if(s==="NG"){
+      ng++;
+      if(r.fixed) fixed++;
+    }
+  }
+  return {total, ok, ng, fixed, unfixed: Math.max(ng-fixed,0)};
+}
+
+async function renderLogsView(){
+  try{
+    const listAll = await getAllLogs();
+    const list = filterLogs(listAll);
+    const tb = $_("log-table-view").querySelector("tbody");
+    tb.innerHTML="";
+    for(const r of list){
+      const statusTxt = (r.result||"").toUpperCase()==="NG" ? (r.fixed ? "NG(แก้ไขแล้ว)" : "NG") : (r.result||"");
+      const cls = (r.result||"").toUpperCase()==="OK" ? "ok-row" : (r.fixed ? "fixed-row" : "ng-row");
+      tb.insertAdjacentHTML("beforeend", `<tr class="${cls}">
+        <td>${esc(r.ts||"")}</td><td>${esc(r.emp||"")}</td>
+        <td>${esc(r.mat||"")}</td><td>${esc(r.prodPN||"")}</td><td>${esc(r.name||"")}</td><td>${esc(r.prodQty??"")}</td>
+        <td>${esc(r.custPN||"")}</td><td>${esc(r.custQty??"")}</td><td>${esc(statusTxt)}</td><td>${esc(r.fixedBy||"")}</td>
+      </tr>`);
+    }
+    const {total, ok, ng, fixed, unfixed} = summarizeLogs(list);
+    $_("sum-total").textContent = total;
+    $_("sum-ok").textContent = ok;
+    $_("sum-ng").textContent = ng;
+    $_("sum-fixed").textContent = fixed;
+    $_("sum-unfixed").textContent = unfixed;
+  }catch(e){ console.error(e); notify("อ่านข้อมูล Logs ไม่สำเร็จ"); }
+}
+
+/* กรองตามช่วงวันที่ (เว้นว่าง = ทั้งหมด) */
+function filterLogs(list){
+  const s = ($_("flt-start").value||"").trim();
+  const e = ($_("flt-end").value||"").trim();
+  return (list||[]).filter(r=>{
+    const dt = (r.ts||"").slice(0,10);
+    if(s && dt && dt < s) return false;
+    if(e && dt && dt > e) return false;
+    return true;
+  });
+}
+function applyFilters(){ renderLogsView(); }
+function clearFilters(){ $_("flt-start").value=""; $_("flt-end").value=""; renderLogsView(); }
+
+/* ====================== LOGS: IndexedDB ====================== */
+const DB_NAME="prd-logs", STORE="scanLogs";
+let DB = null;
+function ensureDB(){
+  if(DB) return Promise.resolve();
+  return new Promise((resolve, reject)=>{
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if(!db.objectStoreNames.contains(STORE)){
+        db.createObjectStore(STORE, {autoIncrement:true});
+      }
+    };
+    req.onsuccess = () => { DB=req.result; DB.onversionchange = ()=>{ try{ DB.close(); }catch{} }; resolve(); };
+    req.onerror = () => reject(req.error);
+  });
+}
+function addLog(row){
+  return ensureDB().then(()=>new Promise((resolve, reject)=>{
+    const tx = DB.transaction(STORE, "readwrite", {durability:"strict"});
+    const req = tx.objectStore(STORE).add(row);
+    req.onsuccess = ()=>resolve(req.result); // key
+    req.onerror = ()=>reject(req.error);
+  }));
+}
+function getAllLogs(){
+  return ensureDB().then(()=>new Promise((resolve, reject)=>{
+    const tx = DB.transaction(STORE, "readonly");
+    const store = tx.objectStore(STORE);
+    const out = [];
+    const req = store.openCursor();
+    req.onsuccess = e=>{
+      const cur = e.target.result;
+      if(cur){ out.push(Object.assign({_key:cur.key}, cur.value)); cur.continue(); }
+      else resolve(out);
+    };
+    req.onerror = ()=>reject(req.error);
+  }));
+}
+function updateLogByKey(key, patch){
+  return ensureDB().then(()=>new Promise((resolve, reject)=>{
+    const tx = DB.transaction(STORE, "readwrite");
+    const store = tx.objectStore(STORE);
+    const getReq = store.get(key);
+    getReq.onsuccess = ()=>{
+      const val = getReq.result || {};
+      Object.assign(val, patch);
+      const putReq = store.put(val, key);
+      putReq.onsuccess = ()=>resolve();
+      putReq.onerror  = ()=>reject(putReq.error);
+    };
+    getReq.onerror = ()=>reject(getReq.error);
+  }));
+}
+function clearAllLogs(){
+  return ensureDB().then(()=>new Promise((resolve, reject)=>{
+    const tx = DB.transaction(STORE, "readwrite");
+    tx.objectStore(STORE).clear();
+    tx.oncomplete=()=>resolve();
+    tx.onerror=()=>reject(tx.error);
+  }));
+}
+function csvEscape(v){ const s=(v??"").toString().replace(/"/g,'""'); return /[",\n]/.test(s)?`"${s}"`:s; }
+async function saveLog(ok){
+  const now = new Date();
+  const rowObj = {
+    ts: formatDateTime(now),
+    emp: USER.code || "",
+    mat: PROD.mat,
+    prodPN: PROD.pn,
+    name: PROD.name,
+    prodQty: PROD.qty,
+    custPN: CUST.pn,
+    custQty: CUST.qty,
+    result: ok ? "OK" : "NG",
+    fixed: false,
+    fixedBy: "",
+    fixedAt: ""
+  };
+  try{ await addLog(rowObj); }catch(e){ console.error(e); notify("บันทึกลง IndexedDB ไม่สำเร็จ"); }
+}
+async function exportFilteredLogs(){
+  const rows = filterLogs(await getAllLogs());
+  const header = ["timestamp","employee_code","material","prod_part_number","part_name","prod_qty","cust_part_number","cust_qty","status","fixed","fixed_by","fixed_at"];
+  const lines = [header.join(",")];
+  for(const r of rows){
+    const vals = [r.ts,r.emp,r.mat,r.prodPN,r.name,r.prodQty,r.custPN,r.custQty,r.result,(r.fixed?"TRUE":"FALSE"),r.fixedBy||"",r.fixedAt||""].map(csvEscape);
+    lines.push(vals.join(","));
+  }
+  const blob = new Blob([`\ufeff${lines.join("\n")}`], {type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob); const a=document.createElement("a");
+  a.href=url; a.download=`logs_filtered_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.csv`;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+async function handleClearLogs(){
+  const pass = ($_("admin-pass").value||"").trim();
+  if(pass!=="adminpe"){ notify("รหัสผ่านไม่ถูกต้อง"); return; }
+  try{ await clearAllLogs(); $_("admin-pass").value=""; renderLogsView(); notify("ล้าง Logs ทั้งหมดแล้ว"); }
+  catch(e){ console.error(e); notify("ล้าง Logs ไม่สำเร็จ"); }
+}
+
+/* =========================== REWORK (แก้ไขงาน NG) =========================== */
+async function renderReworkView(){
+  try{
+    const all = await getAllLogs();
+    const ngs = all.filter(r => (r.result||"").toUpperCase()==="NG");
+    const unfixed = ngs.filter(r => !r.fixed);
+    const fixed = ngs.filter(r => r.fixed);
+
+    $_("rw-unfixed").textContent = unfixed.length;
+    $_("rw-fixed").textContent = fixed.length;
+
+    const tb = $_("rw-table").querySelector("tbody");
+    tb.innerHTML = "";
+    for(const r of unfixed){
+      tb.insertAdjacentHTML("beforeend", `<tr>
+        <td>${esc(r.ts||"")}</td><td>${esc(r.emp||"")}</td>
+        <td>${esc(r.prodPN||"")}</td><td>${esc(r.prodQty??"")}</td>
+        <td>${esc(r.custPN||"")}</td><td>${esc(r.custQty??"")}</td>
+        <td><button onclick='rwStart(${r._key})'>แก้ไข</button></td>
+      </tr>`);
+    }
+    if(!unfixed.length){
+      $_("rw-panel").style.display="none";
+    }
+    $_("rw-list-card").style.display="block";
+  }catch(e){ console.error(e); notify("โหลดรายการงาน NG ไม่สำเร็จ"); }
+}
+
+async function rwStart(key){
+  const all = await getAllLogs();
+  const row = all.find(r=>r._key===key);
+  if(!row){ notify("ไม่พบรายการ"); return; }
+  RW_TARGET = {key, row};
+  RW_PROD = {mat:"", pn:"", name:"", qty:null};
+  RW_CUST = {pn:"", qty:null, name:"", mat:""};
+  RW_EXPECT='prod';
+  $_("rw-in-prod").value=""; $_("rw-in-cust").value="";
+  $_("rw-list-card").style.display="none";
+  $_("rw-panel").style.display="block";
+  enforceRwUI();
+}
+
+function rwCancel(){
+  RW_TARGET=null;
+  $_("rw-panel").style.display="none";
+  $_("rw-list-card").style.display="block";
+}
+
+async function rwParseProduction(){
+  if(!RW_TARGET || SOUND_BUSY) return;
+  if(RW_EXPECT!=='prod'){ notify("โปรดสแกนแท็กลูกค้า"); enforceRwUI(); return; }
+  const el=$_("rw-in-prod");
+  const raw = el.value.trim();
+  const type = classifyTag(raw);
+  if(type!=='prod'){
+    el.value="";
+    await toastMp3Lock("รูปแบบแท็กผลิตไม่ถูกต้อง", audioInvalidProd, el);
+    enforceRwUI();
+    return;
+  }
+  const [mat, qty] = raw.split("|");
+  RW_PROD.mat = norm(mat||""); 
+  RW_PROD.qty = toNum(qty||"");
+  const m = mapMatToPart(RW_PROD.mat); 
+  RW_PROD.pn=m.pn||""; 
+  RW_PROD.name=m.name||"";
+  RW_EXPECT='cust'; enforceRwUI();
+}
+
+async function rwParseCustomer(){
+  if(!RW_TARGET || SOUND_BUSY) return;
+  if(RW_EXPECT!=='cust'){ notify("โปรดสแกนแท็กผลิตก่อน"); enforceRwUI(); return; }
+  const el=$_("rw-in-cust");
+  const raw = el.value.trim();
+  const type = classifyTag(raw);
+  if(type!=='cust'){
+    el.value="";
+    await toastMp3Lock("รูปแบบแท็กลูกค้าไม่ถูกต้อง", audioInvalidCust, el);
+    enforceRwUI();
+    return;
+  }
+  const t = raw.split("|");
+  const base = (t[1]||"").trim(); 
+  const sfx  = (t[2]||"").trim();
+  const qty  = (t[4]||"").trim() || (t[3]||"").trim();
+  RW_CUST.pn  = norm(base + sfx); 
+  RW_CUST.qty = toNum(qty);
+  const det = mapPnToDetails(RW_CUST.pn);
+  RW_CUST.name = det.name || ""; 
+  RW_CUST.mat  = det.mat  || "";
+
+  await rwCompareAndCommit();
+}
+
+/* เปรียบเทียบ (Rework) — แจ้งเตือน+mp3 พร้อมกัน และบล็อกระหว่างเล่น */
+async function rwCompareAndCommit(){
+  const pnOk  = (!!RW_PROD.pn && !!RW_CUST.pn) && (normPN(RW_PROD.pn)===normPN(RW_CUST.pn) || normPNNoDash(RW_PROD.pn)===normPNNoDash(RW_CUST.pn));
+  const qtyOk = toNum(RW_PROD.qty)!=null && toNum(RW_CUST.qty)!=null && toNum(RW_PROD.qty)===toNum(RW_CUST.qty);
+
+  if(pnOk && qtyOk){
+    setScanLock(true);
+    await playAudioAwait(audioOK, 500);
+    setScanLock(false);
+    showToast("การแก้ไขเสร็จสมบูรณ์");
+    const now = new Date();
+    await updateLogByKey(RW_TARGET.key, { fixed:true, fixedBy: USER.code||"", fixedAt: formatDateTime(now) });
+    RW_TARGET=null;
+    $_("rw-panel").style.display="none";
+    $_("rw-list-card").style.display="block";
+    await renderReworkView();
+    await renderLogsView();
+    return;
+  }
+
+  let msg="", snd=null;
+  if(!pnOk){ msg="แท็กไม่ตรงกัน"; snd=audioMismatchPN; }
+  else if(!qtyOk){ msg="จำนวนชิ้นงานไม่ตรงกัน"; snd=audioMismatchQty; }
+
+  $_("rw-in-prod").value=""; $_("rw-in-cust").value="";
+  RW_PROD={mat:"", pn:"", name:"", qty:null}; RW_CUST={pn:"", qty:null, name:"", mat:""};
+  RW_EXPECT='prod'; enforceRwUI();
+
+  await toastMp3Lock(msg||"NG", snd||audioNG, $_("rw-in-prod"));
+}
+
+/* ==================== KEYBOARD / SCANNER ==================== */
+function guardInputChannel(el, must){
+  el.addEventListener("beforeinput", e=>{
+    if(SOUND_BUSY){ e.preventDefault(); return; }
+    if((must==='prod' && EXPECT!=='prod') || (must==='cust' && EXPECT!=='cust')){ e.preventDefault(); notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’"); enforceExpectUI(); }
+  });
+  el.addEventListener("paste", e=>{
+    if(SOUND_BUSY){ e.preventDefault(); return; }
+    if((must==='prod' && EXPECT!=='prod') || (must==='cust' && EXPECT!=='cust')){ e.preventDefault(); notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’"); enforceExpectUI(); }
+  });
+  el.addEventListener("focus", ()=>{
+    if((must==='prod' && EXPECT!=='prod') || (must==='cust' && EXPECT!=='cust')){ notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’"); enforceExpectUI(); }
+  });
+}
+function guardRwChannel(el, must){
+  el.addEventListener("beforeinput", e=>{
+    if(SOUND_BUSY){ e.preventDefault(); return; }
+    if((must==='prod' && RW_EXPECT!=='prod') || (must==='cust' && RW_EXPECT!=='cust')){ e.preventDefault(); notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’ (แก้ไขงาน)":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’ (แก้ไขงาน)"); enforceRwUI(); }
+  });
+  el.addEventListener("paste", e=>{
+    if(SOUND_BUSY){ e.preventDefault(); return; }
+    if((must==='prod' && RW_EXPECT!=='prod') || (must==='cust' && RW_EXPECT!=='cust')){ e.preventDefault(); notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’ (แก้ไขงาน)":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’ (แก้ไขงาน)"); enforceRwUI(); }
+  });
+  el.addEventListener("focus", ()=>{
+    if((must==='prod' && RW_EXPECT!=='prod') || (must==='cust' && RW_EXPECT!=='cust')){ notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’ (แก้ไขงาน)":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’ (แก้ไขงาน)"); enforceRwUI(); }
+  });
+}
+
+function hookKeyboard(){
+  const prodIn=$_("in-prod"), custIn=$_("in-cust");
+  prodIn.addEventListener("keydown", e=>{
+    if(SOUND_BUSY){ e.preventDefault(); return; }
+    if(EXPECT!=='prod'){ e.preventDefault(); notify("ตอนนี้ต้องสแกน ‘แท็กลูกค้า’"); enforceExpectUI(); return; }
+    if(e.key!=="Enter" && SESSION_LOCK){ maybeResetBeforeProdScan(); }
+    if(e.key==="Enter"){ e.preventDefault(); parseProduction(); }
+  });
+  custIn.addEventListener("keydown", e=>{
+    if(SOUND_BUSY){ e.preventDefault(); return; }
+    if(EXPECT!=='cust'){ e.preventDefault(); notify("กรุณาสแกน ‘แท็กผลิต’ ก่อน"); enforceExpectUI(); return; }
+    if(e.key==="Enter"){ e.preventDefault(); parseCustomer(); }
+  });
+  guardInputChannel(prodIn,'prod'); 
+  guardInputChannel(custIn,'cust');
+
+  // rework fields
+  const rp=$_("rw-in-prod"), rc=$_("rw-in-cust");
+  rp?.addEventListener("keydown", e=>{ if(SOUND_BUSY){ e.preventDefault(); return; } if(RW_EXPECT!=='prod'){ e.preventDefault(); notify("โปรดสแกนแท็กลูกค้า"); enforceRwUI(); return; } if(e.key==="Enter"){ e.preventDefault(); rwParseProduction(); }});
+  rc?.addEventListener("keydown", e=>{ if(SOUND_BUSY){ e.preventDefault(); return; } if(RW_EXPECT!=='cust'){ e.preventDefault(); notify("โปรดสแกนแท็กผลิตก่อน"); enforceRwUI(); return; } if(e.key==="Enter"){ e.preventDefault(); rwParseCustomer(); }});
+  guardRwChannel(rp,'prod');
+  guardRwChannel(rc,'cust');
+
+  // login field — ตอน force แล้วอ่านไม่ได้: ลบ + แจ้งเตือน+mp3 พร้อมกัน + ล็อก + โฟกัสคืน
+  const loginInput = $_('login-raw');
+  let loginDeb=null;
+  loginInput.addEventListener('input', ()=>{
+    clearTimeout(loginDeb);
+    loginDeb=setTimeout(()=>{
+      tryAutoLoginFromRaw(loginInput.value);
+    }, 50);
+  });
+  loginInput.addEventListener('keydown', e=>{
+    if(SOUND_BUSY){ e.preventDefault(); return; }
+    if(e.key==='Enter'){ e.preventDefault(); tryAutoLoginFromRaw(loginInput.value, true); }
+  });
+
+  document.body.addEventListener('click', ()=>{ ensureAudio(); unlockAudio(); }, {once:true});
+}
+
+/* ====================== LOGIN ====================== */
+function parseEmployeePayload(raw){
+  const out={code:""};
+  if(!raw) return out;
+  const s = sanitizeScan(raw);
+  try{ const u=new URL(s.startsWith("http")?s:("https://dummy.local/?"+s)); const pc=u.searchParams.get("PersonCode")||u.searchParams.get("personcode"); if(pc){ out.code=sanitizeScan(pc); return out; } }catch{}
+  try{ const o=JSON.parse(s); out.code=sanitizeScan(o.PersonCode||o.personcode||o.id||o.empid||o.code||""); if(out.code) return out; }catch{}
+  if(/[?&=]/.test(s)){ const qs=s.includes("?")?s.split("?")[1]:s; const p=new URLSearchParams(qs); const v=p.get("PersonCode")||p.get("personcode")||p.get("id")||p.get("empid")||p.get("code")||""; if(v){ out.code=sanitizeScan(v); return out; } }
+  if(/[=:].+/.test(s)){ for(const p of s.split(/[;|,\n]/)){ const [k0,...v]=p.split(/[=:]/); const k=(k0||"").trim().toLowerCase(); const vv=sanitizeScan(v.join(":")); if(["personcode","id","empid","employeeid","รหัส","รหัสพนักงาน","code"].includes(k)) { out.code=out.code||vv; } } if(out.code) return out; }
+  const m=s.match(/(PersonCode|รหัสพนักงาน|รหัส|code)\s*[:：]?\s*([A-Za-z0-9\-_]+)/i); if(m){ out.code=sanitizeScan(m[2]); return out; }
+  if(/^[A-Za-z0-9\-_]{5,}$/.test(s)){ out.code=s; return out; }
+  return out;
+}
+async function tryAutoLoginFromRaw(val, force=false){
+  const emp=parseEmployeePayload(val);
+  fillEmployeeUI(emp);
+
+  if(emp.code && (force || /^[A-Za-z0-9\-_]{5,}$/.test(emp.code))){
+    confirmLogin(true);
+    return;
+  }
+  if(force){
+    const el=$_('login-raw');
+    el.value="";
+    await toastMp3Lock("ไม่พบรหัสพนักงานใน Qr-code / รูปแบบไม่ถูกต้อง", audioInvalidLogin, el);
+  }
+}
+async function toggleLoginCamera(){
+  try{
+    const camDiv=$_('login-cam'), btn=$_('btn-login-cam');
+    if(LOGIN_QR.active){ try{ await LOGIN_QR.inst.stop(); }catch{} camDiv.style.display="none"; btn.textContent="เปิดกล้องสแกนบัตร"; LOGIN_QR.active=false; return; }
+    camDiv.style.display="block"; btn.textContent="ปิดกล้องสแกนบัตร";
+    if(!LOGIN_QR.inst) LOGIN_QR.inst=new Html5Qrcode(camDiv.id);
+    const cams=await Html5Qrcode.getCameras(); if(!cams?.length){ camDiv.textContent="ไม่พบกล้อง"; return; }
+    await LOGIN_QR.inst.start(cams[0].id,{fps:10,qrbox:250}, (txt)=>{
+      if(SOUND_BUSY) return; // ระหว่างเล่นเสียงไม่รับสแกน
+      const clean = sanitizeScan(txt);
+      $_('login-raw').value=clean; 
+      tryAutoLoginFromRaw(clean, true);
+    });
+    LOGIN_QR.active=true;
+  }catch(err){ $_('login-cam').textContent="เปิดกล้องไม่ได้: "+(err?.message||err); }
+}
+function fillEmployeeUI(emp){ $_('emp-id').textContent=emp.code||'—'; }
+function confirmLogin(auto=false){
+  const code=$_('emp-id').textContent.trim(); 
+  if(!code||code==='—'){ if(!auto) notify("ยังไม่ได้อ่านรหัสพนักงานจากบัตร"); return; }
+  USER={code};
+  try{ if(LOGIN_QR.active&&LOGIN_QR.inst){ LOGIN_QR.inst.stop(); LOGIN_QR.active=false; } }catch{}
+  document.getElementById("login-screen").style.display="none";
+  document.getElementById("view-checker").removeAttribute("aria-hidden");
+  setText("user-pill",`รหัสพนักงาน: ${USER.code}`); $_("user-pill").style.display="inline-block"; $_("btn-logout").style.display="inline-block";
+  enableUI(true); notify(`เข้าสู่ระบบสำเร็จ: ${USER.code}`, 3000);
+  EXPECT='prod'; enforceExpectUI();
+}
+async function logout(){
+  try{ if(LOGIN_QR.active && LOGIN_QR.inst) await LOGIN_QR.inst.stop(); }catch{}
+  USER={code:null}; enableUI(false); $_("user-pill").style.display="none"; $_("btn-logout").style.display="none";
+  hardReset(); $_("login-screen").style.display="flex"; document.getElementById("view-checker").setAttribute("aria-hidden","true");
+  $_("login-raw").value=""; $_("emp-id").textContent="—"; $_("login-raw").focus();
+}
+function enableUI(on){
+  $_("in-prod").readOnly = !on; $_("in-cust").readOnly = !on;
+  $_("btn-prod").disabled = !on; $_("btn-cust").disabled = !on;
+  if(on) enforceExpectUI();
+}
+
+/* =========================== BOOT ========================== */
+(async function boot(){
+  await ensureDB();
+  initAudioFiles();
+  switchView('checker');
+  try{ const res=await loadCSV(); CSV_ROWS=res.data||[]; if(!CSV_ROWS.length) throw new Error("CSV ว่าง"); detectColumns(CSV_ROWS); }
+  catch(e){ console.error(e); }
+  hookKeyboard();
+  enforceExpectUI();
+  $_("login-raw").focus();
+  toggleSidebar(true);
+})();
+</script>
+</body>
+</html>
