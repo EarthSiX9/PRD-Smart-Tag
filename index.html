@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PRD Smart-TAG — Production vs Customer</title>
-  <meta name="x-build" content="2025-09-02 r40-scan-confirm-chain-auto + fixlist">
+  <meta name="x-build" content="2025-09-02 r41-shutter-mirror-lock + reasons + fixflow">
   <style>
     :root{
       --bg:#f7f9fc; --card:#ffffff; --text:#1f2a44; --muted:#6b7280;
@@ -120,6 +120,7 @@
     .qr-body{padding:12px 14px}
     .qr-foot{padding:12px 14px; border-top:1px solid var(--line); display:flex; gap:8px; align-items:center; flex-wrap:wrap}
     #qr-region{width:100%; min-height:320px}
+    #qr-region.mirror video{ transform: scaleX(-1) !important; } /* กล้องหน้า — กลับด้าน */
     #qr-last{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; color:#374151}
 
     @media (max-width: 960px){
@@ -168,9 +169,7 @@
 
     <!-- Tag Check -->
     <main id="view-checker" class="wrap" aria-hidden="true">
-      <div class="howto">
-        <div id="focus-msg" class="focus-msg"></div>
-      </div>
+      <div class="howto"><div id="focus-msg" class="focus-msg"></div></div>
 
       <div class="card" id="fix-banner" style="display:none;margin-bottom:12px">
         <div class="row" style="justify-content:space-between">
@@ -338,8 +337,7 @@
         <div style="margin-top:8px"><span class="muted">ล่าสุด:</span> <span id="qr-last">—</span></div>
       </div>
       <div class="qr-foot">
-        <button class="icon-btn" id="btn-accept" onclick="acceptScan()">ยืนยันอ่าน</button>
-        <button class="icon-btn" onclick="resumeScan()">อ่านใหม่</button>
+        <button class="icon-btn" id="btn-shot" onclick="shotOnce()">📸 อ่านตอนนี้</button>
         <div class="spacer"></div>
         <button class="icon-btn" id="btn-flip" onclick="flipScanner()">สลับกล้อง</button>
         <button onclick="closeScanner()">ปิดกล้อง</button>
@@ -390,14 +388,22 @@ let CUST = { pn:"", qty:null, name:"", mat:"" };
 let LOGIN_QR = { inst:null, active:false, cameras:[], idx:0, last:null };
 let USER = { code:null };
 
-let SESSION_LOCK = false;
+let SESSION_LOCK = false;  // ล็อครอบผลก่อนหน้า
 let BUSY = false;
 let EXPECT = 'prod';
 
 let FIX_MODE = { active:false, refTs:null }; // โหมดแก้ไข
 
+// ล็อคการกระทำระหว่างเล่นเสียง mp3
+let ACTION_LOCK = false;
+
 /* =========== QR Overlay (ส่วนกลาง) =========== */
-let SCAN_QR = { inst:null, active:false, cameras:[], idx:0, target:null, lastDecoded:null, paused:false, chainNext:false };
+let SCAN_QR = {
+  inst:null, active:false, cameras:[], idx:0,
+  target:null, chainNext:false,
+  paused:true, shotArmed:false, shotTimer:null,
+  lastDecoded:null
+};
 const TARGET_LABEL = { prod:"แท็กผลิต", cust:"แท็กลูกค้า", login:"เข้าสู่ระบบ" };
 
 /* ======================== HELPERS ========================== */
@@ -441,7 +447,7 @@ function initAudioFiles(){
     audioInvalidCust  = new Audio(SOUND_BASE + 'invalid_cust.mp3');
     audioInvalidLogin = new Audio(SOUND_BASE + 'invalid_login.mp3');
     audioBell         = new Audio(SOUND_BASE + 'bell.mp3');
-    audioFixOK        = new Audio(SOUND_BASE + 'ok_fix.mp3'); // เสียง OK แบบพิเศษสำหรับโหมดแก้ไข
+    audioFixOK        = new Audio(SOUND_BASE + 'ok_fix.mp3');
     [audioOK, audioNG, audioInvalidProd, audioInvalidCust, audioInvalidLogin, audioBell, audioFixOK].forEach(a=>{
       if(a){ a.preload='auto'; a.crossOrigin='anonymous'; }
     });
@@ -461,22 +467,36 @@ function unlockAudio(){
     });
   }catch{}
 }
-async function playMp3WithFallback(audioEl, fallbackFn){
-  try{
-    if(!audioEl) throw new Error('no audio');
-    audioEl.currentTime = 0;
-    const p = audioEl.play();
-    if(p && typeof p.then==='function'){ await p; }
-  }catch{
-    try{ if(typeof fallbackFn==='function') fallbackFn(); }catch{}
-  }
+// เล่น mp3 (มี fallback) และรอจนจบ
+function playAndWait(audioEl){
+  return new Promise((resolve)=>{
+    try{
+      if(!audioEl){ synthBell(); setTimeout(resolve, 600); return; }
+      audioEl.currentTime = 0;
+      const onEnd = ()=>{ audioEl.removeEventListener('ended', onEnd); resolve(); };
+      audioEl.addEventListener('ended', onEnd);
+      audioEl.play().catch(()=>{ synthBell(); setTimeout(resolve, 800); });
+      // safety timeout 6s
+      setTimeout(()=>resolve(), 6000);
+    }catch{ synthBell(); setTimeout(resolve, 800); }
+  });
 }
-function playOK(){ playMp3WithFallback(FIX_MODE.active? audioFixOK : audioOK, synthBell); }
-function playNG(){ playMp3WithFallback(audioNG, synthBell); }
-function playInvalidProd(){ playMp3WithFallback(audioInvalidProd, synthBell); }
-function playInvalidCust(){ playMp3WithFallback(audioInvalidCust, synthBell); }
-function playInvalidLogin(){ playMp3WithFallback(audioInvalidLogin, synthBell); }
-function playBell(){ playMp3WithFallback(audioBell, synthBell); }
+// แจ้งเตือน + เล่นกระดิ่ง + เล่น mp3 พร้อมกัน และ “ล็อค” จน mp3 จบ
+async function alertWithLock(audioEl, msg, clearIds=[], focusEl=null){
+  if(ACTION_LOCK) return;
+  try{
+    clearIds.forEach(id=>{ const el = $_(id); if(el) el.value=""; });
+  }catch{}
+  playBell();               // กระดิ่ง
+  showToast(msg);           // Toast
+  ACTION_LOCK = true;
+  await playAndWait(audioEl);  // รอจนเสียงเหตุการณ์จบ
+  ACTION_LOCK = false;
+  if(focusEl){ focusEl.focus(); }
+}
+function playOK(){ (FIX_MODE.active? audioFixOK : audioOK)?.play().catch(()=>synthBell()); }
+function playNG(){ audioNG?.play().catch(()=>synthBell()); }
+function playBell(){ audioBell?.play().catch(()=>synthBell()); }
 
 function showToast(msg, ms=2200){
   const t=$_("toast");
@@ -570,8 +590,8 @@ function hardReset(){
 function maybeResetBeforeProdScan(){ if(SESSION_LOCK) hardReset(); }
 
 /* ========================= PARSERS ========================= */
-function parseProduction(){
-  if(BUSY) return;
+async function parseProduction(){
+  if(BUSY || ACTION_LOCK) { if(ACTION_LOCK) notify("กรุณารอสัญญาณเสียงสิ้นสุด"); return; }
   if(!USER.code){ notify("กรุณาเข้าสู่ระบบก่อนใช้งาน"); return; }
   if(EXPECT!=='prod'){ notify("ต้องสแกน ‘แท็กผลิต’ ก่อน"); enforceExpectUI(); return; }
   maybeResetBeforeProdScan();
@@ -579,9 +599,7 @@ function parseProduction(){
   const raw = $_("in-prod").value.trim();
   const type = classifyTag(raw);
   if(type!=='prod'){
-    playInvalidProd();
-    $_("in-prod").value="";
-    notify("Qr code ไม่ถูกต้อง กรุณาสแกน Qr code ที่แท็กฝ่ายผลิต หรือตรวจสอบภาษาของคีย์บอร์ดให้เป็นภาษาอังกฤษ");
+    await alertWithLock(audioInvalidProd, "Qr code ไม่ถูกต้อง กรุณาสแกน Qr code ที่แท็กฝ่ายผลิต หรือตรวจสอบภาษาของคีย์บอร์ดให้เป็นภาษาอังกฤษ", ['in-prod'], $_('in-prod'));
     enforceExpectUI();
     return;
   }
@@ -604,17 +622,15 @@ function parseProduction(){
   BUSY=false;
 }
 
-function parseCustomer(){
-  if(BUSY) return;
+async function parseCustomer(){
+  if(BUSY || ACTION_LOCK) { if(ACTION_LOCK) notify("กรุณารอสัญญาณเสียงสิ้นสุด"); return; }
   if(!USER.code){ notify("กรุณาเข้าสู่ระบบก่อนใช้งาน"); return; }
   if(EXPECT!=='cust'){ notify("ต้องสแกน ‘แท็กลูกค้า’ ถัดจากแท็กผลิต"); enforceExpectUI(); return; }
 
   const raw = $_("in-cust").value.trim();
   const type = classifyTag(raw);
   if(type!=='cust'){
-    playInvalidCust();
-    $_("in-cust").value="";
-    notify("Qr code ไม่ถูกต้อง กรุณาสแกน Qr code ที่แท็กลูกค้า หรือตรวจสอบภาษาของคีย์บอร์ดให้เป็นภาษาอังกฤษ");
+    await alertWithLock(audioInvalidCust, "Qr code ไม่ถูกต้อง กรุณาสแกน Qr code ที่แท็กลูกค้า หรือตรวจสอบภาษาของคีย์บอร์ดให้เป็นภาษาอังกฤษ", ['in-cust'], $_('in-cust'));
     enforceExpectUI();
     return;
   }
@@ -636,13 +652,14 @@ function parseCustomer(){
   setText("cmp-qty-cust", CUST.qty ?? "—");
   setText("cmp-mat-cust", CUST.mat || "—");
 
-  compareNow(); 
+  await compareNow(); 
   BUSY=false;
 }
 
 /* ========================= COMPARE & RESULT ========================= */
 function showBanner(ok){ const b=$_("banner"); b.className="result-banner "+(ok?"banner-ok":"banner-ng"); b.textContent=ok?"OK":"NG"; b.style.display="flex"; }
 function prepNextCycleAfterCompare(){ $_("in-prod").value=""; $_("in-cust").value=""; EXPECT='prod'; enforceExpectUI(); }
+
 async function compareNow(){
   const pnOk   = (!!PROD.pn && !!CUST.pn) && (normPN(PROD.pn)===normPN(CUST.pn) || normPNNoDash(PROD.pn)===normPNNoDash(CUST.pn));
   const qtyOk  = toNum(PROD.qty)!=null && toNum(CUST.qty)!=null && toNum(PROD.qty)===toNum(CUST.qty);
@@ -650,17 +667,28 @@ async function compareNow(){
   const matOk  = !!PROD.mat  && !!CUST.mat  && (cleanMat(PROD.mat)===cleanMat(CUST.mat));
   const ok = pnOk && qtyOk;
 
-  showBanner(ok); if(ok) playOK(); else playNG();
+  showBanner(ok);
 
+  // เน้นแถว
   for(const id of ["cmp-pn","cmp-qty","cmp-name","cmp-mat"]){ const tr=$_(id); tr.classList.remove("ok-row","ng-row"); }
   $_("cmp-pn").classList.add(pnOk? "ok-row" : "ng-row");
   $_("cmp-qty").classList.add(qtyOk? "ok-row" : "ng-row");
   $_("cmp-name").classList.add(nameOk? "ok-row" : "ng-row");
   $_("cmp-mat").classList.add(matOk? "ok-row" : "ng-row");
 
+  // เหตุผล NG
+  if(!ok){
+    let reason = "แท็กไม่ตรงกัน";
+    if(pnOk===false && qtyOk===true){ reason = "แท็กไม่ตรงกัน"; }
+    else if(pnOk===true && qtyOk===false){ reason = "จำนวนชิ้นงานไม่ตรงกัน"; }
+    else { reason = "แท็กไม่ตรงกัน"; } // ทั้งสองผิด → อย่างเดียว
+    await alertWithLock(audioNG, reason, [], $_('in-prod'));
+  }else{
+    playOK();
+  }
+
   await saveLog(ok);
 
-  // ถ้าเป็นโหมดแก้ไข: ok = เพิ่ม log FIXED และกลับไปลิสต์
   if(FIX_MODE.active){
     if(ok){
       await saveFixLog(FIX_MODE.refTs);
@@ -668,7 +696,7 @@ async function compareNow(){
       notify("การแก้ไขเสร็จสมบูรณ์");
       switchView('fix');
     }else{
-      notify("แก้ไขยังไม่สำเร็จ: กรุณาตรวจสอบอีกครั้ง");
+      // เหตุผลแสดงไปแล้ว
     }
   }
 
@@ -813,7 +841,6 @@ async function handleClearLogs(){
 /* ==================== FIX LIST ==================== */
 async function renderFixList(){
   const all = await getAllLogs();
-  // งาน NG ที่ยังไม่ถูกอ้างอิงด้วย FIXED
   const fixedRefs = new Set(all.filter(r=>r.result==="FIXED").map(r=>r.refTs));
   const todo = all.filter(r=>r.result==="NG" && !fixedRefs.has(r.ts));
   const done = all.filter(r=>r.result==="FIXED");
@@ -838,7 +865,7 @@ function startFix(refTs){
   $_('fix-ref').textContent = refTs;
   switchView('checker');
   hardReset();
-  openScanner('prod', {chainNext:true}); // เริ่มสแกนผลิต แล้วต่อด้วยลูกค้าอัตโนมัติ
+  openScanner('prod', {chainNext:true});
 }
 function cancelFixMode(){
   FIX_MODE = {active:false, refTs:null};
@@ -865,11 +892,11 @@ function hookKeyboard(){
   prodIn.addEventListener("keydown", e=>{
     if(EXPECT!=='prod'){ e.preventDefault(); notify("ตอนนี้ต้องสแกน ‘แท็กลูกค้า’"); enforceExpectUI(); return; }
     if(e.key!=="Enter" && SESSION_LOCK){ maybeResetBeforeProdScan(); }
-    if(e.key==="Enter"){ e.preventDefault(); /* ปิดใช้ Enter: ต้องกดยืนยันหน้ากล้องเท่านั้น */ }
+    if(e.key==="Enter"){ e.preventDefault(); /* ต้องกด 📷 เท่านั้น */ }
   });
   custIn.addEventListener("keydown", e=>{
     if(EXPECT!=='cust'){ e.preventDefault(); notify("กรุณาสแกน ‘แท็กผลิต’ ก่อน"); enforceExpectUI(); return; }
-    if(e.key==="Enter"){ e.preventDefault(); /* ปิดใช้ Enter */ }
+    if(e.key==="Enter"){ e.preventDefault(); }
   });
 
   // login field
@@ -901,7 +928,8 @@ function parseEmployeePayload(raw){
   if(/^[A-Za-z0-9\-_]{5,}$/.test(s)){ out.code=s; return out; }
   return out;
 }
-function tryAutoLoginFromRaw(val, force=false){
+async function tryAutoLoginFromRaw(val, force=false){
+  if(ACTION_LOCK) return;
   const emp=parseEmployeePayload(val);
   fillEmployeeUI(emp);
   if(emp.code && (force || /^[A-Za-z0-9\-_]{5,}$/.test(emp.code))){
@@ -909,15 +937,21 @@ function tryAutoLoginFromRaw(val, force=false){
     return;
   }
   if(force){
-    playInvalidLogin();
-    notify("ไม่พบรหัสพนักงานใน Qr-code / รูปแบบไม่ถูกต้อง");
+    await alertWithLock(audioInvalidLogin, "ไม่พบรหัสพนักงานใน Qr-code / รูปแบบไม่ถูกต้อง", ['login-raw'], $_('login-raw'));
   }
 }
-function isFrontCam(cam){ return /front|user|face|自拍|內建|built.?in/i.test(cam?.label||""); }
+function isFrontCam(cam){ 
+  const label = cam?.label || "";
+  if(/back|rear|environment/i.test(label)) return false;
+  return /front|user|face|selfie|內建|built.?in/i.test(label) || !/back|rear|environment/i.test(label);
+}
 function applyLoginMirror(){
   const cam = LOGIN_QR.cameras[LOGIN_QR.idx];
-  const mirror = isFrontCam(cam);
-  $_('login-cam').classList.toggle('mirror', !!mirror);
+  $_('login-cam').classList.toggle('mirror', !!isFrontCam(cam));
+}
+function applyOverlayMirror(){
+  const cam = SCAN_QR.cameras[SCAN_QR.idx];
+  $_('qr-region').classList.toggle('mirror', !!isFrontCam(cam));
 }
 async function toggleLoginCamera(){
   try{
@@ -932,24 +966,19 @@ async function toggleLoginCamera(){
     const cams=await Html5Qrcode.getCameras(); 
     if(!cams?.length){ camDiv.textContent="ไม่พบกล้อง"; return; }
     LOGIN_QR.cameras=cams; 
-    // เริ่มที่กล้องหลัง (ถ้ามี) ไม่งั้นตัวแรก
     const env = cams.find(c=>/back|rear|environment/i.test(c.label));
     LOGIN_QR.idx = env ? cams.indexOf(env) : 0;
 
     const startCam = async (idx)=>{
       await LOGIN_QR.inst.start(cams[idx].id,{fps:10,qrbox:250}, onLoginScan);
-      LOGIN_QR.idx = idx;
+      LOGIN_QR.idx = idx; applyLoginMirror();
     };
     try{ await startCam(LOGIN_QR.idx); }
-    catch{ // ลองตัวอื่น (เช่น กล้องหน้า)
-      const alt = (LOGIN_QR.idx+1) % cams.length;
-      await startCam(alt);
-    }
+    catch{ const alt = (LOGIN_QR.idx+1) % cams.length; await startCam(alt); }
 
     LOGIN_QR.active=true;
     flip.style.display = "inline-flex";
     flip.disabled = cams.length<=1;
-    applyLoginMirror();
 
     $_('login-scan-controls').style.display='flex';
     $_('login-last').textContent='—';
@@ -962,8 +991,7 @@ async function loginFlipCamera(){
     const next = (LOGIN_QR.idx + 1) % LOGIN_QR.cameras.length;
     await LOGIN_QR.inst.stop();
     await LOGIN_QR.inst.start(LOGIN_QR.cameras[next].id,{fps:10,qrbox:250}, onLoginScan);
-    LOGIN_QR.idx = next;
-    applyLoginMirror();
+    LOGIN_QR.idx = next; applyLoginMirror();
   }catch(err){ $_('login-cam').textContent="สลับกล้องไม่ได้: "+(err?.message||err); }
 }
 function onLoginScan(txt){
@@ -971,10 +999,10 @@ function onLoginScan(txt){
   LOGIN_QR.last = clean;
   $_('login-last').textContent = clean;
 }
-function acceptLoginScan(){
+async function acceptLoginScan(){
   if(!LOGIN_QR.last){ notify("ยังไม่พบข้อมูลจากกล้อง"); return; }
   $_('login-raw').value = LOGIN_QR.last;
-  tryAutoLoginFromRaw(LOGIN_QR.last, true);
+  await tryAutoLoginFromRaw(LOGIN_QR.last, true);
 }
 function clearLoginPending(){ LOGIN_QR.last=null; $_('login-last').textContent='—'; }
 function fillEmployeeUI(emp){ $_('emp-id').textContent=emp.code||'—'; }
@@ -1002,10 +1030,13 @@ function enableUI(on){
 
 /* ==================== QR OVERLAY ส่วนกลาง ==================== */
 async function openScanner(target, opts={}){
+  if(ACTION_LOCK){ notify("กรุณารอสัญญาณเสียงสิ้นสุด"); return; }
   SCAN_QR.target = target;
-  SCAN_QR.chainNext = !!opts.chainNext && target==='prod'; // เฉพาะแรกให้ต่อไปลูกค้า
+  SCAN_QR.chainNext = !!opts.chainNext && target==='prod';
   SCAN_QR.lastDecoded = null;
-  SCAN_QR.paused = false;
+  SCAN_QR.paused = true;
+  SCAN_QR.shotArmed = false;
+
   $_('qr-target-name').textContent = TARGET_LABEL[target] || '—';
   $_('qr-last').textContent = '—';
   $_('qr-overlay').style.display = 'flex';
@@ -1015,45 +1046,61 @@ async function openScanner(target, opts={}){
   try{
     const cams = await Html5Qrcode.getCameras();
     if(!cams?.length){ $_('qr-region').textContent="ไม่พบกล้อง"; return; }
-    SCAN_QR.cameras = cams; 
+    SCAN_QR.cameras = cams;
+
     const env = cams.find(c=>/back|rear|environment/i.test(c.label));
     let idx = env ? cams.indexOf(env) : 0;
 
     const startIdx = async (i)=>{
       await SCAN_QR.inst.start(cams[i].id, {fps:10, qrbox:250}, onOverlayScan);
-      SCAN_QR.idx = i;
+      SCAN_QR.idx = i; applyOverlayMirror();
     };
+
     try{ await startIdx(idx); }
-    catch{
-      const alt = (idx+1)%cams.length;
-      await startIdx(alt);
-    }
+    catch{ const alt = (idx+1)%cams.length; await startIdx(alt); }
 
     SCAN_QR.active = true;
     $_('btn-flip').disabled = cams.length<=1;
+
   }catch(err){
     $_('qr-region').textContent = "เปิดกล้องไม่ได้: " + (err?.message || err);
   }
 }
 function onOverlayScan(decodedText){
-  if(SCAN_QR.paused) return;
+  if(SCAN_QR.paused || !SCAN_QR.shotArmed) return;
   const clean = sanitizeScan(decodedText);
   SCAN_QR.lastDecoded = clean;
-  $_('qr-last').textContent = clean;
+
+  SCAN_QR.paused = true;
+  SCAN_QR.shotArmed = false;
+  clearTimeout(SCAN_QR.shotTimer);
+  applyDecoded(clean);
 }
-function resumeScan(){ SCAN_QR.paused=false; SCAN_QR.lastDecoded=null; $_('qr-last').textContent='—'; }
-async function acceptScan(){
-  if(!SCAN_QR.lastDecoded){ notify("ยังไม่พบข้อมูลจากกล้อง"); return; }
-  const text = SCAN_QR.lastDecoded;
-  SCAN_QR.paused=true;
+function shotOnce(){
+  if(!SCAN_QR.active){ return; }
+  if(ACTION_LOCK){ notify("กรุณารอสัญญาณเสียงสิ้นสุด"); return; }
+  SCAN_QR.lastDecoded = null;
+  SCAN_QR.paused = false;
+  SCAN_QR.shotArmed = true;
+
+  clearTimeout(SCAN_QR.shotTimer);
+  SCAN_QR.shotTimer = setTimeout(()=>{
+    if(SCAN_QR.shotArmed){
+      SCAN_QR.paused = true;
+      SCAN_QR.shotArmed = false;
+      notify("ไม่พบ Qr-code ในเฟรมนี้ ลองกดอีกครั้ง");
+    }
+  }, 1800);
+}
+async function applyDecoded(text){
   await closeScanner();
   if(SCAN_QR.target==='prod'){
-    $_('in-prod').value = text; parseProduction();
-    if(SCAN_QR.chainNext){ openScanner('cust'); }
+    $_('in-prod').value = text; await parseProduction();
+    if(SCAN_QR.chainNext) openScanner('cust');
   }else if(SCAN_QR.target==='cust'){
-    $_('in-cust').value = text; parseCustomer();
+    $_('in-cust').value = text; await parseCustomer();
   }else if(SCAN_QR.target==='login'){
-    $_('login-raw').value = text; tryAutoLoginFromRaw(text, true);
+    $_('login-raw').value = text; await tryAutoLoginFromRaw(text, true);
   }
 }
 async function flipScanner(){
@@ -1062,7 +1109,7 @@ async function flipScanner(){
     const next = (SCAN_QR.idx + 1) % SCAN_QR.cameras.length;
     await SCAN_QR.inst.stop();
     await SCAN_QR.inst.start(SCAN_QR.cameras[next].id, {fps:10, qrbox:250}, onOverlayScan);
-    SCAN_QR.idx = next;
+    SCAN_QR.idx = next; applyOverlayMirror();
   }catch(err){
     notify("สลับกล้องไม่ได้: "+(err?.message||err));
   }
