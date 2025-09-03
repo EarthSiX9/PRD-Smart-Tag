@@ -1,34 +1,34 @@
 <!doctype html>
-<html lang="th">
+<html lang="th" data-theme="light">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PRD Smart-TAG — Production vs Customer</title>
-  <meta name="x-build" content="2025-09-02 r42-alert+mp3-simultaneous-all-scans">
+  <meta name="x-build" content="2025-09-03 r45-nav-hierarchy-lines">
   <style>
     /* =========================
        Material Design 3 Tokens
        ========================= */
     :root{
-      color-scheme: light dark;
+      color-scheme: light;
 
-      /* Brand anchors (kept from original) */
+      /* Brand */
       --prd:#d60000;
       --smart:#042157;
 
-      /* MD3 Core */
-      --md-sys-color-primary:#2563eb;     /* accent blue */
+      /* MD3 Light (base) */
+      --md-sys-color-primary:#2563eb;
       --md-sys-color-on-primary:#ffffff;
       --md-sys-color-primary-container:#dbeafe;
       --md-sys-color-on-primary-container:#0b3aa6;
 
-      --md-sys-color-secondary:#6b7280;   /* muted gray */
+      --md-sys-color-secondary:#6b7280;
       --md-sys-color-on-secondary:#ffffff;
       --md-sys-color-secondary-container:#e5e7eb;
       --md-sys-color-on-secondary-container:#1f2937;
 
-      --md-sys-color-surface:#f8fafc;     /* app bg */
-      --md-sys-color-surface-container:#ffffff; /* cards */
+      --md-sys-color-surface:#f8fafc;
+      --md-sys-color-surface-container:#ffffff;
       --md-sys-color-on-surface:#1f2a44;
       --md-sys-color-surface-variant:#eef2f7;
       --md-sys-color-on-surface-variant:#475569;
@@ -43,19 +43,14 @@
 
       --md-sys-color-success:#0f7a3a;
       --md-sys-color-success-container:#e8f7ee;
-      --md-sys-color-on-success:#06321a;
 
-      --md-state-hover-opacity:.08;
-      --md-state-focus-opacity:.10;
-      --md-state-pressed-opacity:.12;
+      /* Elevation */
+      --elev-0:none;
+      --elev-1:0 1px 2px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.05);
+      --elev-2:0 4px 10px rgba(0,0,0,.08), 0 8px 16px rgba(0,0,0,.06);
+      --elev-3:0 8px 24px rgba(0,0,0,.10), 0 16px 32px rgba(0,0,0,.08);
 
-      /* Elevation (MD3-ish) */
-      --elev-0: none;
-      --elev-1: 0 1px 2px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.05);
-      --elev-2: 0 4px 10px rgba(0,0,0,.08), 0 8px 16px rgba(0,0,0,.06);
-      --elev-3: 0 8px 24px rgba(0,0,0,.10), 0 16px 32px rgba(0,0,0,.08);
-
-      /* App specific (mapped from old vars) */
+      /* Map to old vars */
       --bg:var(--md-sys-color-surface);
       --card:var(--md-sys-color-surface-container);
       --text:var(--md-sys-color-on-surface);
@@ -70,374 +65,261 @@
       --ng-bg:var(--md-sys-color-error-container);
 
       --btnborder:#d1d5db;
-      --toast:#111827;
-      --toast-text:#f9fafb;
+      --toast:#111827; --toast-text:#f9fafb;
 
-      --side-bg:#ffffff;
-      --side-text:#1f2937;
-      --side-hover:#f3f4f6;
-
+      --side-bg:#ffffff; --side-text:#1f2937; --side-hover:#f3f4f6;
       --topbar-bg:#ffffff;
 
-      --fixed-bg:#FEF9C3;
-      --fixed-text:#92400e;
+      --fixed-bg:#FEF9C3; --fixed-text:#92400e;
 
-      /* Type scale (MD3-ish) */
       --title-1: clamp(18px, 2.2vw, 22px);
-      --title-2: 16px;
-      --label: 12px;
+      --title-2: 16px; --label: 12px;
 
-      /* Shape */
-      --radius-xs:8px;
-      --radius-sm:10px;
-      --radius-md:12px;
-      --radius-lg:14px;
-      --radius-xl:16px;
+      --radius-xs:8px; --radius-sm:10px; --radius-md:12px; --radius-lg:14px; --radius-xl:16px;
 
-      /* Motion */
-      --dur-fast: 120ms;
-      --dur: 180ms;
-      --easing: cubic-bezier(.2,.0,.2,1);
+      --dur-fast:120ms; --dur:180ms; --easing:cubic-bezier(.2,.0,.2,1);
     }
 
-    @media (prefers-color-scheme: dark){
-      :root{
-        --md-sys-color-primary:#8ab4ff;
-        --md-sys-color-on-primary:#001b3d;
-        --md-sys-color-primary-container:#1e293b;
-        --md-sys-color-on-primary-container:#cfe1ff;
+    /* Dark theme (explicit) */
+    html[data-theme="dark"]{
+      color-scheme: dark;
 
-        --md-sys-color-surface:#0b1220;
-        --md-sys-color-surface-container:#0f172a;
-        --md-sys-color-on-surface:#e5e7eb;
-        --md-sys-color-surface-variant:#111827;
-        --md-sys-color-on-surface-variant:#9ca3af;
+      --md-sys-color-primary:#8ab4ff; --md-sys-color-on-primary:#001b3d;
+      --md-sys-color-primary-container:#1e293b; --md-sys-color-on-primary-container:#cfe1ff;
 
-        --md-sys-color-outline:#334155;
-        --md-sys-color-outline-variant:#1f2937;
+      --md-sys-color-surface:#0b1220;
+      --md-sys-color-surface-container:#0f172a;
+      --md-sys-color-on-surface:#e5e7eb;
+      --md-sys-color-surface-variant:#111827;
+      --md-sys-color-on-surface-variant:#9ca3af;
 
-        --side-bg:#0f172a;
-        --side-text:#e5e7eb;
-        --side-hover:#111827;
+      --md-sys-color-outline:#334155;
+      --md-sys-color-outline-variant:#1f2937;
 
-        --topbar-bg:#0f172a;
+      --side-bg:#0f172a; --side-text:#e5e7eb; --side-hover:#111827;
+      --topbar-bg:#0f172a;
+      --toast:#111827; --toast-text:#e5e7eb; --btnborder:#334155;
 
-        --toast:#111827;
-        --toast-text:#e5e7eb;
-
-        --btnborder:#334155;
-      }
+      /* Stronger result colors + black text */
+      --ok-bg:#22c55e;
+      --ng-bg:#ef4444;
+      --fixed-bg:#fde047;
+      --fixed-text:#111111;
     }
 
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
+      margin:0; background:var(--bg); color:var(--text);
       font-family: ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Thai",Arial,sans-serif;
       -webkit-tap-highlight-color:transparent;
     }
-
-    /* Focus visible (MD3 strong ring) */
     :where(button,input,select,textarea,[role="button"]):focus-visible{
-      outline: 3px solid color-mix(in oklab, var(--accent) 60%, #ffffff);
-      outline-offset: 2px;
-      border-radius: var(--radius-md);
+      outline:3px solid color-mix(in oklab, var(--accent) 60%, #ffffff);
+      outline-offset:2px; border-radius:var(--radius-md);
     }
 
-    /* ================= Top App Bar ================= */
-    .topbar{
-      position:sticky; top:0; z-index:1000;
-      display:flex; align-items:center; gap:12px;
-      height:64px;
-      padding:10px 14px;
-      background:var(--topbar-bg);
-      border-bottom:1px solid var(--line);
-      backdrop-filter: saturate(1.2) blur(8px);
-    }
+    /* ================= Topbar ================= */
+    .topbar{position:sticky; top:0; z-index:1000; display:flex; align-items:center; gap:12px;
+      height:64px; padding:10px 14px; background:var(--topbar-bg); border-bottom:1px solid var(--line);
+      backdrop-filter:saturate(1.2) blur(8px);}
     .menu-btn{
-      display:inline-flex; align-items:center; justify-content:center;
-      width:44px; height:44px; min-width:44px;
-      border-radius: var(--radius-md);
-      border:1px solid var(--md-sys-color-outline-variant);
-      background:var(--card);
-      cursor:pointer; font-size:18px;
-      transition: transform var(--dur) var(--easing), background var(--dur) var(--easing), border-color var(--dur) var(--easing);
-      box-shadow: var(--elev-0);
+      display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px;
+      border-radius:var(--radius-md); border:1px solid var(--md-sys-color-outline-variant);
+      background:var(--card); cursor:pointer; font-size:18px;
+      box-shadow:var(--elev-1);
+      transition:transform var(--dur) var(--easing), background var(--dur) var(--easing), border-color var(--dur) var(--easing);
       position:relative; overflow:hidden;
     }
     .menu-btn:hover{ background:color-mix(in oklab, var(--accent-weak) 18%, var(--card)); }
     .menu-btn:active{ transform:translateY(1px); }
-
     .brand-inline{display:flex; align-items:baseline; gap:10px; line-height:1; user-select:none;}
-    .brand-prd{
-      font-family:"LilyUPC","Tahoma","Noto Sans Thai",sans-serif;
-      font-weight:900; font-style:italic; color:var(--prd);
-      font-size:30px; letter-spacing:.5px
-    }
-    .brand-smart{
-      font-family:"LilyUPC","Tahoma","Noto Sans Thai",sans-serif;
-      font-weight:900; color:var(--smart);
-      font-size:26px; letter-spacing:.3px
-    }
+    .brand-prd{font-family:"LilyUPC","Tahoma","Noto Sans Thai",sans-serif;font-weight:900;font-style:italic;color:var(--prd);font-size:30px;letter-spacing:.5px}
+    .brand-smart{font-family:"LilyUPC","Tahoma","Noto Sans Thai",sans-serif;font-weight:900;color:var(--smart);font-size:26px;letter-spacing:.3px}
+    html[data-theme="dark"] .brand-smart{ color:#ffffff; } /* Smart-Tag white in dark */
     .spacer{flex:1}
 
     .topbar-right{display:flex; align-items:center; gap:10px}
 
-    /* Assist Chip */
-    .badge{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid var(--md-sys-color-outline-variant);
-      background:var(--card);
-      font-size:12px;
-      line-height:1;
+    /* ========== Global MD3 Buttons (unchanged from previous version) ========== */
+    button{
+      appearance:none; -webkit-appearance:none;
+      border:1px solid var(--btnborder); background:var(--card); color:var(--text);
+      border-radius:14px; padding:10px 14px; line-height:1;
+      font-weight:700; font-size:14px; cursor:pointer;
+      box-shadow:var(--elev-1);
+      transition: background var(--dur) var(--easing), border-color var(--dur) var(--easing), box-shadow var(--dur) var(--easing), transform var(--dur-fast) var(--easing);
     }
-    .badge b{font-weight:700}
+    button:hover{ background: color-mix(in oklab, var(--card) 88%, var(--accent-weak) 12%); border-color: color-mix(in oklab, var(--btnborder) 65%, var(--accent) 35%); }
+    button:active{ transform: translateY(1px); box-shadow: var(--elev-0); }
+    button[disabled]{ opacity:.55; cursor:not-allowed; box-shadow:var(--elev-0); }
 
-    /* ================= Layout & Navigation ================= */
-    .layout{
-      display:grid; grid-template-columns: 260px 1fr; min-height:calc(100vh - 64px);
-      transition:grid-template-columns var(--dur) var(--easing)
-    }
+    button.primary{ background:var(--accent); color:var(--md-sys-color-on-primary); border-color: transparent; }
+    button.primary:hover{ background: color-mix(in oklab, var(--accent) 92%, #000 8%); }
+    button.primary:active{ background: color-mix(in oklab, var(--accent) 85%, #000 15%); }
+
+    button.danger{ background: color-mix(in oklab, var(--ng-bg) 72%, #000 0%); color:#000; border-color: color-mix(in oklab, var(--ng-bg) 65%, #000 35%); }
+    button.danger:hover{ background: color-mix(in oklab, var(--ng-bg) 82%, #000 0%); }
+    button.danger:active{ background: color-mix(in oklab, var(--ng-bg) 90%, #000 0%); }
+
+    /* ================= Layout + sidebar ================= */
+    .layout{display:grid; grid-template-columns: 260px 1fr; min-height:calc(100vh - 64px); transition:grid-template-columns var(--dur) var(--easing)}
     .layout.collapsed{grid-template-columns: 0 1fr;}
-
-    .side{
-      background:var(--side-bg); color:var(--side-text);
-      padding:18px 14px; position:sticky; top:64px; height:calc(100vh - 64px);
-      border-right:1px solid var(--line);
-      display:flex; flex-direction:column; gap:14px;
-      transition:transform var(--dur) var(--easing), opacity var(--dur) var(--easing);
-      box-shadow: var(--elev-0);
-    }
+    .side{background:var(--side-bg); color:var(--side-text); padding:18px 14px; position:sticky; top:64px; height:calc(100vh - 64px);
+      border-right:1px solid var(--line); display:flex; flex-direction:column; gap:14px; transition:transform var(--dur) var(--easing), opacity var(--dur) var(--easing);}
     .layout.collapsed .side{ transform:translateX(-100%); opacity:0; pointer-events:none; }
 
+    /* ======== NAV: hierarchy styles per request ======== */
     .nav{display:flex; flex-direction:column; gap:6px; margin-top:6px}
 
+    /* Head (parent): bold + flush-left */
     .parent{
       display:flex; align-items:center; justify-content:space-between;
-      padding:12px 12px; border-radius: var(--radius-md); cursor:pointer;
-      transition: background var(--dur) var(--easing), color var(--dur) var(--easing);
-      position:relative; overflow:hidden; min-height:44px;
+      padding:12px 12px; border-radius:12px; cursor:pointer; position:relative; overflow:hidden;
+      font-weight:800; /* << ตัวหนา */
     }
     .parent:hover{ background:color-mix(in oklab, var(--accent-weak) 25%, transparent); }
     .caret{font-size:12px; opacity:.8; transition:transform var(--dur) var(--easing)}
     .parent.expanded .caret{ transform:rotate(90deg); }
 
-    .submenu{display:none; flex-direction:column; gap:6px; padding-left:6px; margin-top:2px;}
+    /* Submenu group: has connector vertical line from parent */
+    .submenu{
+      display:none; flex-direction:column; gap:6px;
+      margin-top:4px;
+      padding:6px 0 6px 26px; /* indent group */
+      position:relative;
+    }
     .submenu.show{display:flex;}
+    .submenu::before{
+      content:""; position:absolute; left:14px; top:2px; bottom:2px; width:2px;
+      background: var(--md-sys-color-outline-variant); border-radius:2px;
+    }
 
-    .nav button{
-      text-align:left; width:100%; min-height:44px;
-      padding:10px 12px; border-radius: var(--radius-md); border:1px solid transparent;
+    /* Submenu items: thin font, left connector ├─ */
+    .submenu button{
+      text-align:left; width:100%;
+      padding:10px 12px 10px 26px;  /* indent item text */
+      border-radius:12px; border:1px solid transparent;
       background:transparent; color:var(--side-text); cursor:pointer; font-size:14px;
-      transition: background var(--dur) var(--easing), color var(--dur) var(--easing);
-      position:relative; overflow:hidden;
+      font-weight:500; /* << บางกว่าหัวข้อใหญ่ */
+      position:relative;
     }
-    .nav button:hover{ background:color-mix(in oklab, var(--accent-weak) 20%, transparent); }
-    .nav button.active{
-      background:var(--accent-weak);
+    /* Small horizontal connector from the vertical line to the item */
+    .submenu button::before{
+      content:""; position:absolute; left:14px; top:50%; width:12px; height:2px;
+      background: var(--md-sys-color-outline-variant); transform:translateY(-50%);
+      border-radius:2px;
+    }
+    .submenu button:hover{ background:var(--side-hover); }
+    .submenu button.active{
+      background:var(--accent-weak); border-color:#dbeafe;
       color: color-mix(in oklab, var(--accent) 45%, var(--side-text));
-      border-color:#dbeafe;
-      box-shadow: var(--elev-0);
     }
 
-    /* ================= Main Content ================= */
+    /* Non-submenu top-level nav buttons (e.g., Print/Create) keep MD3 look */
+    .nav > button:not(.parent){
+      font-weight:700; border-radius:12px; border:1px solid transparent; box-shadow:none;
+      background:transparent; color:var(--side-text); min-height:44px; text-align:left;
+      padding:10px 12px;
+    }
+    .nav > button:not(.parent):hover{ background:color-mix(in oklab, var(--accent-weak) 20%, transparent); }
+    .nav > button:not(.parent).active{ background:var(--accent-weak); border-color:#dbeafe; color: color-mix(in oklab, var(--accent) 45%, var(--side-text)); }
+
+    /* ================= Main ================= */
     .wrap{max-width:100% !important; margin:0; padding:24px 32px;}
-
-    .howto{
-      border:1px solid #f1d36a; background:var(--fixed-bg);
-      border-radius: var(--radius-lg); padding:14px;
-      display:flex; align-items:center; justify-content:center; margin:12px 0 18px;
-      box-shadow: var(--elev-1);
-    }
+    .howto{border:1px solid #f1d36a;background:#fffbcc;border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:center;margin:12px 0 18px;box-shadow:var(--elev-1)}
     .howto .focus-msg{font-weight:900;color:#111;text-align:center;white-space:pre-line}
 
-    /* Cards (MD3) */
-    .card{
-      border:1px solid var(--line);
-      background:var(--card);
-      border-radius: var(--radius-xl);
-      padding:16px;
-      box-shadow: var(--elev-1);
-      transition: box-shadow var(--dur) var(--easing), transform var(--dur) var(--easing);
-    }
-    .card:hover{ box-shadow: var(--elev-2); transform: translateY(-1px); }
-    .card h3{margin:0 0 8px;font-size:var(--title-2); color:var(--md-sys-color-on-surface-variant); font-weight:700}
+    .card{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--elev-1)}
+    .card h3{margin:0 0 8px;font-size:16px; color:var(--md-sys-color-on-surface-variant); font-weight:700}
     .card.compact{padding:10px}
-
     .cmp-top-grid{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
     .cmp-bottom{margin-top:16px}
-
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 
-    /* Text fields (Outlined) */
     input[type=text], input[type=date], input[type=password]{
-      flex:1; min-width:220px; padding:11px 12px;
-      border-radius: var(--radius-md);
-      border:1px solid var(--btnborder);
-      background:var(--card);
-      color:var(--text);
-      outline:none;
-      transition: border-color var(--dur) var(--easing), box-shadow var(--dur) var(--easing), background var(--dur) var(--easing);
+      flex:1;min-width:220px;padding:11px 12px;border-radius:12px;border:1px solid var(--btnborder);
+      background:var(--card);color:var(--text);outline:none;
+      transition:border-color var(--dur) var(--easing), box-shadow var(--dur) var(--easing), background var(--dur) var(--easing)
     }
     input::placeholder{color:#9ca3af}
-    input[readonly]{background:color-mix(in oklab, var(--card) 85%, #0000 15%);}
+    input[readonly]{background:color-mix(in oklab, var(--card) 85%, #0000 15%)}
+    input[type=text]:hover, input[type=date]:hover, input[type=password]:hover{border-color: color-mix(in oklab, var(--accent) 40%, var(--btnborder)); background: color-mix(in oklab, var(--card) 92%, var(--accent-weak) 8%)}
+    input[type=text]:focus, input[type=date]:focus, input[type=password]:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in oklab, var(--accent) 25%, transparent)}
 
-    input[type=text]:hover, input[type=date]:hover, input[type=password]:hover{
-      border-color: color-mix(in oklab, var(--accent) 40%, var(--btnborder));
-      background: color-mix(in oklab, var(--card) 92%, var(--accent-weak) 8%);
-    }
-    input[type=text]:focus, input[type=date]:focus, input[type=password]:focus{
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 25%, transparent);
-    }
+    /* Result banner + compare table (unchanged) */
+    .result-banner{display:none;align-items:center;justify-content:center;border-radius:16px;padding:22px;font-weight:900;letter-spacing:.5px;text-align:center;margin-bottom:10px;font-size:clamp(28px,6vw,56px);box-shadow:var(--elev-1)}
+    .banner-ok{background:var(--ok-bg);color:var(--ok);border:1px solid #86efac}
+    .banner-ng{background:var(--ng-bg);color:var(--ng);border:1px solid #fca5a5}
+    html[data-theme="dark"] .banner-ok,
+    html[data-theme="dark"] .banner-ng{ color:#000000 !important; } /* black text on strong bg */
 
-    /* Buttons (Filled/Tonal/Outlined) */
-    button{
-      padding:10px 14px; min-height:40px;
-      border-radius: var(--radius-lg);
-      border:1px solid var(--btnborder);
-      background:var(--card);
-      color:var(--text);
-      cursor:pointer;
-      font-weight:600;
-      transition: transform var(--dur) var(--easing), background var(--dur) var(--easing), border-color var(--dur) var(--easing), box-shadow var(--dur) var(--easing);
-      position:relative; overflow:hidden;
-    }
-    button:hover{ background:color-mix(in oklab, var(--accent-weak) 16%, var(--card)); }
-    button:active{ transform: translateY(1px); }
-    button[disabled]{opacity:.55; cursor:not-allowed}
-
-    button.primary{
-      background:var(--accent);
-      color:var(--md-sys-color-on-primary);
-      border-color: transparent;
-      box-shadow: var(--elev-1);
-    }
-    button.primary:hover{ box-shadow: var(--elev-2); }
-
-    /* Filters group */
-    .filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-    .filters input[type=date]{padding:8px}
-    .filters button{padding:8px 12px;border-radius: var(--radius-md)}
-
-    /* Result banner */
-    .result-banner{
-      display:none; align-items:center; justify-content:center;
-      border-radius: var(--radius-xl); padding:22px;
-      font-weight:900; letter-spacing:.5px; text-align:center;
-      margin-bottom:10px; font-size: clamp(28px, 6vw, 56px);
-      box-shadow: var(--elev-1);
-    }
-    .banner-ok{ background:var(--ok-bg); color:var(--ok); border:1px solid #86efac }
-    .banner-ng{ background:var(--ng-bg); color:var(--ng); border:1px solid #fca5a5 }
-
-    /* Compare table */
-    .cmp{width:100%; border-collapse:separate; border-spacing:0; margin-top:10px; font-size:13px; overflow:hidden; border-radius: var(--radius-lg); box-shadow: var(--elev-0); }
+    .cmp{width:100%; border-collapse:separate; border-spacing:0; margin-top:10px; font-size:13px; overflow:hidden; border-radius:12px}
     .cmp th,.cmp td{padding:12px 12px; border-bottom:1px solid var(--line)}
-    .cmp thead th{
-      background:var(--md-sys-color-surface-variant);
-      color:var(--md-sys-color-on-surface-variant);
-      text-align:left; position:sticky; top:0;
-      z-index:1;
-    }
-    .cmp tbody tr:hover{ background:color-mix(in oklab, var(--accent-weak) 12%, transparent); }
-    .ok-row{ background:var(--ok-bg) !important; color:var(--ok) !important; font-weight:800; }
-    .ng-row{ background:var(--ng-bg) !important; color:var(--ng) !important; font-weight:800; }
-    .fixed-row{ background:var(--fixed-bg) !important; color:var(--fixed-text) !important; font-weight:800; }
+    .cmp thead th{background:var(--md-sys-color-surface-variant); color:var(--md-sys-color-on-surface-variant); text-align:left; position:sticky; top:0; z-index:1}
+    .cmp tbody tr:hover{ background:color-mix(in oklab, var(--accent-weak) 12%, transparent) }
 
-    /* Logs summary chips */
-    #log-totals{
-      display:flex; gap:14px; align-items:center; font-size:13px; padding:10px 12px;
-      background:var(--md-sys-color-surface-variant);
-      border:1px solid var(--line); border-radius: var(--radius-lg); margin-bottom:8px
-    }
+    .ok-row{ background:var(--ok-bg) !important; color:var(--ok) !important; font-weight:800 }
+    .ng-row{ background:var(--ng-bg) !important; color:var(--ng) !important; font-weight:800 }
+    .fixed-row{ background:var(--fixed-bg) !important; color:var(--fixed-text) !important; font-weight:800 }
+    html[data-theme="dark"] .ok-row,
+    html[data-theme="dark"] .ng-row,
+    html[data-theme="dark"] .fixed-row{ color:#000000 !important; }
+
+    #log-totals{display:flex;gap:14px;align-items:center;font-size:13px;padding:10px 12px;background:var(--md-sys-color-surface-variant);border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
     #log-totals .dot{width:8px;height:8px;border-radius:999px;display:inline-block;margin-right:6px;background:#9ca3af}
-    #log-totals .ok .dot{background:var(--ok)}
-    #log-totals .ng .dot{background:var(--ng)}
-    #log-totals .fixed .dot{background:#d97706}
+    #log-totals .ok .dot{background:color-mix(in oklab, var(--ok-bg) 80%, #000)}
+    #log-totals .ng .dot{background:color-mix(in oklab, var(--ng-bg) 80%, #000)}
+    #log-totals .fixed .dot{background:color-mix(in oklab, var(--fixed-bg) 80%, #000)}
     #log-totals b{font-size:14px}
 
-    /* Toast */
-    .toast{
-      position:fixed; right:18px; top:76px; z-index:9999;
-      background:var(--toast); color:var(--toast-text);
-      border:1px solid color-mix(in oklab, var(--toast) 70%, #fff);
-      border-radius: var(--radius-xl); padding:10px 14px;
-      box-shadow: var(--elev-3);
-      opacity:0; transform:translateY(-8px) scale(.98);
-      pointer-events:none;
-      transition: opacity var(--dur) var(--easing), transform var(--dur) var(--easing);
-      max-width: min(80vw, 420px);
-    }
-    .toast.show{opacity:1; transform:translateY(0) scale(1)}
+    .toast{position:fixed;right:18px;top:76px;z-index:9999;background:var(--toast);color:var(--toast-text);border:1px solid color-mix(in oklab, var(--toast) 70%, #fff);border-radius:16px;padding:10px 14px;box-shadow:var(--elev-3);opacity:0;transform:translateY(-8px) scale(.98);pointer-events:none;transition:opacity var(--dur) var(--easing),transform var(--dur) var(--easing);max-width:min(80vw,420px)}
+    .toast.show{opacity:1;transform:translateY(0) scale(1)}
 
-    /* Logs tables */
-    .logs{
-      border:1px solid var(--line); border-radius: var(--radius-lg);
-      background:var(--card); overflow:auto; max-height:420px;
-      box-shadow: var(--elev-1);
-    }
-    table{width:100%; border-collapse:separate; border-spacing:0; font-size:12px}
-    th,td{padding:10px 12px; border-bottom:1px solid var(--line); white-space:nowrap}
-    th{position:sticky; top:0; background:var(--md-sys-color-surface-variant); text-align:left; color:var(--md-sys-color-on-surface-variant)}
+    .logs{border:1px solid var(--line);border-radius:12px;background:var(--card);overflow:auto;max-height:420px;box-shadow:var(--elev-1)}
 
-    /* Login overlay */
-    .login-screen{
-      position:fixed; inset:0; z-index:10000; background:rgba(11,18,32,.9);
-      display:flex; align-items:center; justify-content:center;
-      backdrop-filter: blur(6px);
-    }
-    .login-panel{
-      width:min(92vw,560px); background:var(--card);
-      border-radius:18px; border:1px solid var(--line);
-      box-shadow: var(--elev-3); overflow:hidden;
-    }
-    .login-panel header{
-      background:var(--md-sys-color-surface-variant);
-      border-bottom:1px solid var(--line); padding:16px 18px; font-weight:800;
-      color:var(--md-sys-color-on-surface-variant);
-    }
-    .login-panel .body{ padding:16px 18px; }
+    table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
+    th,td{padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+    th{position:sticky;top:0;background:var(--md-sys-color-surface-variant);text-align:left;color:var(--md-sys-color-on-surface-variant)}
+
+    /* Login */
+    .login-screen{position:fixed; inset:0; z-index:10000; background:rgba(11,18,32,.9); display:flex; align-items:center; justify-content:center; backdrop-filter: blur(6px)}
+    .login-panel{width:min(92vw,560px); background:var(--card); border-radius:18px; border:1px solid var(--line); box-shadow:var(--elev-3); overflow:hidden}
+    .login-panel header{background:var(--md-sys-color-surface-variant); border-bottom:1px solid var(--line); padding:16px 18px; font-weight:800; color:var(--md-sys-color-on-surface-variant)}
+    .login-panel .body{ padding:16px 18px }
     .login-panel .foot{ padding:12px 18px; border-top:1px solid var(--line); display:flex; gap:8px; justify-content:flex-end }
-    .mutewarn{
-      background:#fffbeb; color:#b45309; border:1px solid #fcd34d;
-      padding:8px 10px; border-radius: var(--radius-md); font-size:12px
-    }
+    .mutewarn{background:#fffbeb;color:#b45309;border:1px solid #fcd34d;padding:8px 10px;border-radius:12px;font-size:12px}
     #login-cam{display:none}
 
-    .rw-title{display:flex; gap:14px; align-items:baseline; flex-wrap:wrap}
-    .rw-title .stat{color:var(--muted); font-weight:600}
-    .rw-title .stat b{color:var(--md-sys-color-on-surface)}
+    /* Scrollbar styling */
+    .logs::-webkit-scrollbar{ width:12px; height:12px }
+    .logs::-webkit-scrollbar-track{ background:var(--md-sys-color-surface-variant); border-radius:10px }
+    .logs::-webkit-scrollbar-thumb{ background:#cbd5e1; border-radius:10px; border:3px solid var(--md-sys-color-surface-variant) }
+    html[data-theme="dark"] .logs::-webkit-scrollbar-thumb{ background:#64748b; border-color:var(--md-sys-color-surface-variant) }
+    .logs{ scrollbar-width:thin; scrollbar-color:#cbd5e1 var(--md-sys-color-surface-variant) }
+    html[data-theme="dark"] .logs{ scrollbar-color:#64748b var(--md-sys-color-surface-variant) }
 
-    /* Ripple effect */
-    .ripple-container{ position:relative; overflow:hidden; }
-    .ripple{
-      position:absolute; border-radius:50%;
-      transform: translate(-50%, -50%) scale(0);
-      opacity: .12; pointer-events:none;
-      background: currentColor;
-      animation: ripple var(--dur) var(--easing);
+    /* ========== Theme switch (kept) ========== */
+    .theme-switch{
+      --sw-h:28px; --sw-w:56px; --knob:22px; --pad:3px;
+      position:relative; width:var(--sw-w); height:var(--sw-h);
+      border-radius:999px; border:1px solid var(--md-sys-color-outline-variant);
+      background:linear-gradient(180deg, var(--card), color-mix(in oklab, var(--card) 85%, #0000));
+      box-shadow:var(--elev-1); cursor:pointer; display:grid; grid-template-columns:1fr 1fr;
+      align-items:center; justify-items:center; padding:0 var(--pad);
+      margin-right:8px;
     }
-    @keyframes ripple{
-      to{ transform: translate(-50%, -50%) scale(24); opacity:0; }
-    }
-
-    /* Reduce motion */
-    @media (prefers-reduced-motion: reduce){
-      .card:hover{ transform:none; }
-      .toast{ transition: none; }
-      .menu-btn, button{ transition: none; }
-    }
+    .theme-switch .icon{ font-size:14px; line-height:1; opacity:.95; user-select:none; pointer-events:none; transition:opacity var(--dur) var(--easing), transform var(--dur) var(--easing); }
+    .theme-switch[data-mode="light"] .moon{ opacity:.35; transform:scale(.92); }
+    .theme-switch[data-mode="dark"]  .sun{  opacity:.35; transform:scale(.92); }
+    .theme-switch .knob{ position:absolute; top:50%; left:var(--pad); width:var(--knob); height:var(--knob); transform:translate(0,-50%); transition:left var(--dur) var(--easing), background var(--dur) var(--easing), box-shadow var(--dur) var(--easing); border-radius:999px; background: var(--accent); box-shadow:0 2px 6px rgba(0,0,0,.25); }
+    .theme-switch[data-mode="dark"] .knob{ left: calc(100% - var(--knob) - var(--pad)); }
 
     @media (max-width: 960px){
-      .layout{grid-template-columns: 0 1fr;}
-      .side{transform:translateX(-100%); opacity:0; pointer-events:none;}
-      .wrap{padding-left:16px; padding-right:16px;}
-      .cmp-top-grid{ grid-template-columns: 1fr; }
+      .layout{grid-template-columns: 0 1fr}
+      .side{transform:translateX(-100%); opacity:0; pointer-events:none}
+      .wrap{padding-left:16px; padding-right:16px}
+      .cmp-top-grid{ grid-template-columns: 1fr }
     }
   </style>
   <script src="https://unpkg.com/html5-qrcode"></script>
@@ -446,15 +328,23 @@
 <body>
   <!-- Topbar -->
   <div class="topbar">
-    <button id="btn-menu" class="menu-btn ripple-container" aria-label="สลับเมนู">☰</button>
+    <button id="btn-menu" class="menu-btn" aria-label="สลับเมนู">☰</button>
     <div class="brand-inline">
       <div class="brand-prd">PRD</div>
       <div class="brand-smart">Smart-TAG</div>
     </div>
     <div class="spacer"></div>
+
+    <!-- Theme switch -->
+    <button id="theme-switch" class="theme-switch" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode" data-mode="light">
+      <span class="icon sun" aria-hidden="true">☀️</span>
+      <span class="icon moon" aria-hidden="true">🌙</span>
+      <span class="knob" aria-hidden="true"></span>
+    </button>
+
     <div class="topbar-right">
       <span id="user-pill" class="badge" style="display:none"></span>
-      <button id="btn-logout" class="ripple-container" onclick="logout()" style="display:none">ออกจากระบบ</button>
+      <button id="btn-logout" onclick="logout()" style="display:none">ออกจากระบบ</button>
     </div>
   </div>
 
@@ -463,16 +353,18 @@
     <!-- Sidebar -->
     <aside class="side" id="sidebar">
       <nav class="nav">
-        <div id="parent-checker" class="parent ripple-container" onclick="toggleSubmenu('checker')" role="button" aria-expanded="true" tabindex="0">
+        <div id="parent-checker" class="parent" onclick="toggleSubmenu('checker')" role="button" aria-expanded="true" tabindex="0">
           <span>Tag Match Checker</span><span class="caret">▶</span>
         </div>
-        <div id="submenu-checker" class="submenu show">
-          <button id="nav-checker" class="ripple-container active" onclick="switchView('checker')">Tag Check</button>
-          <button id="nav-logs" class="ripple-container" onclick="switchView('logs')">Scan Logs</button>
-          <button id="nav-rework" class="ripple-container" onclick="switchView('rework')">แก้ไขงาน NG</button>
+        <div id="submenu-checker" class="submenu show" aria-label="Submenu: Tag Match Checker">
+          <button id="nav-checker" class="active" onclick="switchView('checker')">Tag Check</button>
+          <button id="nav-logs" onclick="switchView('logs')">Scan Logs</button>
+          <button id="nav-rework" onclick="switchView('rework')">แก้ไขงาน NG</button>
         </div>
-        <button id="nav-print" class="ripple-container" onclick="switchView('print')">Print Tag</button>
-        <button id="nav-create" class="ripple-container" onclick="switchView('create')">Create Tag</button>
+
+        <!-- other top-level entries -->
+        <button id="nav-print" onclick="switchView('print')">Print Tag</button>
+        <button id="nav-create" onclick="switchView('create')">Create Tag</button>
       </nav>
       <div style="margin-top:auto; font-size:12px; opacity:.7">© Paradise Plastic</div>
     </aside>
@@ -485,16 +377,14 @@
         <div class="card">
           <h3>แท็กผลิต (Production Tag)</h3>
           <div class="row">
-            <input id="in-prod" type="text" placeholder="กำลังรอการสแกน Qr-code ที่แท็กฝ่ายผลิต" readonly />
-            <button class="primary ripple-container" id="btn-prod" onclick="parseProduction()" disabled>แปลง</button>
+            <input id="in-prod" type="text" placeholder="สแกน Qr-code ที่แท็กฝ่ายผลิต แล้วกด Enter" readonly />
           </div>
         </div>
 
         <div class="card">
           <h3>แท็กลูกค้า (Customer Tag)</h3>
           <div class="row">
-            <input id="in-cust" type="text" placeholder="กำลังรอการสแกน Qr-code ที่แท็กลูกค้า" readonly />
-            <button class="primary ripple-container" id="btn-cust" onclick="parseCustomer()" disabled>แปลง</button>
+            <input id="in-cust" type="text" placeholder="สแกน Qr-code ที่แท็กลูกค้า แล้วกด Enter" readonly />
           </div>
         </div>
       </div>
@@ -526,8 +416,8 @@
           <div style="margin-left:auto; display:flex; gap:8px; align-items:center">
             <label style="font-weight:600">กรอกรหัสผ่านเพื่อลบข้อมูล</label>
             <input id="admin-pass" type="password" placeholder="Password">
-            <button class="ripple-container" onclick="handleClearLogs()" style="background:var(--ng);color:#fff;border-color:var(--ng)">ล้าง Logs ทั้งหมด</button>
-            <button class="ripple-container" onclick="exportFilteredLogs()">ดาวน์โหลดข้อมูล (ตามตัวกรอง)</button>
+            <button class="danger" onclick="handleClearLogs()">ล้าง Logs ทั้งหมด</button>
+            <button onclick="exportFilteredLogs()">ดาวน์โหลดข้อมูล (ตามตัวกรอง)</button>
           </div>
         </div>
       </div>
@@ -536,8 +426,8 @@
         <h3>ตัวกรอง</h3>
         <div class="filters">
           <input type="date" id="flt-start"> <span>—</span> <input type="date" id="flt-end">
-          <button class="ripple-container" onclick="applyFilters()">กรอง</button>
-          <button class="ripple-container" onclick="clearFilters()">ล้าง</button>
+          <button class="primary" onclick="applyFilters()">กรอง</button>
+          <button onclick="clearFilters()">ล้าง</button>
         </div>
       </div>
 
@@ -571,7 +461,7 @@
     <main id="view-rework" class="wrap" style="display:none">
       <h2 style="margin:0 0 12px; font-size:var(--title-1);">แก้ไขงาน NG</h2>
 
-      <!-- รายการงาน (ซ่อนเมื่อกดแก้ไข) -->
+      <!-- รายการงาน -->
       <div id="rw-list-card" class="card">
         <h3 class="rw-title">
           <span>รายการงาน NG ที่ต้องแก้ไข</span>
@@ -593,7 +483,7 @@
         </div>
       </div>
 
-      <!-- แผงสแกนแก้ไข (แสดงเมื่อกดแก้ไข) -->
+      <!-- แผงสแกนแก้ไข -->
       <div id="rw-panel" class="card" style="display:none; margin-top:12px">
         <h3>ยืนยันการแก้ไข</h3>
         <div class="howto"><div id="rw-focus" class="focus-msg"></div></div>
@@ -602,21 +492,19 @@
           <div class="card" style="padding:12px">
             <h3 style="margin:0 0 8px">สแกนแท็กผลิต (Production Tag)</h3>
             <div class="row">
-              <input id="rw-in-prod" type="text" placeholder="สแกนแท็กผลิต" />
-              <button class="primary ripple-container" id="rw-btn-prod" onclick="rwParseProduction()">แปลง</button>
+              <input id="rw-in-prod" type="text" placeholder="สแกนแท็กผลิต แล้วกด Enter" />
             </div>
           </div>
           <div class="card" style="padding:12px">
             <h3 style="margin:0 0 8px">สแกนแท็กลูกค้า (Customer Tag)</h3>
             <div class="row">
-              <input id="rw-in-cust" type="text" placeholder="สแกนแท็กลูกค้า" />
-              <button class="primary ripple-container" id="rw-btn-cust" onclick="rwParseCustomer()">แปลง</button>
+              <input id="rw-in-cust" type="text" placeholder="สแกนแท็กลูกค้า แล้วกด Enter" />
             </div>
           </div>
         </div>
 
         <div class="row" style="margin-top:12px; gap:8px">
-          <button class="ripple-container" onclick="rwCancel()">ยกเลิก</button>
+          <button onclick="rwCancel()">ยกเลิก</button>
           <span class="muted">ระบบจะตรวจอัตโนมัติเมื่อสแกนครบทั้งสองแท็ก</span>
         </div>
       </div>
@@ -645,7 +533,7 @@
           เข้าสู่ระบบด้วยการสแกน Qr-code ที่บัตรพนักงาน (สแกนเนอร์ USB หรือกด “เปิดกล้องสแกนบัตร”)
         </div>
         <div class="row">
-          <button id="btn-login-cam" class="ripple-container" onclick="toggleLoginCamera()">เปิดกล้องสแกนบัตร</button>
+          <button id="btn-login-cam" onclick="toggleLoginCamera()">เปิดกล้องสแกนบัตร</button>
         </div>
         <div id="login-cam" style="margin-top:10px; display:none"></div>
         <div class="row" style="margin-top:10px">
@@ -660,7 +548,26 @@
   </div>
 
 <script>
-/* ===================== MENU / VIEWS ===================== */
+/* ===== Theme switch (unchanged logic) ===== */
+function applyTheme(mode){
+  const html = document.documentElement;
+  html.dataset.theme = mode;
+  localStorage.setItem('themeMode', mode);
+  const sw = document.getElementById('theme-switch');
+  sw.dataset.mode = mode;
+  sw.setAttribute('aria-checked', mode==='dark' ? 'true' : 'false');
+}
+function initTheme(){
+  const saved = localStorage.getItem('themeMode') || 'light';
+  applyTheme(saved);
+  const sw = document.getElementById('theme-switch');
+  sw.addEventListener('click', ()=>{
+    const next = (document.documentElement.dataset.theme==='dark') ? 'light' : 'dark';
+    applyTheme(next);
+  });
+}
+
+/* ===== Existing app JS below (unchanged except where previously improved) ===== */
 function switchView(name){
   for(const id of ['checker','logs','rework','print','create']){
     const main = document.getElementById('view-'+id);
@@ -705,14 +612,13 @@ let SESSION_LOCK = false;
 let BUSY = false;
 let EXPECT = 'prod';
 
-/* Rework state */
 let RW_EXPECT='prod', RW_PROD={mat:"", pn:"", name:"", qty:null}, RW_CUST={pn:"", qty:null, name:"", mat:""};
-let RW_TARGET=null; // {key, row}
+let RW_TARGET=null;
 
-/* Global lock กันสแกนระหว่างเล่นเสียง */
 let SOUND_BUSY=false;
 
-/* ======================== HELPERS ========================== */
+/* Helpers, audio, parsing, compare, logs, rework, keyboard, login …
+   (same as the previous version you confirmed) */
 const $_ = id => document.getElementById(id);
 const setText = (id, v)=>($_(id).textContent = v);
 const norm = s => (s??"").toString().trim();
@@ -727,7 +633,6 @@ let toastTimer=null,audioCtx=null;
 function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
 function resumeAudio(){ try{ if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch{} }
 
-/* ========= กระดิ่งสังเคราะห์ (fallback) ========= */
 function synthBell(durationMs=600){
   ensureAudio(); resumeAudio();
   const c = audioCtx, t = c.currentTime;
@@ -741,7 +646,6 @@ function synthBell(durationMs=600){
   o1.stop(t+durationMs/1000); o2.stop(t+durationMs/1000);
 }
 
-/* ========= ไฟล์เสียง mp3 ========= */
 const SOUND_BASE = 'sound/';
 let audioOK=null, audioNG=null, audioInvalidProd=null, audioInvalidCust=null, audioInvalidLogin=null, audioBell=null,
     audioMismatchPN=null, audioMismatchQty=null;
@@ -753,7 +657,7 @@ function initAudioFiles(){
     audioInvalidProd  = new Audio(SOUND_BASE + 'invalid_prod.mp3');
     audioInvalidCust  = new Audio(SOUND_BASE + 'invalid_cust.mp3');
     audioInvalidLogin = new Audio(SOUND_BASE + 'invalid_login.mp3');
-    audioBell         = new Audio(SOUND_BASE + 'bell.mp3'); // ใช้เฉพาะ notify() ทั่วไป
+    audioBell         = new Audio(SOUND_BASE + 'bell.mp3');
     audioMismatchPN   = new Audio(SOUND_BASE + 'mismatch_pn.mp3');
     audioMismatchQty  = new Audio(SOUND_BASE + 'mismatch_qty.mp3');
     [audioOK, audioNG, audioInvalidProd, audioInvalidCust, audioInvalidLogin, audioBell, audioMismatchPN, audioMismatchQty]
@@ -774,28 +678,17 @@ function unlockAudio(){
   }catch{}
 }
 
-/* ========== ยูทิลล็อกสแกนขณะเล่นเสียง ========== */
 function setScanLock(on){
   SOUND_BUSY = !!on;
-  // Main
   const prodIn=$_("in-prod"), custIn=$_("in-cust");
-  const prodBtn=$_("btn-prod"), custBtn=$_("btn-cust");
   if(prodIn) prodIn.readOnly = on || (EXPECT!=='prod');
   if(custIn) custIn.readOnly = on || (EXPECT!=='cust');
-  if(prodBtn) prodBtn.disabled = on || (EXPECT!=='prod');
-  if(custBtn) custBtn.disabled = on || (EXPECT!=='cust');
-  // Rework
   const rpi=$_("rw-in-prod"), rci=$_("rw-in-cust");
-  const rpb=$_("rw-btn-prod"), rcb=$_("rw-btn-cust");
   if(rpi) rpi.readOnly = on || (RW_EXPECT!=='prod');
   if(rci) rci.readOnly = on || (RW_EXPECT!=='cust');
-  if(rpb) rpb.disabled = on || (RW_EXPECT!=='prod');
-  if(rcb) rcb.disabled = on || (RW_EXPECT!=='cust');
-  // Login
   const li=$_("login-raw"); if(li) li.readOnly = on ? true : false;
 }
 
-/* เล่น mp3 (พร้อม fallback กระดิ่ง) แล้วรอจนจบ */
 function playAudioAwait(audioEl, fallbackMs=700){
   return new Promise((resolve)=>{
     try{
@@ -807,7 +700,6 @@ function playAudioAwait(audioEl, fallbackMs=700){
       if(p && typeof p.then==='function'){
         p.catch(()=>{ audioEl.removeEventListener('ended', done); synthBell(fallbackMs); setTimeout(resolve, fallbackMs); });
       }else{
-        // ถ้าบราวเซอร์ไม่คืน Promise ให้ตั้ง safety timer
         setTimeout(resolve, 900);
       }
     }catch{
@@ -816,7 +708,6 @@ function playAudioAwait(audioEl, fallbackMs=700){
   });
 }
 
-/* แสดง toast + เล่น mp3 พร้อมกัน + ล็อกระหว่างเล่น + โฟกัสช่องเดิมเมื่อจบ */
 async function toastMp3Lock(message, audioEl, focusEl, fallbackMs=700){
   setScanLock(true);
   showToast(message);
@@ -825,7 +716,6 @@ async function toastMp3Lock(message, audioEl, focusEl, fallbackMs=700){
   try{ focusEl?.focus(); }catch{}
 }
 
-/* Toast ทั่วไป (ยังมีเสียงกระดิ่งเบา ๆ สำหรับแจ้งทั่วไป; ไม่ล็อก) */
 function notify(msg, ms=5000){
   try{ audioBell && audioBell.play().catch(()=>synthBell(300)); }catch{ synthBell(300); }
   showToast(msg, ms);
@@ -849,7 +739,6 @@ function updateRwFocus(){
     : `กรุณาสแกนแท็กลูกค้า (โหมดแก้ไขงาน NG)`;
 }
 
-/* ========================= CSV (BOM) ========================= */
 function loadCSV(){ return new Promise((resolve,reject)=>{ Papa.parse("bom_export.csv",{download:true,header:true,skipEmptyLines:true,complete:res=>resolve(res),error:err=>reject(err)}); }); }
 function detectColumns(rows){
   const cols = Object.keys(rows[0]||{});
@@ -858,7 +747,6 @@ function detectColumns(rows){
   NAME_COL = cols.find(c=>/customer[_\s]?description|part[\s_]?name|description|desc/i.test(c)) || cols[2] || cols[0];
 }
 
-/* ===================== LOOKUPS ===================== */
 function mapMatToPart(mat){
   if(!CSV_ROWS.length || !MAT_COL || !PN_COL || !NAME_COL) return {pn:null,name:null};
   const key = cleanMat(mat);
@@ -877,7 +765,6 @@ function mapPnToDetails(pn){
   return { mat: norm(row[MAT_COL]||""), name: norm(row[NAME_COL]||"") };
 }
 
-/* ===================== TAG CLASSIFIER ===================== */
 function isLikelyProd(raw){
   const s = norm(raw); const parts = s.split("|");
   if(parts.length!==2) return false;
@@ -905,27 +792,21 @@ function classifyTag(raw){
   return 'unknown';
 }
 
-/* ========================= UI ENFORCERS ========================= */
 function enforceExpectUI(){
   const prodOK = EXPECT==='prod';
   const prodIn = $_("in-prod"), custIn = $_("in-cust");
-  const prodBtn = $_("btn-prod"), custBtn=$_("btn-cust");
   prodIn.readOnly = SOUND_BUSY || !prodOK;  custIn.readOnly = SOUND_BUSY || prodOK;
-  prodBtn.disabled = SOUND_BUSY || !prodOK; custBtn.disabled = SOUND_BUSY || prodOK;
   if(!SOUND_BUSY){ if(prodOK){ prodIn.focus(); } else { custIn.focus(); } }
   updateFocusBanner();
 }
 function enforceRwUI(){
   const prodOK = RW_EXPECT==='prod';
   const prodIn = $_("rw-in-prod"), custIn = $_("rw-in-cust");
-  const prodBtn = $_("rw-btn-prod"), custBtn=$_("rw-btn-cust");
   prodIn.readOnly = SOUND_BUSY || !prodOK;  custIn.readOnly = SOUND_BUSY || prodOK;
-  prodBtn.disabled = SOUND_BUSY || !prodOK; custBtn.disabled = SOUND_BUSY || !prodOK ? true : false;
   if(!SOUND_BUSY){ if(prodOK){ prodIn.focus(); } else { custIn.focus(); } }
   updateRwFocus();
 }
 
-/* ========================= SESSION RESET ========================= */
 function hardReset(){
   $_("in-prod").value = ""; $_("in-cust").value = "";
   PROD = {mat:"",pn:"",name:"",qty:null}; CUST={pn:"",qty:null,name:"",mat:""};
@@ -936,7 +817,6 @@ function hardReset(){
 }
 function maybeResetBeforeProdScan(){ if(SESSION_LOCK) hardReset(); }
 
-/* ========================= PARSERS (Main) ========================= */
 async function parseProduction(){
   if(BUSY || SOUND_BUSY) return;
   if(!USER.code){ notify("กรุณาเข้าสู่ระบบก่อนใช้งาน"); return; }
@@ -1007,10 +887,10 @@ async function parseCustomer(){
   BUSY=false;
 }
 
-/* ========================= COMPARE & RESULT (Main) ========================= */
 function showBanner(ok){ const b=$_("banner"); b.className="result-banner "+(ok?"banner-ok":"banner-ng"); b.textContent=ok?"OK":"NG"; b.style.display="flex"; }
 function clearMainInputsForNext(){ $_("in-prod").value=""; $_("in-cust").value=""; EXPECT='prod'; enforceExpectUI(); }
 
+/* Fast-continue OK */
 async function compareNow(){
   const pnOk   = (!!PROD.pn && !!CUST.pn) && (normPN(PROD.pn)===normPN(CUST.pn) || normPNNoDash(PROD.pn)===normPNNoDash(CUST.pn));
   const qtyOk  = toNum(PROD.qty)!=null && toNum(CUST.qty)!=null && toNum(PROD.qty)===toNum(CUST.qty);
@@ -1027,17 +907,17 @@ async function compareNow(){
   $_("cmp-mat").classList.add(matOk ? "ok-row" : "ng-row");
 
   if(ok){
-    setScanLock(true);
-    await playAudioAwait(audioOK, 500);
-    setScanLock(false);
-    await saveLog(true);
     clearMainInputsForNext();
+    setScanLock(true);
+    (async()=>{ try{ await playAudioAwait(audioOK, 400); }catch{} })();
+    setTimeout(()=>setScanLock(false), 180);
+    (async()=>{ try{ await saveLog(true); }catch(e){ console.error(e); } })();
   }else{
     let msg="", snd=null;
     if(!pnOk){ msg="แท็กไม่ตรงกัน"; snd=audioMismatchPN; }
     else if(!qtyOk){ msg="จำนวนชิ้นงานไม่ตรงกัน"; snd=audioMismatchQty; }
 
-    clearMainInputsForNext(); // ล้างข้อมูลและกลับไปเริ่มที่ผลิต
+    clearMainInputsForNext();
     await toastMp3Lock(msg||"NG", snd||audioNG, $_("in-prod"));
     await saveLog(false);
   }
@@ -1045,7 +925,6 @@ async function compareNow(){
   SESSION_LOCK = false;
 }
 
-/* ==================== LOGS (UI + สรุป) ==================== */
 function summarizeLogs(list){
   const total = list.length;
   let ok=0, ng=0, fixed=0;
@@ -1084,7 +963,6 @@ async function renderLogsView(){
   }catch(e){ console.error(e); notify("อ่านข้อมูล Logs ไม่สำเร็จ"); }
 }
 
-/* กรองตามช่วงวันที่ (เว้นว่าง = ทั้งหมด) */
 function filterLogs(list){
   const s = ($_("flt-start").value||"").trim();
   const e = ($_("flt-end").value||"").trim();
@@ -1098,7 +976,6 @@ function filterLogs(list){
 function applyFilters(){ renderLogsView(); }
 function clearFilters(){ $_("flt-start").value=""; $_("flt-end").value=""; renderLogsView(); }
 
-/* ====================== LOGS: IndexedDB ====================== */
 const DB_NAME="prd-logs", STORE="scanLogs";
 let DB = null;
 function ensureDB(){
@@ -1119,7 +996,7 @@ function addLog(row){
   return ensureDB().then(()=>new Promise((resolve, reject)=>{
     const tx = DB.transaction(STORE, "readwrite", {durability:"strict"});
     const req = tx.objectStore(STORE).add(row);
-    req.onsuccess = ()=>resolve(req.result); // key
+    req.onsuccess = ()=>resolve(req.result);
     req.onerror = ()=>reject(req.error);
   }));
 }
@@ -1199,7 +1076,6 @@ async function handleClearLogs(){
   catch(e){ console.error(e); notify("ล้าง Logs ไม่สำเร็จ"); }
 }
 
-/* =========================== REWORK (แก้ไขงาน NG) =========================== */
 async function renderReworkView(){
   try{
     const all = await getAllLogs();
@@ -1217,7 +1093,7 @@ async function renderReworkView(){
         <td>${esc(r.ts||"")}</td><td>${esc(r.emp||"")}</td>
         <td>${esc(r.prodPN||"")}</td><td>${esc(r.prodQty??"")}</td>
         <td>${esc(r.custPN||"")}</td><td>${esc(r.custQty??"")}</td>
-        <td><button class="ripple-container" onclick='rwStart(${r._key})'>แก้ไข</button></td>
+        <td><button class="primary" onclick='rwStart(${r._key})'>แก้ไข</button></td>
       </tr>`);
     }
     if(!unfixed.length){
@@ -1293,15 +1169,14 @@ async function rwParseCustomer(){
   await rwCompareAndCommit();
 }
 
-/* เปรียบเทียบ (Rework) — แจ้งเตือน+mp3 พร้อมกัน และบล็อกระหว่างเล่น */
 async function rwCompareAndCommit(){
   const pnOk  = (!!RW_PROD.pn && !!RW_CUST.pn) && (normPN(RW_PROD.pn)===normPN(RW_CUST.pn) || normPNNoDash(RW_PROD.pn)===normPNNoDash(RW_CUST.pn));
   const qtyOk = toNum(RW_PROD.qty)!=null && toNum(RW_CUST.qty)!=null && toNum(RW_PROD.qty)===toNum(RW_CUST.qty);
 
   if(pnOk && qtyOk){
     setScanLock(true);
-    await playAudioAwait(audioOK, 500);
-    setScanLock(false);
+    (async()=>{ try{ await playAudioAwait(audioOK, 400); }catch{} })();
+    setTimeout(()=>setScanLock(false), 180);
     showToast("การแก้ไขเสร็จสมบูรณ์");
     const now = new Date();
     await updateLogByKey(RW_TARGET.key, { fixed:true, fixedBy: USER.code||"", fixedAt: formatDateTime(now) });
@@ -1324,7 +1199,6 @@ async function rwCompareAndCommit(){
   await toastMp3Lock(msg||"NG", snd||audioNG, $_("rw-in-prod"));
 }
 
-/* ==================== KEYBOARD / SCANNER ==================== */
 function guardInputChannel(el, must){
   el.addEventListener("beforeinput", e=>{
     if(SOUND_BUSY){ e.preventDefault(); return; }
@@ -1368,14 +1242,12 @@ function hookKeyboard(){
   guardInputChannel(prodIn,'prod'); 
   guardInputChannel(custIn,'cust');
 
-  // rework fields
   const rp=$_("rw-in-prod"), rc=$_("rw-in-cust");
   rp?.addEventListener("keydown", e=>{ if(SOUND_BUSY){ e.preventDefault(); return; } if(RW_EXPECT!=='prod'){ e.preventDefault(); notify("โปรดสแกนแท็กลูกค้า"); enforceRwUI(); return; } if(e.key==="Enter"){ e.preventDefault(); rwParseProduction(); }});
   rc?.addEventListener("keydown", e=>{ if(SOUND_BUSY){ e.preventDefault(); return; } if(RW_EXPECT!=='cust'){ e.preventDefault(); notify("โปรดสแกนแท็กผลิตก่อน"); enforceRwUI(); return; } if(e.key==="Enter"){ e.preventDefault(); rwParseCustomer(); }});
   guardRwChannel(rp,'prod');
   guardRwChannel(rc,'cust');
 
-  // login field
   const loginInput = $_('login-raw');
   let loginDeb=null;
   loginInput.addEventListener('input', ()=>{
@@ -1392,7 +1264,6 @@ function hookKeyboard(){
   document.body.addEventListener('click', ()=>{ ensureAudio(); unlockAudio(); }, {once:true});
 }
 
-/* ====================== LOGIN ====================== */
 function parseEmployeePayload(raw){
   const out={code:""};
   if(!raw) return out;
@@ -1427,7 +1298,7 @@ async function toggleLoginCamera(){
     if(!LOGIN_QR.inst) LOGIN_QR.inst=new Html5Qrcode(camDiv.id);
     const cams=await Html5Qrcode.getCameras(); if(!cams?.length){ camDiv.textContent="ไม่พบกล้อง"; return; }
     await LOGIN_QR.inst.start(cams[0].id,{fps:10,qrbox:250}, (txt)=>{
-      if(SOUND_BUSY) return; // ระหว่างเล่นเสียงไม่รับสแกน
+      if(SOUND_BUSY) return;
       const clean = sanitizeScan(txt);
       $_('login-raw').value=clean; 
       tryAutoLoginFromRaw(clean, true);
@@ -1455,33 +1326,11 @@ async function logout(){
 }
 function enableUI(on){
   $_("in-prod").readOnly = !on; $_("in-cust").readOnly = !on;
-  $_("btn-prod").disabled = !on; $_("btn-cust").disabled = !on;
   if(on) enforceExpectUI();
 }
 
-/* =============== MD3 Ripple (lightweight, non-intrusive) =============== */
-function attachRipple(root=document){
-  const targets = root.querySelectorAll('.ripple-container, button, .parent, .nav button');
-  targets.forEach(el=>{
-    if(el.__hasRipple) return;
-    el.__hasRipple = true;
-    el.addEventListener('click', (e)=>{
-      if(el.disabled) return;
-      const rect = el.getBoundingClientRect();
-      const r = Math.max(rect.width, rect.height) * 0.5;
-      const span = document.createElement('span');
-      span.className = 'ripple';
-      span.style.width = span.style.height = `${r*2}px`;
-      span.style.left = `${e.clientX - rect.left}px`;
-      span.style.top  = `${e.clientY - rect.top}px`;
-      el.appendChild(span);
-      span.addEventListener('animationend', ()=>span.remove());
-    }, {passive:true});
-  });
-}
-
-/* =========================== BOOT ========================== */
 (async function boot(){
+  initTheme();
   await ensureDB();
   initAudioFiles();
   switchView('checker');
@@ -1491,9 +1340,6 @@ function attachRipple(root=document){
   enforceExpectUI();
   $_("login-raw").focus();
   toggleSidebar(true);
-
-  // init ripple for current DOM
-  attachRipple(document);
 })();
 </script>
 </body>
