@@ -4,124 +4,434 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PRD Smart-TAG — Production vs Customer</title>
-  <meta name="x-build" content="2025-09-02 r41-shutter-mirror-lock + reasons + fixflow">
+  <meta name="x-build" content="2025-09-02 r42-alert+mp3-simultaneous-all-scans">
   <style>
+    /* =========================
+       Material Design 3 Tokens
+       ========================= */
     :root{
-      --bg:#f7f9fc; --card:#ffffff; --text:#1f2a44; --muted:#6b7280;
-      --line:#e5e7eb; --accent:#2563eb; --accent-weak:#eef2ff;
-      --ok:#0f7a3a; --ok-bg:#e8f7ee; --ng:#b91c1c; --ng-bg:#fde8e8;
-      --btnborder:#d1d5db; --toast:#111827; --toast-text:#f9fafb;
-      --focus-bg:#fff7cc; --prd:#d60000; --smart:#042157;
-      --side-bg:#ffffff; --side-text:#1f2937; --side-hover:#f3f4f6;
-      --topbar-bg:#ffffff; --fixed:#fef9c3;
+      color-scheme: light dark;
+
+      /* Brand anchors (kept from original) */
+      --prd:#d60000;
+      --smart:#042157;
+
+      /* MD3 Core */
+      --md-sys-color-primary:#2563eb;     /* accent blue */
+      --md-sys-color-on-primary:#ffffff;
+      --md-sys-color-primary-container:#dbeafe;
+      --md-sys-color-on-primary-container:#0b3aa6;
+
+      --md-sys-color-secondary:#6b7280;   /* muted gray */
+      --md-sys-color-on-secondary:#ffffff;
+      --md-sys-color-secondary-container:#e5e7eb;
+      --md-sys-color-on-secondary-container:#1f2937;
+
+      --md-sys-color-surface:#f8fafc;     /* app bg */
+      --md-sys-color-surface-container:#ffffff; /* cards */
+      --md-sys-color-on-surface:#1f2a44;
+      --md-sys-color-surface-variant:#eef2f7;
+      --md-sys-color-on-surface-variant:#475569;
+
+      --md-sys-color-outline:#cbd5e1;
+      --md-sys-color-outline-variant:#e2e8f0;
+
+      --md-sys-color-error:#b91c1c;
+      --md-sys-color-on-error:#ffffff;
+      --md-sys-color-error-container:#fde8e8;
+      --md-sys-color-on-error-container:#7f1d1d;
+
+      --md-sys-color-success:#0f7a3a;
+      --md-sys-color-success-container:#e8f7ee;
+      --md-sys-color-on-success:#06321a;
+
+      --md-state-hover-opacity:.08;
+      --md-state-focus-opacity:.10;
+      --md-state-pressed-opacity:.12;
+
+      /* Elevation (MD3-ish) */
+      --elev-0: none;
+      --elev-1: 0 1px 2px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.05);
+      --elev-2: 0 4px 10px rgba(0,0,0,.08), 0 8px 16px rgba(0,0,0,.06);
+      --elev-3: 0 8px 24px rgba(0,0,0,.10), 0 16px 32px rgba(0,0,0,.08);
+
+      /* App specific (mapped from old vars) */
+      --bg:var(--md-sys-color-surface);
+      --card:var(--md-sys-color-surface-container);
+      --text:var(--md-sys-color-on-surface);
+      --muted:#6b7280;
+      --line:var(--md-sys-color-outline-variant);
+      --accent:var(--md-sys-color-primary);
+      --accent-weak:var(--md-sys-color-primary-container);
+
+      --ok:var(--md-sys-color-success);
+      --ok-bg:var(--md-sys-color-success-container);
+      --ng:var(--md-sys-color-error);
+      --ng-bg:var(--md-sys-color-error-container);
+
+      --btnborder:#d1d5db;
+      --toast:#111827;
+      --toast-text:#f9fafb;
+
+      --side-bg:#ffffff;
+      --side-text:#1f2937;
+      --side-hover:#f3f4f6;
+
+      --topbar-bg:#ffffff;
+
+      --fixed-bg:#FEF9C3;
+      --fixed-text:#92400e;
+
+      /* Type scale (MD3-ish) */
+      --title-1: clamp(18px, 2.2vw, 22px);
+      --title-2: 16px;
+      --label: 12px;
+
+      /* Shape */
+      --radius-xs:8px;
+      --radius-sm:10px;
+      --radius-md:12px;
+      --radius-lg:14px;
+      --radius-xl:16px;
+
+      /* Motion */
+      --dur-fast: 120ms;
+      --dur: 180ms;
+      --easing: cubic-bezier(.2,.0,.2,1);
     }
+
+    @media (prefers-color-scheme: dark){
+      :root{
+        --md-sys-color-primary:#8ab4ff;
+        --md-sys-color-on-primary:#001b3d;
+        --md-sys-color-primary-container:#1e293b;
+        --md-sys-color-on-primary-container:#cfe1ff;
+
+        --md-sys-color-surface:#0b1220;
+        --md-sys-color-surface-container:#0f172a;
+        --md-sys-color-on-surface:#e5e7eb;
+        --md-sys-color-surface-variant:#111827;
+        --md-sys-color-on-surface-variant:#9ca3af;
+
+        --md-sys-color-outline:#334155;
+        --md-sys-color-outline-variant:#1f2937;
+
+        --side-bg:#0f172a;
+        --side-text:#e5e7eb;
+        --side-hover:#111827;
+
+        --topbar-bg:#0f172a;
+
+        --toast:#111827;
+        --toast-text:#e5e7eb;
+
+        --btnborder:#334155;
+      }
+    }
+
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text)}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Thai",Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
 
-    /* Topbar */
-    .topbar{position:sticky; top:0; z-index:1000; display:flex; align-items:center; gap:12px;
-      padding:10px 14px; background:var(--topbar-bg); border-bottom:1px solid var(--line);}
-    .menu-btn{display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px;
-      border-radius:10px; border:1px solid var(--line); background:#fff; cursor:pointer; font-size:18px;}
+    /* Focus visible (MD3 strong ring) */
+    :where(button,input,select,textarea,[role="button"]):focus-visible{
+      outline: 3px solid color-mix(in oklab, var(--accent) 60%, #ffffff);
+      outline-offset: 2px;
+      border-radius: var(--radius-md);
+    }
+
+    /* ================= Top App Bar ================= */
+    .topbar{
+      position:sticky; top:0; z-index:1000;
+      display:flex; align-items:center; gap:12px;
+      height:64px;
+      padding:10px 14px;
+      background:var(--topbar-bg);
+      border-bottom:1px solid var(--line);
+      backdrop-filter: saturate(1.2) blur(8px);
+    }
+    .menu-btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      width:44px; height:44px; min-width:44px;
+      border-radius: var(--radius-md);
+      border:1px solid var(--md-sys-color-outline-variant);
+      background:var(--card);
+      cursor:pointer; font-size:18px;
+      transition: transform var(--dur) var(--easing), background var(--dur) var(--easing), border-color var(--dur) var(--easing);
+      box-shadow: var(--elev-0);
+      position:relative; overflow:hidden;
+    }
+    .menu-btn:hover{ background:color-mix(in oklab, var(--accent-weak) 18%, var(--card)); }
     .menu-btn:active{ transform:translateY(1px); }
-    .brand-inline{display:flex; align-items:baseline; gap:10px; line-height:1; user-select:none;}
-    .brand-prd{font-family:"LilyUPC","Tahoma","Noto Sans Thai",sans-serif;font-weight:800;font-style:italic;color:var(--prd);font-size:32px;letter-spacing:.5px}
-    .brand-smart{font-family:"LilyUPC","Tahoma","Noto Sans Thai",sans-serif;font-weight:800;color:var(--smart);font-size:28px;letter-spacing:.3px}
-    .spacer{flex:1}
-    .topbar-right{display:flex; align-items:center; gap:10px}
-    .badge{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:12px}
 
-    /* Layout + sidebar */
-    .layout{display:grid; grid-template-columns: 260px 1fr; min-height:calc(100vh - 62px); transition:grid-template-columns .2s ease}
+    .brand-inline{display:flex; align-items:baseline; gap:10px; line-height:1; user-select:none;}
+    .brand-prd{
+      font-family:"LilyUPC","Tahoma","Noto Sans Thai",sans-serif;
+      font-weight:900; font-style:italic; color:var(--prd);
+      font-size:30px; letter-spacing:.5px
+    }
+    .brand-smart{
+      font-family:"LilyUPC","Tahoma","Noto Sans Thai",sans-serif;
+      font-weight:900; color:var(--smart);
+      font-size:26px; letter-spacing:.3px
+    }
+    .spacer{flex:1}
+
+    .topbar-right{display:flex; align-items:center; gap:10px}
+
+    /* Assist Chip */
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--md-sys-color-outline-variant);
+      background:var(--card);
+      font-size:12px;
+      line-height:1;
+    }
+    .badge b{font-weight:700}
+
+    /* ================= Layout & Navigation ================= */
+    .layout{
+      display:grid; grid-template-columns: 260px 1fr; min-height:calc(100vh - 64px);
+      transition:grid-template-columns var(--dur) var(--easing)
+    }
     .layout.collapsed{grid-template-columns: 0 1fr;}
-    .side{background:var(--side-bg); color:var(--side-text); padding:18px 14px; position:sticky; top:62px; height:calc(100vh - 62px);
-      border-right:1px solid var(--line); display:flex; flex-direction:column; gap:14px; transition:transform .2s ease, opacity .2s ease;}
+
+    .side{
+      background:var(--side-bg); color:var(--side-text);
+      padding:18px 14px; position:sticky; top:64px; height:calc(100vh - 64px);
+      border-right:1px solid var(--line);
+      display:flex; flex-direction:column; gap:14px;
+      transition:transform var(--dur) var(--easing), opacity var(--dur) var(--easing);
+      box-shadow: var(--elev-0);
+    }
     .layout.collapsed .side{ transform:translateX(-100%); opacity:0; pointer-events:none; }
 
-    .nav{display:flex; flex-direction:column; gap:6px; margin-top:10px}
-    .nav button{ text-align:left; width:100%; padding:10px 12px; border-radius:10px; border:1px solid transparent;
-      background:transparent; color:var(--side-text); cursor:pointer; font-size:14px;}
-    .nav button:hover{ background:var(--side-hover); }
-    .nav button.active{ background:var(--accent-weak); border-color:#dbeafe; }
+    .nav{display:flex; flex-direction:column; gap:6px; margin-top:6px}
 
-    .parent{display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:10px; cursor:pointer}
-    .parent:hover{ background:var(--side-hover); }
-    .caret{font-size:12px; opacity:.8; transition:transform .2s}
+    .parent{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 12px; border-radius: var(--radius-md); cursor:pointer;
+      transition: background var(--dur) var(--easing), color var(--dur) var(--easing);
+      position:relative; overflow:hidden; min-height:44px;
+    }
+    .parent:hover{ background:color-mix(in oklab, var(--accent-weak) 25%, transparent); }
+    .caret{font-size:12px; opacity:.8; transition:transform var(--dur) var(--easing)}
     .parent.expanded .caret{ transform:rotate(90deg); }
-    .submenu{display:none; flex-direction:column; gap:6px; padding-left:10px; margin-top:2px;}
+
+    .submenu{display:none; flex-direction:column; gap:6px; padding-left:6px; margin-top:2px;}
     .submenu.show{display:flex;}
-    .submenu button{ padding:8px 12px; font-size:13px; border-radius:10px; }
 
-    /* Main area */
-    .wrap{max-width:100%;margin:0 auto;padding:24px}
+    .nav button{
+      text-align:left; width:100%; min-height:44px;
+      padding:10px 12px; border-radius: var(--radius-md); border:1px solid transparent;
+      background:transparent; color:var(--side-text); cursor:pointer; font-size:14px;
+      transition: background var(--dur) var(--easing), color var(--dur) var(--easing);
+      position:relative; overflow:hidden;
+    }
+    .nav button:hover{ background:color-mix(in oklab, var(--accent-weak) 20%, transparent); }
+    .nav button.active{
+      background:var(--accent-weak);
+      color: color-mix(in oklab, var(--accent) 45%, var(--side-text));
+      border-color:#dbeafe;
+      box-shadow: var(--elev-0);
+    }
 
-    .howto{border:1px solid #f1d36a;background:var(--focus-bg);border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:center;margin:12px 0 18px}
+    /* ================= Main Content ================= */
+    .wrap{max-width:100% !important; margin:0; padding:24px 32px;}
+
+    .howto{
+      border:1px solid #f1d36a; background:var(--fixed-bg);
+      border-radius: var(--radius-lg); padding:14px;
+      display:flex; align-items:center; justify-content:center; margin:12px 0 18px;
+      box-shadow: var(--elev-1);
+    }
     .howto .focus-msg{font-weight:900;color:#111;text-align:center;white-space:pre-line}
+
+    /* Cards (MD3) */
+    .card{
+      border:1px solid var(--line);
+      background:var(--card);
+      border-radius: var(--radius-xl);
+      padding:16px;
+      box-shadow: var(--elev-1);
+      transition: box-shadow var(--dur) var(--easing), transform var(--dur) var(--easing);
+    }
+    .card:hover{ box-shadow: var(--elev-2); transform: translateY(-1px); }
+    .card h3{margin:0 0 8px;font-size:var(--title-2); color:var(--md-sys-color-on-surface-variant); font-weight:700}
+    .card.compact{padding:10px}
 
     .cmp-top-grid{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
     .cmp-bottom{margin-top:16px}
-    .card{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.03)}
-    .card h3{margin:0 0 8px;font-size:16px}
-    .card.compact{padding:10px}
+
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .muted{color:#6b7280}
 
-    input[type=text], input[type=date], input[type=password]{flex:1;min-width:220px;padding:10px 12px;border-radius:10px;border:1px solid var(--btnborder);background:#fff;color:#2b364d;outline:none}
+    /* Text fields (Outlined) */
+    input[type=text], input[type=date], input[type=password]{
+      flex:1; min-width:220px; padding:11px 12px;
+      border-radius: var(--radius-md);
+      border:1px solid var(--btnborder);
+      background:var(--card);
+      color:var(--text);
+      outline:none;
+      transition: border-color var(--dur) var(--easing), box-shadow var(--dur) var(--easing), background var(--dur) var(--easing);
+    }
     input::placeholder{color:#9ca3af}
-    input[readonly]{background:#f3f4f6}
-    button{padding:10px 14px;border-radius:12px;border:1px solid var(--btnborder);background:#fff;color:#1f2a44;cursor:pointer}
-    button.primary{background:var(--accent);color:#fff;border-color:transparent}
-    button[disabled]{opacity:.5;cursor:not-allowed}
-    .icon-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border-radius:10px;border:1px solid var(--btnborder);background:#fff}
-    .icon-btn.small{padding:6px 8px;font-size:12px}
-    .icon-btn:active{transform:translateY(1px)}
+    input[readonly]{background:color-mix(in oklab, var(--card) 85%, #0000 15%);}
 
-    .result-banner{display:none;align-items:center;justify-content:center;border-radius:14px;padding:18px;font-weight:900;letter-spacing:.5px;text-align:center;margin-bottom:10px;font-size:60px}
-    .banner-ok{background:var(--ok-bg);color:var(--ok);border:1px solid #86efac}
-    .banner-ng{background:var(--ng-bg);color:#b91c1c;border:1px solid #fca5a5}
+    input[type=text]:hover, input[type=date]:hover, input[type=password]:hover{
+      border-color: color-mix(in oklab, var(--accent) 40%, var(--btnborder));
+      background: color-mix(in oklab, var(--card) 92%, var(--accent-weak) 8%);
+    }
+    input[type=text]:focus, input[type=date]:focus, input[type=password]:focus{
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 25%, transparent);
+    }
 
-    .cmp{width:100%; border-collapse:collapse; margin-top:10px; font-size:13px}
-    .cmp th,.cmp td{padding:10px 12px; border:1px solid var(--line)}
-    .cmp th{background:#f8fafc; color:#475569; text-align:left}
+    /* Buttons (Filled/Tonal/Outlined) */
+    button{
+      padding:10px 14px; min-height:40px;
+      border-radius: var(--radius-lg);
+      border:1px solid var(--btnborder);
+      background:var(--card);
+      color:var(--text);
+      cursor:pointer;
+      font-weight:600;
+      transition: transform var(--dur) var(--easing), background var(--dur) var(--easing), border-color var(--dur) var(--easing), box-shadow var(--dur) var(--easing);
+      position:relative; overflow:hidden;
+    }
+    button:hover{ background:color-mix(in oklab, var(--accent-weak) 16%, var(--card)); }
+    button:active{ transform: translateY(1px); }
+    button[disabled]{opacity:.55; cursor:not-allowed}
+
+    button.primary{
+      background:var(--accent);
+      color:var(--md-sys-color-on-primary);
+      border-color: transparent;
+      box-shadow: var(--elev-1);
+    }
+    button.primary:hover{ box-shadow: var(--elev-2); }
+
+    /* Filters group */
+    .filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .filters input[type=date]{padding:8px}
+    .filters button{padding:8px 12px;border-radius: var(--radius-md)}
+
+    /* Result banner */
+    .result-banner{
+      display:none; align-items:center; justify-content:center;
+      border-radius: var(--radius-xl); padding:22px;
+      font-weight:900; letter-spacing:.5px; text-align:center;
+      margin-bottom:10px; font-size: clamp(28px, 6vw, 56px);
+      box-shadow: var(--elev-1);
+    }
+    .banner-ok{ background:var(--ok-bg); color:var(--ok); border:1px solid #86efac }
+    .banner-ng{ background:var(--ng-bg); color:var(--ng); border:1px solid #fca5a5 }
+
+    /* Compare table */
+    .cmp{width:100%; border-collapse:separate; border-spacing:0; margin-top:10px; font-size:13px; overflow:hidden; border-radius: var(--radius-lg); box-shadow: var(--elev-0); }
+    .cmp th,.cmp td{padding:12px 12px; border-bottom:1px solid var(--line)}
+    .cmp thead th{
+      background:var(--md-sys-color-surface-variant);
+      color:var(--md-sys-color-on-surface-variant);
+      text-align:left; position:sticky; top:0;
+      z-index:1;
+    }
+    .cmp tbody tr:hover{ background:color-mix(in oklab, var(--accent-weak) 12%, transparent); }
     .ok-row{ background:var(--ok-bg) !important; color:var(--ok) !important; font-weight:800; }
-    .ng-row{ background:var(--ng-bg) !important; color:#b91c1c !important; font-weight:800; }
-    .fix-row{ background:var(--fixed) !important; }
+    .ng-row{ background:var(--ng-bg) !important; color:var(--ng) !important; font-weight:800; }
+    .fixed-row{ background:var(--fixed-bg) !important; color:var(--fixed-text) !important; font-weight:800; }
 
-    /* totals summary */
-    #log-totals{display:flex;gap:14px;align-items:center;font-size:13px;padding:8px 10px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;margin-bottom:8px}
+    /* Logs summary chips */
+    #log-totals{
+      display:flex; gap:14px; align-items:center; font-size:13px; padding:10px 12px;
+      background:var(--md-sys-color-surface-variant);
+      border:1px solid var(--line); border-radius: var(--radius-lg); margin-bottom:8px
+    }
     #log-totals .dot{width:8px;height:8px;border-radius:999px;display:inline-block;margin-right:6px;background:#9ca3af}
     #log-totals .ok .dot{background:var(--ok)}
-    #log-totals .ng .dot{background:#b91c1c}
+    #log-totals .ng .dot{background:var(--ng)}
+    #log-totals .fixed .dot{background:#d97706}
     #log-totals b{font-size:14px}
 
-    .toast{position:fixed;right:18px;top:72px;z-index:9500;background:#111827;color:#f9fafb;border:1px solid #374151;border-radius:12px;padding:10px 14px;box-shadow:0 10px 28px rgba(0,0,0,.25);opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .18s,transform .18s;max-width:80vw}
-    .toast.show{opacity:1;transform:translateY(0)}
+    /* Toast */
+    .toast{
+      position:fixed; right:18px; top:76px; z-index:9999;
+      background:var(--toast); color:var(--toast-text);
+      border:1px solid color-mix(in oklab, var(--toast) 70%, #fff);
+      border-radius: var(--radius-xl); padding:10px 14px;
+      box-shadow: var(--elev-3);
+      opacity:0; transform:translateY(-8px) scale(.98);
+      pointer-events:none;
+      transition: opacity var(--dur) var(--easing), transform var(--dur) var(--easing);
+      max-width: min(80vw, 420px);
+    }
+    .toast.show{opacity:1; transform:translateY(0) scale(1)}
 
-    .logs{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:auto;max-height:420px}
-    table{width:100%;border-collapse:collapse;font-size:12px}
-    th,td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
-    th{position:sticky;top:0;background:#f8fafc;text-align:left;color:#475569}
+    /* Logs tables */
+    .logs{
+      border:1px solid var(--line); border-radius: var(--radius-lg);
+      background:var(--card); overflow:auto; max-height:420px;
+      box-shadow: var(--elev-1);
+    }
+    table{width:100%; border-collapse:separate; border-spacing:0; font-size:12px}
+    th,td{padding:10px 12px; border-bottom:1px solid var(--line); white-space:nowrap}
+    th{position:sticky; top:0; background:var(--md-sys-color-surface-variant); text-align:left; color:var(--md-sys-color-on-surface-variant)}
 
     /* Login overlay */
-    .login-screen{position:fixed; inset:0; z-index:10000; background:#0b1220; display:flex; align-items:center; justify-content:center;}
-    .login-panel{width:min(92vw,560px); background:#ffffff; border-radius:18px; border:1px solid #e5e7eb; box-shadow:0 30px 100px rgba(0,0,0,.45); overflow:hidden;}
-    .login-panel header{background:#f8fafc; border-bottom:1px solid #e5e7eb; padding:16px 18px; font-weight:800;}
+    .login-screen{
+      position:fixed; inset:0; z-index:10000; background:rgba(11,18,32,.9);
+      display:flex; align-items:center; justify-content:center;
+      backdrop-filter: blur(6px);
+    }
+    .login-panel{
+      width:min(92vw,560px); background:var(--card);
+      border-radius:18px; border:1px solid var(--line);
+      box-shadow: var(--elev-3); overflow:hidden;
+    }
+    .login-panel header{
+      background:var(--md-sys-color-surface-variant);
+      border-bottom:1px solid var(--line); padding:16px 18px; font-weight:800;
+      color:var(--md-sys-color-on-surface-variant);
+    }
     .login-panel .body{ padding:16px 18px; }
-    .login-panel .foot{ padding:12px 18px; border-top:1px solid #e5e7eb; display:flex; gap:8px; justify-content:flex-end }
-    .mutewarn{background:#fffbeb;color:#b45309;border:1px solid #fcd34d;padding:8px 10px;border-radius:10px;font-size:12px}
+    .login-panel .foot{ padding:12px 18px; border-top:1px solid var(--line); display:flex; gap:8px; justify-content:flex-end }
+    .mutewarn{
+      background:#fffbeb; color:#b45309; border:1px solid #fcd34d;
+      padding:8px 10px; border-radius: var(--radius-md); font-size:12px
+    }
     #login-cam{display:none}
-    #login-cam.mirror video{ transform: scaleX(-1) !important; }
-    #login-last{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px}
 
-    /* QR overlay */
-    .qr-overlay{position:fixed; inset:0; z-index:9800; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; padding:16px}
-    .qr-panel{width:min(92vw,520px); background:#fff; border-radius:16px; border:1px solid var(--line); box-shadow:0 24px 80px rgba(0,0,0,.4); overflow:hidden}
-    .qr-panel header{padding:12px 14px; border-bottom:1px solid var(--line); background:#f8fafc; font-weight:800}
-    .qr-body{padding:12px 14px}
-    .qr-foot{padding:12px 14px; border-top:1px solid var(--line); display:flex; gap:8px; align-items:center; flex-wrap:wrap}
-    #qr-region{width:100%; min-height:320px}
-    #qr-region.mirror video{ transform: scaleX(-1) !important; } /* กล้องหน้า — กลับด้าน */
-    #qr-last{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; color:#374151}
+    .rw-title{display:flex; gap:14px; align-items:baseline; flex-wrap:wrap}
+    .rw-title .stat{color:var(--muted); font-weight:600}
+    .rw-title .stat b{color:var(--md-sys-color-on-surface)}
+
+    /* Ripple effect */
+    .ripple-container{ position:relative; overflow:hidden; }
+    .ripple{
+      position:absolute; border-radius:50%;
+      transform: translate(-50%, -50%) scale(0);
+      opacity: .12; pointer-events:none;
+      background: currentColor;
+      animation: ripple var(--dur) var(--easing);
+    }
+    @keyframes ripple{
+      to{ transform: translate(-50%, -50%) scale(24); opacity:0; }
+    }
+
+    /* Reduce motion */
+    @media (prefers-reduced-motion: reduce){
+      .card:hover{ transform:none; }
+      .toast{ transition: none; }
+      .menu-btn, button{ transition: none; }
+    }
 
     @media (max-width: 960px){
       .layout{grid-template-columns: 0 1fr;}
@@ -136,7 +446,7 @@
 <body>
   <!-- Topbar -->
   <div class="topbar">
-    <button id="btn-menu" class="menu-btn" aria-label="สลับเมนู">☰</button>
+    <button id="btn-menu" class="menu-btn ripple-container" aria-label="สลับเมนู">☰</button>
     <div class="brand-inline">
       <div class="brand-prd">PRD</div>
       <div class="brand-smart">Smart-TAG</div>
@@ -144,7 +454,7 @@
     <div class="spacer"></div>
     <div class="topbar-right">
       <span id="user-pill" class="badge" style="display:none"></span>
-      <button id="btn-logout" onclick="logout()" style="display:none">ออกจากระบบ</button>
+      <button id="btn-logout" class="ripple-container" onclick="logout()" style="display:none">ออกจากระบบ</button>
     </div>
   </div>
 
@@ -153,37 +463,30 @@
     <!-- Sidebar -->
     <aside class="side" id="sidebar">
       <nav class="nav">
-        <div id="parent-checker" class="parent" onclick="toggleSubmenu('checker')">
+        <div id="parent-checker" class="parent ripple-container" onclick="toggleSubmenu('checker')" role="button" aria-expanded="true" tabindex="0">
           <span>Tag Match Checker</span><span class="caret">▶</span>
         </div>
         <div id="submenu-checker" class="submenu show">
-          <button id="nav-checker" onclick="switchView('checker')" class="active">Tag Check</button>
-          <button id="nav-fix" onclick="switchView('fix')">แก้ไขงาน NG</button>
-          <button id="nav-logs" onclick="switchView('logs')">Scan Logs</button>
+          <button id="nav-checker" class="ripple-container active" onclick="switchView('checker')">Tag Check</button>
+          <button id="nav-logs" class="ripple-container" onclick="switchView('logs')">Scan Logs</button>
+          <button id="nav-rework" class="ripple-container" onclick="switchView('rework')">แก้ไขงาน NG</button>
         </div>
-        <button id="nav-print" onclick="switchView('print')">Print Tag</button>
-        <button id="nav-create" onclick="switchView('create')">Create Tag</button>
+        <button id="nav-print" class="ripple-container" onclick="switchView('print')">Print Tag</button>
+        <button id="nav-create" class="ripple-container" onclick="switchView('create')">Create Tag</button>
       </nav>
       <div style="margin-top:auto; font-size:12px; opacity:.7">© Paradise Plastic</div>
     </aside>
 
-    <!-- Tag Check -->
+    <!-- Compare view -->
     <main id="view-checker" class="wrap" aria-hidden="true">
       <div class="howto"><div id="focus-msg" class="focus-msg"></div></div>
-
-      <div class="card" id="fix-banner" style="display:none;margin-bottom:12px">
-        <div class="row" style="justify-content:space-between">
-          <div><b>โหมดแก้ไขงาน NG</b> — อ้างอิง: <span id="fix-ref"></span></div>
-          <div><button class="icon-btn small" onclick="cancelFixMode()">ยกเลิก</button></div>
-        </div>
-      </div>
 
       <div class="cmp-top-grid">
         <div class="card">
           <h3>แท็กผลิต (Production Tag)</h3>
           <div class="row">
             <input id="in-prod" type="text" placeholder="กำลังรอการสแกน Qr-code ที่แท็กฝ่ายผลิต" readonly />
-            <button class="icon-btn small" onclick="openScanner('prod', {chainNext:true})" title="เปิดกล้องสแกน"><span>📷</span> สแกน</button>
+            <button class="primary ripple-container" id="btn-prod" onclick="parseProduction()" disabled>แปลง</button>
           </div>
         </div>
 
@@ -191,7 +494,7 @@
           <h3>แท็กลูกค้า (Customer Tag)</h3>
           <div class="row">
             <input id="in-cust" type="text" placeholder="กำลังรอการสแกน Qr-code ที่แท็กลูกค้า" readonly />
-            <button class="icon-btn small" onclick="openScanner('cust')" title="เปิดกล้องสแกน"><span>📷</span> สแกน</button>
+            <button class="primary ripple-container" id="btn-cust" onclick="parseCustomer()" disabled>แปลง</button>
           </div>
         </div>
       </div>
@@ -199,7 +502,7 @@
       <div class="cmp-bottom">
         <div class="card result-card">
           <h3>ผลการตรวจสอบ</h3>
-          <div id="banner" class="result-banner"></div>
+          <div id="banner" class="result-banner" role="status" aria-live="polite"></div>
           <table class="cmp" id="cmp-table" aria-label="รายละเอียดผลการตรวจสอบ">
             <thead><tr><th>หัวข้อ</th><th>ผลิต</th><th>ลูกค้า</th></tr></thead>
             <tbody>
@@ -213,38 +516,18 @@
       </div>
     </main>
 
-    <!-- Fix NG view -->
-    <main id="view-fix" class="wrap" style="display:none">
-      <h2>รายการงาน NG ที่ต้องแก้ไข <span class="muted">|</span>
-        <span class="muted">ยังไม่แก้ไข: <b id="fix-todo">0</b> แก้ไขแล้ว: <b id="fix-done">0</b></span>
-      </h2>
-
-      <div class="card">
-        <div class="logs" style="margin-top:10px">
-          <table id="fix-table">
-            <thead>
-              <tr>
-                <th>เวลา/วันที่</th><th>รหัสพนักงาน</th><th>Material</th><th>Prod PN</th><th>Part Name</th><th>Qty</th><th>Cust PN</th><th>Cust Qty</th><th>ดำเนินการ</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </main>
-
-    <!-- Logs -->
+    <!-- Logs view -->
     <main id="view-logs" class="wrap" style="display:none">
-      <h2>Scan Logs</h2>
+      <h2 style="margin:0 0 12px; font-size:var(--title-1);">Scan Logs</h2>
 
       <div class="card">
         <div class="row" style="gap:12px; align-items:flex-end">
           <div class="muted"></div>
           <div style="margin-left:auto; display:flex; gap:8px; align-items:center">
-            <label>กรอกรหัสผ่านเพื่อลบข้อมูล</label>
+            <label style="font-weight:600">กรอกรหัสผ่านเพื่อลบข้อมูล</label>
             <input id="admin-pass" type="password" placeholder="Password">
-            <button onclick="handleClearLogs()" style="background:#b91c1c;color:#fff;border-color:#b91c1c">ล้าง Logs ทั้งหมด</button>
-            <button onclick="exportFilteredLogs()">ดาวน์โหลดข้อมูล (ตามตัวกรอง)</button>
+            <button class="ripple-container" onclick="handleClearLogs()" style="background:var(--ng);color:#fff;border-color:var(--ng)">ล้าง Logs ทั้งหมด</button>
+            <button class="ripple-container" onclick="exportFilteredLogs()">ดาวน์โหลดข้อมูล (ตามตัวกรอง)</button>
           </div>
         </div>
       </div>
@@ -253,8 +536,8 @@
         <h3>ตัวกรอง</h3>
         <div class="filters">
           <input type="date" id="flt-start"> <span>—</span> <input type="date" id="flt-end">
-          <button onclick="applyFilters()">กรอง</button>
-          <button onclick="clearFilters()">ล้าง</button>
+          <button class="ripple-container" onclick="applyFilters()">กรอง</button>
+          <button class="ripple-container" onclick="clearFilters()">ล้าง</button>
         </div>
       </div>
 
@@ -265,6 +548,8 @@
           <span class="all">รวมทั้งหมด: <b id="sum-total">0</b></span>
           <span class="ok"><span class="dot"></span>OK: <b id="sum-ok">0</b></span>
           <span class="ng"><span class="dot"></span>NG: <b id="sum-ng">0</b></span>
+          <span class="fixed"><span class="dot"></span>แก้ไขแล้ว: <b id="sum-fixed">0</b></span>
+          <span class=""><span class="dot"></span>ยังไม่แก้ไข: <b id="sum-unfixed">0</b></span>
         </div>
 
         <div class="logs" style="margin-top:10px">
@@ -273,7 +558,7 @@
               <tr>
                 <th>เวลา/วันที่</th><th>รหัสพนักงาน</th>
                 <th>Material</th><th>Part Number</th><th>Part Name</th><th>Qty.</th>
-                <th>Part Number</th><th>Qty.</th><th>Status</th><th>FixedBy</th>
+                <th>Part Number</th><th>Qty.</th><th>Status</th><th>ผู้แก้ไข</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -282,13 +567,68 @@
       </div>
     </main>
 
+    <!-- Rework NG view -->
+    <main id="view-rework" class="wrap" style="display:none">
+      <h2 style="margin:0 0 12px; font-size:var(--title-1);">แก้ไขงาน NG</h2>
+
+      <!-- รายการงาน (ซ่อนเมื่อกดแก้ไข) -->
+      <div id="rw-list-card" class="card">
+        <h3 class="rw-title">
+          <span>รายการงาน NG ที่ต้องแก้ไข</span>
+          <span class="stat">ยังไม่แก้ไข: <b id="rw-unfixed">0</b></span>
+          <span class="stat">แก้ไขแล้ว: <b id="rw-fixed">0</b></span>
+        </h3>
+        <div class="logs" style="margin-top:10px">
+          <table id="rw-table">
+            <thead>
+              <tr>
+                <th>เวลา/วันที่</th><th>รหัสพนักงาน</th>
+                <th>PN(ผลิต)</th><th>Qty(ผลิต)</th>
+                <th>PN(ลูกค้า)</th><th>Qty(ลูกค้า)</th>
+                <th>จัดการ</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- แผงสแกนแก้ไข (แสดงเมื่อกดแก้ไข) -->
+      <div id="rw-panel" class="card" style="display:none; margin-top:12px">
+        <h3>ยืนยันการแก้ไข</h3>
+        <div class="howto"><div id="rw-focus" class="focus-msg"></div></div>
+
+        <div class="cmp-top-grid">
+          <div class="card" style="padding:12px">
+            <h3 style="margin:0 0 8px">สแกนแท็กผลิต (Production Tag)</h3>
+            <div class="row">
+              <input id="rw-in-prod" type="text" placeholder="สแกนแท็กผลิต" />
+              <button class="primary ripple-container" id="rw-btn-prod" onclick="rwParseProduction()">แปลง</button>
+            </div>
+          </div>
+          <div class="card" style="padding:12px">
+            <h3 style="margin:0 0 8px">สแกนแท็กลูกค้า (Customer Tag)</h3>
+            <div class="row">
+              <input id="rw-in-cust" type="text" placeholder="สแกนแท็กลูกค้า" />
+              <button class="primary ripple-container" id="rw-btn-cust" onclick="rwParseCustomer()">แปลง</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px; gap:8px">
+          <button class="ripple-container" onclick="rwCancel()">ยกเลิก</button>
+          <span class="muted">ระบบจะตรวจอัตโนมัติเมื่อสแกนครบทั้งสองแท็ก</span>
+        </div>
+      </div>
+    </main>
+
     <!-- Placeholders -->
     <main id="view-print" class="wrap" style="display:none">
-      <h2>Print Tag</h2>
+      <h2 style="margin:0 0 12px; font-size:var(--title-1);">Print Tag</h2>
       <div class="card">พื้นที่นี้เตรียมไว้สำหรับระบบพิมพ์แท็ก</div>
     </main>
     <main id="view-create" class="wrap" style="display:none">
-      <h2>Create Tag</h2>
+      <h2 style="margin:0 0 12px; font-size:var(--title-1);">Create Tag</h2>
       <div class="card">พื้นที่นี้เตรียมไว้สำหรับสร้าง/ออกแบบแท็ก</div>
     </main>
   </div>
@@ -305,18 +645,9 @@
           เข้าสู่ระบบด้วยการสแกน Qr-code ที่บัตรพนักงาน (สแกนเนอร์ USB หรือกด “เปิดกล้องสแกนบัตร”)
         </div>
         <div class="row">
-          <button id="btn-login-cam" onclick="toggleLoginCamera()">เปิดกล้องสแกนบัตร</button>
-          <button id="btn-login-flip" class="icon-btn small" onclick="loginFlipCamera()" style="display:none">สลับกล้อง</button>
+          <button id="btn-login-cam" class="ripple-container" onclick="toggleLoginCamera()">เปิดกล้องสแกนบัตร</button>
         </div>
         <div id="login-cam" style="margin-top:10px; display:none"></div>
-
-        <div class="row" id="login-scan-controls" style="display:none; align-items:center">
-          <span class="muted">ล่าสุด:</span>
-          <span id="login-last"></span>
-          <button id="btn-login-accept" class="icon-btn small" onclick="acceptLoginScan()">ยืนยันอ่าน</button>
-          <button class="icon-btn small" onclick="clearLoginPending()">อ่านใหม่</button>
-        </div>
-
         <div class="row" style="margin-top:10px">
           <input id="login-raw" type="text" placeholder="104XXXXXXX หรือ URL ที่มี ?PersonCode=" style="flex:1" />
         </div>
@@ -328,27 +659,10 @@
     </div>
   </div>
 
-  <!-- QR Overlay (ส่วนกลาง) -->
-  <div id="qr-overlay" class="qr-overlay" role="dialog" aria-modal="true">
-    <div class="qr-panel">
-      <header>สแกน Qr-code — <span id="qr-target-name">—</span></header>
-      <div class="qr-body">
-        <div id="qr-region"></div>
-        <div style="margin-top:8px"><span class="muted">ล่าสุด:</span> <span id="qr-last">—</span></div>
-      </div>
-      <div class="qr-foot">
-        <button class="icon-btn" id="btn-shot" onclick="shotOnce()">📸 อ่านตอนนี้</button>
-        <div class="spacer"></div>
-        <button class="icon-btn" id="btn-flip" onclick="flipScanner()">สลับกล้อง</button>
-        <button onclick="closeScanner()">ปิดกล้อง</button>
-      </div>
-    </div>
-  </div>
-
 <script>
 /* ===================== MENU / VIEWS ===================== */
 function switchView(name){
-  for(const id of ['checker','fix','logs','print','create']){
+  for(const id of ['checker','logs','rework','print','create']){
     const main = document.getElementById('view-'+id);
     const btn  = document.getElementById(id==='checker'?'nav-checker':('nav-'+id));
     if(main) main.style.display = (id===name)?'block':'none';
@@ -357,12 +671,12 @@ function switchView(name){
   const parent = document.getElementById('parent-checker');
   if(parent){
     const anyActive = document.getElementById('nav-checker').classList.contains('active')
-                   || document.getElementById('nav-fix').classList.contains('active')
-                   || document.getElementById('nav-logs').classList.contains('active');
+                   || document.getElementById('nav-logs').classList.contains('active')
+                   || document.getElementById('nav-rework').classList.contains('active');
     parent.classList.toggle('active', anyActive);
   }
   if(name==='logs'){ renderLogsView(); }
-  if(name==='fix'){ renderFixList(); }
+  if(name==='rework'){ renderReworkView(); }
 }
 function toggleSubmenu(key){
   const sub = document.getElementById('submenu-'+key);
@@ -378,33 +692,25 @@ function toggleSidebar(force){
 }
 document.addEventListener('DOMContentLoaded', ()=>document.getElementById('btn-menu').addEventListener('click', ()=>toggleSidebar()));
 
-/* ========================== STATE ========================== */
 let CSV_ROWS = [];
 let MAT_COL = null, PN_COL = null, NAME_COL = null;
 
 let PROD = { mat:"", pn:"", name:"", qty:null };
 let CUST = { pn:"", qty:null, name:"", mat:"" };
 
-let LOGIN_QR = { inst:null, active:false, cameras:[], idx:0, last:null };
+let LOGIN_QR = { inst:null, active:false };
 let USER = { code:null };
 
-let SESSION_LOCK = false;  // ล็อครอบผลก่อนหน้า
+let SESSION_LOCK = false;
 let BUSY = false;
 let EXPECT = 'prod';
 
-let FIX_MODE = { active:false, refTs:null }; // โหมดแก้ไข
+/* Rework state */
+let RW_EXPECT='prod', RW_PROD={mat:"", pn:"", name:"", qty:null}, RW_CUST={pn:"", qty:null, name:"", mat:""};
+let RW_TARGET=null; // {key, row}
 
-// ล็อคการกระทำระหว่างเล่นเสียง mp3
-let ACTION_LOCK = false;
-
-/* =========== QR Overlay (ส่วนกลาง) =========== */
-let SCAN_QR = {
-  inst:null, active:false, cameras:[], idx:0,
-  target:null, chainNext:false,
-  paused:true, shotArmed:false, shotTimer:null,
-  lastDecoded:null
-};
-const TARGET_LABEL = { prod:"แท็กผลิต", cust:"แท็กลูกค้า", login:"เข้าสู่ระบบ" };
+/* Global lock กันสแกนระหว่างเล่นเสียง */
+let SOUND_BUSY=false;
 
 /* ======================== HELPERS ========================== */
 const $_ = id => document.getElementById(id);
@@ -422,22 +728,23 @@ function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext||windo
 function resumeAudio(){ try{ if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch{} }
 
 /* ========= กระดิ่งสังเคราะห์ (fallback) ========= */
-function synthBell(){
+function synthBell(durationMs=600){
   ensureAudio(); resumeAudio();
   const c = audioCtx, t = c.currentTime;
   const g = c.createGain(); g.gain.setValueAtTime(0.0001, t);
   const o1 = c.createOscillator(); o1.type='sine'; o1.frequency.setValueAtTime(1500, t);
   const o2 = c.createOscillator(); o2.type='sine'; o2.frequency.setValueAtTime(2000, t); o2.detune.setValueAtTime(6, t);
   g.gain.exponentialRampToValueAtTime(0.9, t+0.01);
-  g.gain.exponentialRampToValueAtTime(0.0001, t+0.55);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+durationMs/1000);
   o1.connect(g); o2.connect(g); g.connect(c.destination);
   o1.start(t); o2.start(t);
-  o1.stop(t+0.6); o2.stop(t+0.6);
+  o1.stop(t+durationMs/1000); o2.stop(t+durationMs/1000);
 }
 
 /* ========= ไฟล์เสียง mp3 ========= */
 const SOUND_BASE = 'sound/';
-let audioOK=null, audioNG=null, audioInvalidProd=null, audioInvalidCust=null, audioInvalidLogin=null, audioBell=null, audioFixOK=null;
+let audioOK=null, audioNG=null, audioInvalidProd=null, audioInvalidCust=null, audioInvalidLogin=null, audioBell=null,
+    audioMismatchPN=null, audioMismatchQty=null;
 
 function initAudioFiles(){
   try{
@@ -446,71 +753,100 @@ function initAudioFiles(){
     audioInvalidProd  = new Audio(SOUND_BASE + 'invalid_prod.mp3');
     audioInvalidCust  = new Audio(SOUND_BASE + 'invalid_cust.mp3');
     audioInvalidLogin = new Audio(SOUND_BASE + 'invalid_login.mp3');
-    audioBell         = new Audio(SOUND_BASE + 'bell.mp3');
-    audioFixOK        = new Audio(SOUND_BASE + 'ok_fix.mp3');
-    [audioOK, audioNG, audioInvalidProd, audioInvalidCust, audioInvalidLogin, audioBell, audioFixOK].forEach(a=>{
-      if(a){ a.preload='auto'; a.crossOrigin='anonymous'; }
-    });
+    audioBell         = new Audio(SOUND_BASE + 'bell.mp3'); // ใช้เฉพาะ notify() ทั่วไป
+    audioMismatchPN   = new Audio(SOUND_BASE + 'mismatch_pn.mp3');
+    audioMismatchQty  = new Audio(SOUND_BASE + 'mismatch_qty.mp3');
+    [audioOK, audioNG, audioInvalidProd, audioInvalidCust, audioInvalidLogin, audioBell, audioMismatchPN, audioMismatchQty]
+      .forEach(a=>{ if(a){ a.preload='auto'; a.crossOrigin='anonymous'; }});
   }catch{}
 }
+
 function unlockAudio(){
   try{
-    [audioOK, audioNG, audioInvalidProd, audioInvalidCust, audioInvalidLogin, audioBell, audioFixOK].forEach(a=>{
+    [audioOK, audioNG, audioInvalidProd, audioInvalidCust, audioInvalidLogin, audioBell, audioMismatchPN, audioMismatchQty].forEach(a=>{
       if(!a) return;
       const v=a.volume; a.volume=0;
       const p=a.play();
       if(p && typeof p.then==='function'){
         p.then(()=>{ a.pause(); a.currentTime=0; a.volume=v; }).catch(()=>{ a.volume=v; });
-      }else{
-        a.pause(); a.currentTime=0; a.volume=v;
-      }
+      }else{ a.pause(); a.currentTime=0; a.volume=v; }
     });
   }catch{}
 }
-// เล่น mp3 (มี fallback) และรอจนจบ
-function playAndWait(audioEl){
+
+/* ========== ยูทิลล็อกสแกนขณะเล่นเสียง ========== */
+function setScanLock(on){
+  SOUND_BUSY = !!on;
+  // Main
+  const prodIn=$_("in-prod"), custIn=$_("in-cust");
+  const prodBtn=$_("btn-prod"), custBtn=$_("btn-cust");
+  if(prodIn) prodIn.readOnly = on || (EXPECT!=='prod');
+  if(custIn) custIn.readOnly = on || (EXPECT!=='cust');
+  if(prodBtn) prodBtn.disabled = on || (EXPECT!=='prod');
+  if(custBtn) custBtn.disabled = on || (EXPECT!=='cust');
+  // Rework
+  const rpi=$_("rw-in-prod"), rci=$_("rw-in-cust");
+  const rpb=$_("rw-btn-prod"), rcb=$_("rw-btn-cust");
+  if(rpi) rpi.readOnly = on || (RW_EXPECT!=='prod');
+  if(rci) rci.readOnly = on || (RW_EXPECT!=='cust');
+  if(rpb) rpb.disabled = on || (RW_EXPECT!=='prod');
+  if(rcb) rcb.disabled = on || (RW_EXPECT!=='cust');
+  // Login
+  const li=$_("login-raw"); if(li) li.readOnly = on ? true : false;
+}
+
+/* เล่น mp3 (พร้อม fallback กระดิ่ง) แล้วรอจนจบ */
+function playAudioAwait(audioEl, fallbackMs=700){
   return new Promise((resolve)=>{
     try{
-      if(!audioEl){ synthBell(); setTimeout(resolve, 600); return; }
+      if(!audioEl) throw new Error('no audio element');
       audioEl.currentTime = 0;
-      const onEnd = ()=>{ audioEl.removeEventListener('ended', onEnd); resolve(); };
-      audioEl.addEventListener('ended', onEnd);
-      audioEl.play().catch(()=>{ synthBell(); setTimeout(resolve, 800); });
-      // safety timeout 6s
-      setTimeout(()=>resolve(), 6000);
-    }catch{ synthBell(); setTimeout(resolve, 800); }
+      const done = ()=>{ audioEl.removeEventListener('ended', done); resolve(); };
+      audioEl.addEventListener('ended', done, {once:true});
+      const p = audioEl.play();
+      if(p && typeof p.then==='function'){
+        p.catch(()=>{ audioEl.removeEventListener('ended', done); synthBell(fallbackMs); setTimeout(resolve, fallbackMs); });
+      }else{
+        // ถ้าบราวเซอร์ไม่คืน Promise ให้ตั้ง safety timer
+        setTimeout(resolve, 900);
+      }
+    }catch{
+      synthBell(fallbackMs); setTimeout(resolve, fallbackMs);
+    }
   });
 }
-// แจ้งเตือน + เล่นกระดิ่ง + เล่น mp3 พร้อมกัน และ “ล็อค” จน mp3 จบ
-async function alertWithLock(audioEl, msg, clearIds=[], focusEl=null){
-  if(ACTION_LOCK) return;
-  try{
-    clearIds.forEach(id=>{ const el = $_(id); if(el) el.value=""; });
-  }catch{}
-  playBell();               // กระดิ่ง
-  showToast(msg);           // Toast
-  ACTION_LOCK = true;
-  await playAndWait(audioEl);  // รอจนเสียงเหตุการณ์จบ
-  ACTION_LOCK = false;
-  if(focusEl){ focusEl.focus(); }
+
+/* แสดง toast + เล่น mp3 พร้อมกัน + ล็อกระหว่างเล่น + โฟกัสช่องเดิมเมื่อจบ */
+async function toastMp3Lock(message, audioEl, focusEl, fallbackMs=700){
+  setScanLock(true);
+  showToast(message);
+  await playAudioAwait(audioEl, fallbackMs);
+  setScanLock(false);
+  try{ focusEl?.focus(); }catch{}
 }
-function playOK(){ (FIX_MODE.active? audioFixOK : audioOK)?.play().catch(()=>synthBell()); }
-function playNG(){ audioNG?.play().catch(()=>synthBell()); }
-function playBell(){ audioBell?.play().catch(()=>synthBell()); }
+
+/* Toast ทั่วไป (ยังมีเสียงกระดิ่งเบา ๆ สำหรับแจ้งทั่วไป; ไม่ล็อก) */
+function notify(msg, ms=5000){
+  try{ audioBell && audioBell.play().catch(()=>synthBell(300)); }catch{ synthBell(300); }
+  showToast(msg, ms);
+}
 
 function showToast(msg, ms=2200){
   const t=$_("toast");
   t.textContent=msg; t.classList.add("show");
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),ms);
 }
-function notify(msg, ms=5000){ playBell(); showToast(msg, ms); }
 
 function formatDateTime(dt){ const p=n=>String(n).padStart(2,'0'); return `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())} ${p(dt.getHours())}:${p(dt.getMinutes())}:${p(dt.getSeconds())}`; }
 function updateFocusBanner(){
-  const suffix = FIX_MODE.active ? " (โหมดแก้ไข NG)" : "";
   $_("focus-msg").textContent = EXPECT==='prod'
-    ? `กรุณาสแกนแท็กฝ่ายผลิต Please scan the Production TAG${suffix}.`
-    : `กรุณาสแกนแท็กลูกค้า Please scan the Customer TAG${suffix}.`;
+    ? `กรุณาสแกนแท็กฝ่ายผลิต Please scan the Production TAG.`
+    : `กรุณาสแกนแท็กลูกค้า Please scan the Customer TAG.`;
+}
+function updateRwFocus(){
+  $_("rw-focus").textContent = RW_EXPECT==='prod'
+    ? `กรุณาสแกนแท็กผลิต (โหมดแก้ไขงาน NG)`
+    : `กรุณาสแกนแท็กลูกค้า (โหมดแก้ไขงาน NG)`;
 }
 
 /* ========================= CSV (BOM) ========================= */
@@ -569,13 +905,24 @@ function classifyTag(raw){
   return 'unknown';
 }
 
-/* ========================= UI LOCK ========================= */
+/* ========================= UI ENFORCERS ========================= */
 function enforceExpectUI(){
   const prodOK = EXPECT==='prod';
   const prodIn = $_("in-prod"), custIn = $_("in-cust");
-  prodIn.readOnly = !prodOK;  custIn.readOnly = prodOK;
-  if(prodOK){ prodIn.focus(); } else { custIn.focus(); }
+  const prodBtn = $_("btn-prod"), custBtn=$_("btn-cust");
+  prodIn.readOnly = SOUND_BUSY || !prodOK;  custIn.readOnly = SOUND_BUSY || prodOK;
+  prodBtn.disabled = SOUND_BUSY || !prodOK; custBtn.disabled = SOUND_BUSY || prodOK;
+  if(!SOUND_BUSY){ if(prodOK){ prodIn.focus(); } else { custIn.focus(); } }
   updateFocusBanner();
+}
+function enforceRwUI(){
+  const prodOK = RW_EXPECT==='prod';
+  const prodIn = $_("rw-in-prod"), custIn = $_("rw-in-cust");
+  const prodBtn = $_("rw-btn-prod"), custBtn=$_("rw-btn-cust");
+  prodIn.readOnly = SOUND_BUSY || !prodOK;  custIn.readOnly = SOUND_BUSY || prodOK;
+  prodBtn.disabled = SOUND_BUSY || !prodOK; custBtn.disabled = SOUND_BUSY || !prodOK ? true : false;
+  if(!SOUND_BUSY){ if(prodOK){ prodIn.focus(); } else { custIn.focus(); } }
+  updateRwFocus();
 }
 
 /* ========================= SESSION RESET ========================= */
@@ -589,17 +936,19 @@ function hardReset(){
 }
 function maybeResetBeforeProdScan(){ if(SESSION_LOCK) hardReset(); }
 
-/* ========================= PARSERS ========================= */
+/* ========================= PARSERS (Main) ========================= */
 async function parseProduction(){
-  if(BUSY || ACTION_LOCK) { if(ACTION_LOCK) notify("กรุณารอสัญญาณเสียงสิ้นสุด"); return; }
+  if(BUSY || SOUND_BUSY) return;
   if(!USER.code){ notify("กรุณาเข้าสู่ระบบก่อนใช้งาน"); return; }
   if(EXPECT!=='prod'){ notify("ต้องสแกน ‘แท็กผลิต’ ก่อน"); enforceExpectUI(); return; }
   maybeResetBeforeProdScan();
 
-  const raw = $_("in-prod").value.trim();
+  const el = $_("in-prod");
+  const raw = el.value.trim();
   const type = classifyTag(raw);
   if(type!=='prod'){
-    await alertWithLock(audioInvalidProd, "Qr code ไม่ถูกต้อง กรุณาสแกน Qr code ที่แท็กฝ่ายผลิต หรือตรวจสอบภาษาของคีย์บอร์ดให้เป็นภาษาอังกฤษ", ['in-prod'], $_('in-prod'));
+    el.value="";
+    await toastMp3Lock("Qr code ไม่ถูกต้อง: โปรดสแกนแท็ก ‘ผลิต’", audioInvalidProd, el);
     enforceExpectUI();
     return;
   }
@@ -623,14 +972,16 @@ async function parseProduction(){
 }
 
 async function parseCustomer(){
-  if(BUSY || ACTION_LOCK) { if(ACTION_LOCK) notify("กรุณารอสัญญาณเสียงสิ้นสุด"); return; }
+  if(BUSY || SOUND_BUSY) return;
   if(!USER.code){ notify("กรุณาเข้าสู่ระบบก่อนใช้งาน"); return; }
   if(EXPECT!=='cust'){ notify("ต้องสแกน ‘แท็กลูกค้า’ ถัดจากแท็กผลิต"); enforceExpectUI(); return; }
 
-  const raw = $_("in-cust").value.trim();
+  const el = $_("in-cust");
+  const raw = el.value.trim();
   const type = classifyTag(raw);
   if(type!=='cust'){
-    await alertWithLock(audioInvalidCust, "Qr code ไม่ถูกต้อง กรุณาสแกน Qr code ที่แท็กลูกค้า หรือตรวจสอบภาษาของคีย์บอร์ดให้เป็นภาษาอังกฤษ", ['in-cust'], $_('in-cust'));
+    el.value="";
+    await toastMp3Lock("Qr code ไม่ถูกต้อง: โปรดสแกนแท็ก ‘ลูกค้า’", audioInvalidCust, el);
     enforceExpectUI();
     return;
   }
@@ -656,9 +1007,9 @@ async function parseCustomer(){
   BUSY=false;
 }
 
-/* ========================= COMPARE & RESULT ========================= */
+/* ========================= COMPARE & RESULT (Main) ========================= */
 function showBanner(ok){ const b=$_("banner"); b.className="result-banner "+(ok?"banner-ok":"banner-ng"); b.textContent=ok?"OK":"NG"; b.style.display="flex"; }
-function prepNextCycleAfterCompare(){ $_("in-prod").value=""; $_("in-cust").value=""; EXPECT='prod'; enforceExpectUI(); }
+function clearMainInputsForNext(){ $_("in-prod").value=""; $_("in-cust").value=""; EXPECT='prod'; enforceExpectUI(); }
 
 async function compareNow(){
   const pnOk   = (!!PROD.pn && !!CUST.pn) && (normPN(PROD.pn)===normPN(CUST.pn) || normPNNoDash(PROD.pn)===normPNNoDash(CUST.pn));
@@ -669,52 +1020,46 @@ async function compareNow(){
 
   showBanner(ok);
 
-  // เน้นแถว
   for(const id of ["cmp-pn","cmp-qty","cmp-name","cmp-mat"]){ const tr=$_(id); tr.classList.remove("ok-row","ng-row"); }
-  $_("cmp-pn").classList.add(pnOk? "ok-row" : "ng-row");
-  $_("cmp-qty").classList.add(qtyOk? "ok-row" : "ng-row");
+  $_("cmp-pn").classList.add(pnOk ? "ok-row" : "ng-row");
+  $_("cmp-qty").classList.add(qtyOk ? "ok-row" : "ng-row");
   $_("cmp-name").classList.add(nameOk? "ok-row" : "ng-row");
-  $_("cmp-mat").classList.add(matOk? "ok-row" : "ng-row");
+  $_("cmp-mat").classList.add(matOk ? "ok-row" : "ng-row");
 
-  // เหตุผล NG
-  if(!ok){
-    let reason = "แท็กไม่ตรงกัน";
-    if(pnOk===false && qtyOk===true){ reason = "แท็กไม่ตรงกัน"; }
-    else if(pnOk===true && qtyOk===false){ reason = "จำนวนชิ้นงานไม่ตรงกัน"; }
-    else { reason = "แท็กไม่ตรงกัน"; } // ทั้งสองผิด → อย่างเดียว
-    await alertWithLock(audioNG, reason, [], $_('in-prod'));
+  if(ok){
+    setScanLock(true);
+    await playAudioAwait(audioOK, 500);
+    setScanLock(false);
+    await saveLog(true);
+    clearMainInputsForNext();
   }else{
-    playOK();
+    let msg="", snd=null;
+    if(!pnOk){ msg="แท็กไม่ตรงกัน"; snd=audioMismatchPN; }
+    else if(!qtyOk){ msg="จำนวนชิ้นงานไม่ตรงกัน"; snd=audioMismatchQty; }
+
+    clearMainInputsForNext(); // ล้างข้อมูลและกลับไปเริ่มที่ผลิต
+    await toastMp3Lock(msg||"NG", snd||audioNG, $_("in-prod"));
+    await saveLog(false);
   }
 
-  await saveLog(ok);
-
-  if(FIX_MODE.active){
-    if(ok){
-      await saveFixLog(FIX_MODE.refTs);
-      FIX_MODE={active:false,refTs:null};
-      notify("การแก้ไขเสร็จสมบูรณ์");
-      switchView('fix');
-    }else{
-      // เหตุผลแสดงไปแล้ว
-    }
-  }
-
-  prepNextCycleAfterCompare();
-  SESSION_LOCK = true;
+  SESSION_LOCK = false;
 }
 
-/* ==================== LOGS ==================== */
+/* ==================== LOGS (UI + สรุป) ==================== */
 function summarizeLogs(list){
   const total = list.length;
-  let ok=0, ng=0;
+  let ok=0, ng=0, fixed=0;
   for(const r of list){
     const s = (r.result||"").toUpperCase();
     if(s==="OK") ok++;
-    else if(s==="NG") ng++;
+    else if(s==="NG"){
+      ng++;
+      if(r.fixed) fixed++;
+    }
   }
-  return {total, ok, ng};
+  return {total, ok, ng, fixed, unfixed: Math.max(ng-fixed,0)};
 }
+
 async function renderLogsView(){
   try{
     const listAll = await getAllLogs();
@@ -722,20 +1067,24 @@ async function renderLogsView(){
     const tb = $_("log-table-view").querySelector("tbody");
     tb.innerHTML="";
     for(const r of list){
-      const s = (r.result||"").toUpperCase();
-      const cls = s==="OK" ? "ok-row" : (s==="NG" ? "ng-row" : "fix-row");
+      const statusTxt = (r.result||"").toUpperCase()==="NG" ? (r.fixed ? "NG(แก้ไขแล้ว)" : "NG") : (r.result||"");
+      const cls = (r.result||"").toUpperCase()==="OK" ? "ok-row" : (r.fixed ? "fixed-row" : "ng-row");
       tb.insertAdjacentHTML("beforeend", `<tr class="${cls}">
         <td>${esc(r.ts||"")}</td><td>${esc(r.emp||"")}</td>
         <td>${esc(r.mat||"")}</td><td>${esc(r.prodPN||"")}</td><td>${esc(r.name||"")}</td><td>${esc(r.prodQty??"")}</td>
-        <td>${esc(r.custPN||"")}</td><td>${esc(r.custQty??"")}</td><td>${esc(r.result||"")}</td><td>${esc(r.fixedBy||"")}</td>
+        <td>${esc(r.custPN||"")}</td><td>${esc(r.custQty??"")}</td><td>${esc(statusTxt)}</td><td>${esc(r.fixedBy||"")}</td>
       </tr>`);
     }
-    const {total, ok, ng} = summarizeLogs(list.filter(r=>r.result!=="FIXED"));
+    const {total, ok, ng, fixed, unfixed} = summarizeLogs(list);
     $_("sum-total").textContent = total;
     $_("sum-ok").textContent = ok;
     $_("sum-ng").textContent = ng;
+    $_("sum-fixed").textContent = fixed;
+    $_("sum-unfixed").textContent = unfixed;
   }catch(e){ console.error(e); notify("อ่านข้อมูล Logs ไม่สำเร็จ"); }
 }
+
+/* กรองตามช่วงวันที่ (เว้นว่าง = ทั้งหมด) */
 function filterLogs(list){
   const s = ($_("flt-start").value||"").trim();
   const e = ($_("flt-end").value||"").trim();
@@ -769,17 +1118,38 @@ function ensureDB(){
 function addLog(row){
   return ensureDB().then(()=>new Promise((resolve, reject)=>{
     const tx = DB.transaction(STORE, "readwrite", {durability:"strict"});
-    tx.objectStore(STORE).add(row);
-    tx.oncomplete = ()=>resolve();
-    tx.onerror = ()=>reject(tx.error);
+    const req = tx.objectStore(STORE).add(row);
+    req.onsuccess = ()=>resolve(req.result); // key
+    req.onerror = ()=>reject(req.error);
   }));
 }
 function getAllLogs(){
   return ensureDB().then(()=>new Promise((resolve, reject)=>{
     const tx = DB.transaction(STORE, "readonly");
-    const rq = tx.objectStore(STORE).getAll();
-    rq.onsuccess = ()=>resolve(rq.result||[]);
-    rq.onerror = ()=>reject(rq.error);
+    const store = tx.objectStore(STORE);
+    const out = [];
+    const req = store.openCursor();
+    req.onsuccess = e=>{
+      const cur = e.target.result;
+      if(cur){ out.push(Object.assign({_key:cur.key}, cur.value)); cur.continue(); }
+      else resolve(out);
+    };
+    req.onerror = ()=>reject(req.error);
+  }));
+}
+function updateLogByKey(key, patch){
+  return ensureDB().then(()=>new Promise((resolve, reject)=>{
+    const tx = DB.transaction(STORE, "readwrite");
+    const store = tx.objectStore(STORE);
+    const getReq = store.get(key);
+    getReq.onsuccess = ()=>{
+      const val = getReq.result || {};
+      Object.assign(val, patch);
+      const putReq = store.put(val, key);
+      putReq.onsuccess = ()=>resolve();
+      putReq.onerror  = ()=>reject(putReq.error);
+    };
+    getReq.onerror = ()=>reject(getReq.error);
   }));
 }
 function clearAllLogs(){
@@ -802,28 +1172,19 @@ async function saveLog(ok){
     prodQty: PROD.qty,
     custPN: CUST.pn,
     custQty: CUST.qty,
-    result: ok ? "OK" : "NG"
+    result: ok ? "OK" : "NG",
+    fixed: false,
+    fixedBy: "",
+    fixedAt: ""
   };
   try{ await addLog(rowObj); }catch(e){ console.error(e); notify("บันทึกลง IndexedDB ไม่สำเร็จ"); }
 }
-async function saveFixLog(refTs){
-  const now = new Date();
-  const rowObj = {
-    ts: formatDateTime(now),
-    emp: USER.code || "",
-    mat: PROD.mat,
-    prodPN: PROD.pn, name: PROD.name, prodQty: PROD.qty,
-    custPN: CUST.pn, custQty: CUST.qty,
-    result: "FIXED", refTs, fixedBy: USER.code || ""
-  };
-  try{ await addLog(rowObj); }catch(e){ console.error(e); notify("บันทึกสถานะแก้ไขไม่สำเร็จ"); }
-}
 async function exportFilteredLogs(){
   const rows = filterLogs(await getAllLogs());
-  const header = ["timestamp","employee_code","material","prod_part_number","part_name","prod_qty","cust_part_number","cust_qty","status","fixedBy","refTs"];
+  const header = ["timestamp","employee_code","material","prod_part_number","part_name","prod_qty","cust_part_number","cust_qty","status","fixed","fixed_by","fixed_at"];
   const lines = [header.join(",")];
   for(const r of rows){
-    const vals = [r.ts,r.emp,r.mat,r.prodPN,r.name,r.prodQty,r.custPN,r.custQty,r.result,r.fixedBy||"",r.refTs||""].map(csvEscape);
+    const vals = [r.ts,r.emp,r.mat,r.prodPN,r.name,r.prodQty,r.custPN,r.custQty,r.result,(r.fixed?"TRUE":"FALSE"),r.fixedBy||"",r.fixedAt||""].map(csvEscape);
     lines.push(vals.join(","));
   }
   const blob = new Blob([`\ufeff${lines.join("\n")}`], {type:"text/csv;charset=utf-8"});
@@ -838,66 +1199,181 @@ async function handleClearLogs(){
   catch(e){ console.error(e); notify("ล้าง Logs ไม่สำเร็จ"); }
 }
 
-/* ==================== FIX LIST ==================== */
-async function renderFixList(){
+/* =========================== REWORK (แก้ไขงาน NG) =========================== */
+async function renderReworkView(){
+  try{
+    const all = await getAllLogs();
+    const ngs = all.filter(r => (r.result||"").toUpperCase()==="NG");
+    const unfixed = ngs.filter(r => !r.fixed);
+    const fixed = ngs.filter(r => r.fixed);
+
+    $_("rw-unfixed").textContent = unfixed.length;
+    $_("rw-fixed").textContent = fixed.length;
+
+    const tb = $_("rw-table").querySelector("tbody");
+    tb.innerHTML = "";
+    for(const r of unfixed){
+      tb.insertAdjacentHTML("beforeend", `<tr>
+        <td>${esc(r.ts||"")}</td><td>${esc(r.emp||"")}</td>
+        <td>${esc(r.prodPN||"")}</td><td>${esc(r.prodQty??"")}</td>
+        <td>${esc(r.custPN||"")}</td><td>${esc(r.custQty??"")}</td>
+        <td><button class="ripple-container" onclick='rwStart(${r._key})'>แก้ไข</button></td>
+      </tr>`);
+    }
+    if(!unfixed.length){
+      $_("rw-panel").style.display="none";
+    }
+    $_("rw-list-card").style.display="block";
+  }catch(e){ console.error(e); notify("โหลดรายการงาน NG ไม่สำเร็จ"); }
+}
+
+async function rwStart(key){
   const all = await getAllLogs();
-  const fixedRefs = new Set(all.filter(r=>r.result==="FIXED").map(r=>r.refTs));
-  const todo = all.filter(r=>r.result==="NG" && !fixedRefs.has(r.ts));
-  const done = all.filter(r=>r.result==="FIXED");
+  const row = all.find(r=>r._key===key);
+  if(!row){ notify("ไม่พบรายการ"); return; }
+  RW_TARGET = {key, row};
+  RW_PROD = {mat:"", pn:"", name:"", qty:null};
+  RW_CUST = {pn:"", qty:null, name:"", mat:""};
+  RW_EXPECT='prod';
+  $_("rw-in-prod").value=""; $_("rw-in-cust").value="";
+  $_("rw-list-card").style.display="none";
+  $_("rw-panel").style.display="block";
+  enforceRwUI();
+}
 
-  $_('fix-todo').textContent = todo.length;
-  $_('fix-done').textContent = done.length;
+function rwCancel(){
+  RW_TARGET=null;
+  $_("rw-panel").style.display="none";
+  $_("rw-list-card").style.display="block";
+}
 
-  const tb = $_('fix-table').querySelector('tbody');
-  tb.innerHTML = '';
-  for(const r of todo){
-    tb.insertAdjacentHTML('beforeend', `<tr class="ng-row">
-      <td>${esc(r.ts||"")}</td><td>${esc(r.emp||"")}</td>
-      <td>${esc(r.mat||"")}</td><td>${esc(r.prodPN||"")}</td><td>${esc(r.name||"")}</td><td>${esc(r.prodQty??"")}</td>
-      <td>${esc(r.custPN||"")}</td><td>${esc(r.custQty??"")}</td>
-      <td><button class="icon-btn small" onclick="startFix('${r.ts}')">แก้ไข</button></td>
-    </tr>`);
+async function rwParseProduction(){
+  if(!RW_TARGET || SOUND_BUSY) return;
+  if(RW_EXPECT!=='prod'){ notify("โปรดสแกนแท็กลูกค้า"); enforceRwUI(); return; }
+  const el=$_("rw-in-prod");
+  const raw = el.value.trim();
+  const type = classifyTag(raw);
+  if(type!=='prod'){
+    el.value="";
+    await toastMp3Lock("รูปแบบแท็กผลิตไม่ถูกต้อง", audioInvalidProd, el);
+    enforceRwUI();
+    return;
   }
-}
-function startFix(refTs){
-  FIX_MODE = {active:true, refTs};
-  $_('fix-banner').style.display='block';
-  $_('fix-ref').textContent = refTs;
-  switchView('checker');
-  hardReset();
-  openScanner('prod', {chainNext:true});
-}
-function cancelFixMode(){
-  FIX_MODE = {active:false, refTs:null};
-  $_('fix-banner').style.display='none';
-  switchView('fix');
+  const [mat, qty] = raw.split("|");
+  RW_PROD.mat = norm(mat||""); 
+  RW_PROD.qty = toNum(qty||"");
+  const m = mapMatToPart(RW_PROD.mat); 
+  RW_PROD.pn=m.pn||""; 
+  RW_PROD.name=m.name||"";
+  RW_EXPECT='cust'; enforceRwUI();
 }
 
-/* =========================== BOOT ========================== */
-(async function boot(){
-  await ensureDB();
-  initAudioFiles();
-  switchView('checker');
-  try{ const res=await loadCSV(); CSV_ROWS=res.data||[]; if(!CSV_ROWS.length) throw new Error("CSV ว่าง"); detectColumns(CSV_ROWS); }
-  catch(e){ console.error(e); }
-  hookKeyboard();
-  enforceExpectUI();
-  $_("login-raw").focus();
-  toggleSidebar(true);
-})();
+async function rwParseCustomer(){
+  if(!RW_TARGET || SOUND_BUSY) return;
+  if(RW_EXPECT!=='cust'){ notify("โปรดสแกนแท็กผลิตก่อน"); enforceRwUI(); return; }
+  const el=$_("rw-in-cust");
+  const raw = el.value.trim();
+  const type = classifyTag(raw);
+  if(type!=='cust'){
+    el.value="";
+    await toastMp3Lock("รูปแบบแท็กลูกค้าไม่ถูกต้อง", audioInvalidCust, el);
+    enforceRwUI();
+    return;
+  }
+  const t = raw.split("|");
+  const base = (t[1]||"").trim(); 
+  const sfx  = (t[2]||"").trim();
+  const qty  = (t[4]||"").trim() || (t[3]||"").trim();
+  RW_CUST.pn  = norm(base + sfx); 
+  RW_CUST.qty = toNum(qty);
+  const det = mapPnToDetails(RW_CUST.pn);
+  RW_CUST.name = det.name || ""; 
+  RW_CUST.mat  = det.mat  || "";
+
+  await rwCompareAndCommit();
+}
+
+/* เปรียบเทียบ (Rework) — แจ้งเตือน+mp3 พร้อมกัน และบล็อกระหว่างเล่น */
+async function rwCompareAndCommit(){
+  const pnOk  = (!!RW_PROD.pn && !!RW_CUST.pn) && (normPN(RW_PROD.pn)===normPN(RW_CUST.pn) || normPNNoDash(RW_PROD.pn)===normPNNoDash(RW_CUST.pn));
+  const qtyOk = toNum(RW_PROD.qty)!=null && toNum(RW_CUST.qty)!=null && toNum(RW_PROD.qty)===toNum(RW_CUST.qty);
+
+  if(pnOk && qtyOk){
+    setScanLock(true);
+    await playAudioAwait(audioOK, 500);
+    setScanLock(false);
+    showToast("การแก้ไขเสร็จสมบูรณ์");
+    const now = new Date();
+    await updateLogByKey(RW_TARGET.key, { fixed:true, fixedBy: USER.code||"", fixedAt: formatDateTime(now) });
+    RW_TARGET=null;
+    $_("rw-panel").style.display="none";
+    $_("rw-list-card").style.display="block";
+    await renderReworkView();
+    await renderLogsView();
+    return;
+  }
+
+  let msg="", snd=null;
+  if(!pnOk){ msg="แท็กไม่ตรงกัน"; snd=audioMismatchPN; }
+  else if(!qtyOk){ msg="จำนวนชิ้นงานไม่ตรงกัน"; snd=audioMismatchQty; }
+
+  $_("rw-in-prod").value=""; $_("rw-in-cust").value="";
+  RW_PROD={mat:"", pn:"", name:"", qty:null}; RW_CUST={pn:"", qty:null, name:"", mat:""};
+  RW_EXPECT='prod'; enforceRwUI();
+
+  await toastMp3Lock(msg||"NG", snd||audioNG, $_("rw-in-prod"));
+}
 
 /* ==================== KEYBOARD / SCANNER ==================== */
+function guardInputChannel(el, must){
+  el.addEventListener("beforeinput", e=>{
+    if(SOUND_BUSY){ e.preventDefault(); return; }
+    if((must==='prod' && EXPECT!=='prod') || (must==='cust' && EXPECT!=='cust')){ e.preventDefault(); notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’"); enforceExpectUI(); }
+  });
+  el.addEventListener("paste", e=>{
+    if(SOUND_BUSY){ e.preventDefault(); return; }
+    if((must==='prod' && EXPECT!=='prod') || (must==='cust' && EXPECT!=='cust')){ e.preventDefault(); notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’"); enforceExpectUI(); }
+  });
+  el.addEventListener("focus", ()=>{
+    if((must==='prod' && EXPECT!=='prod') || (must==='cust' && EXPECT!=='cust')){ notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’"); enforceExpectUI(); }
+  });
+}
+function guardRwChannel(el, must){
+  el.addEventListener("beforeinput", e=>{
+    if(SOUND_BUSY){ e.preventDefault(); return; }
+    if((must==='prod' && RW_EXPECT!=='prod') || (must==='cust' && RW_EXPECT!=='cust')){ e.preventDefault(); notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’ (แก้ไขงาน)":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’ (แก้ไขงาน)"); enforceRwUI(); }
+  });
+  el.addEventListener("paste", e=>{
+    if(SOUND_BUSY){ e.preventDefault(); return; }
+    if((must==='prod' && RW_EXPECT!=='prod') || (must==='cust' && RW_EXPECT!=='cust')){ e.preventDefault(); notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’ (แก้ไขงาน)":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’ (แก้ไขงาน)"); enforceRwUI(); }
+  });
+  el.addEventListener("focus", ()=>{
+    if((must==='prod' && RW_EXPECT!=='prod') || (must==='cust' && RW_EXPECT!=='cust')){ notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’ (แก้ไขงาน)":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’ (แก้ไขงาน)"); enforceRwUI(); }
+  });
+}
+
 function hookKeyboard(){
   const prodIn=$_("in-prod"), custIn=$_("in-cust");
   prodIn.addEventListener("keydown", e=>{
+    if(SOUND_BUSY){ e.preventDefault(); return; }
     if(EXPECT!=='prod'){ e.preventDefault(); notify("ตอนนี้ต้องสแกน ‘แท็กลูกค้า’"); enforceExpectUI(); return; }
     if(e.key!=="Enter" && SESSION_LOCK){ maybeResetBeforeProdScan(); }
-    if(e.key==="Enter"){ e.preventDefault(); /* ต้องกด 📷 เท่านั้น */ }
+    if(e.key==="Enter"){ e.preventDefault(); parseProduction(); }
   });
   custIn.addEventListener("keydown", e=>{
+    if(SOUND_BUSY){ e.preventDefault(); return; }
     if(EXPECT!=='cust'){ e.preventDefault(); notify("กรุณาสแกน ‘แท็กผลิต’ ก่อน"); enforceExpectUI(); return; }
-    if(e.key==="Enter"){ e.preventDefault(); }
+    if(e.key==="Enter"){ e.preventDefault(); parseCustomer(); }
   });
+  guardInputChannel(prodIn,'prod'); 
+  guardInputChannel(custIn,'cust');
+
+  // rework fields
+  const rp=$_("rw-in-prod"), rc=$_("rw-in-cust");
+  rp?.addEventListener("keydown", e=>{ if(SOUND_BUSY){ e.preventDefault(); return; } if(RW_EXPECT!=='prod'){ e.preventDefault(); notify("โปรดสแกนแท็กลูกค้า"); enforceRwUI(); return; } if(e.key==="Enter"){ e.preventDefault(); rwParseProduction(); }});
+  rc?.addEventListener("keydown", e=>{ if(SOUND_BUSY){ e.preventDefault(); return; } if(RW_EXPECT!=='cust'){ e.preventDefault(); notify("โปรดสแกนแท็กผลิตก่อน"); enforceRwUI(); return; } if(e.key==="Enter"){ e.preventDefault(); rwParseCustomer(); }});
+  guardRwChannel(rp,'prod');
+  guardRwChannel(rc,'cust');
 
   // login field
   const loginInput = $_('login-raw');
@@ -909,6 +1385,7 @@ function hookKeyboard(){
     }, 50);
   });
   loginInput.addEventListener('keydown', e=>{
+    if(SOUND_BUSY){ e.preventDefault(); return; }
     if(e.key==='Enter'){ e.preventDefault(); tryAutoLoginFromRaw(loginInput.value, true); }
   });
 
@@ -929,91 +1406,44 @@ function parseEmployeePayload(raw){
   return out;
 }
 async function tryAutoLoginFromRaw(val, force=false){
-  if(ACTION_LOCK) return;
   const emp=parseEmployeePayload(val);
   fillEmployeeUI(emp);
+
   if(emp.code && (force || /^[A-Za-z0-9\-_]{5,}$/.test(emp.code))){
     confirmLogin(true);
     return;
   }
   if(force){
-    await alertWithLock(audioInvalidLogin, "ไม่พบรหัสพนักงานใน Qr-code / รูปแบบไม่ถูกต้อง", ['login-raw'], $_('login-raw'));
+    const el=$_('login-raw');
+    el.value="";
+    await toastMp3Lock("ไม่พบรหัสพนักงานใน Qr-code / รูปแบบไม่ถูกต้อง", audioInvalidLogin, el);
   }
-}
-function isFrontCam(cam){ 
-  const label = cam?.label || "";
-  if(/back|rear|environment/i.test(label)) return false;
-  return /front|user|face|selfie|內建|built.?in/i.test(label) || !/back|rear|environment/i.test(label);
-}
-function applyLoginMirror(){
-  const cam = LOGIN_QR.cameras[LOGIN_QR.idx];
-  $_('login-cam').classList.toggle('mirror', !!isFrontCam(cam));
-}
-function applyOverlayMirror(){
-  const cam = SCAN_QR.cameras[SCAN_QR.idx];
-  $_('qr-region').classList.toggle('mirror', !!isFrontCam(cam));
 }
 async function toggleLoginCamera(){
   try{
-    const camDiv=$_('login-cam'), btn=$_('btn-login-cam'), flip=$_('btn-login-flip');
-    if(LOGIN_QR.active){ 
-      try{ await LOGIN_QR.inst.stop(); }catch{}
-      camDiv.style.display="none"; btn.textContent="เปิดกล้องสแกนบัตร"; flip.style.display="none";
-      LOGIN_QR.active=false; return; 
-    }
+    const camDiv=$_('login-cam'), btn=$_('btn-login-cam');
+    if(LOGIN_QR.active){ try{ await LOGIN_QR.inst.stop(); }catch{} camDiv.style.display="none"; btn.textContent="เปิดกล้องสแกนบัตร"; LOGIN_QR.active=false; return; }
     camDiv.style.display="block"; btn.textContent="ปิดกล้องสแกนบัตร";
     if(!LOGIN_QR.inst) LOGIN_QR.inst=new Html5Qrcode(camDiv.id);
-    const cams=await Html5Qrcode.getCameras(); 
-    if(!cams?.length){ camDiv.textContent="ไม่พบกล้อง"; return; }
-    LOGIN_QR.cameras=cams; 
-    const env = cams.find(c=>/back|rear|environment/i.test(c.label));
-    LOGIN_QR.idx = env ? cams.indexOf(env) : 0;
-
-    const startCam = async (idx)=>{
-      await LOGIN_QR.inst.start(cams[idx].id,{fps:10,qrbox:250}, onLoginScan);
-      LOGIN_QR.idx = idx; applyLoginMirror();
-    };
-    try{ await startCam(LOGIN_QR.idx); }
-    catch{ const alt = (LOGIN_QR.idx+1) % cams.length; await startCam(alt); }
-
+    const cams=await Html5Qrcode.getCameras(); if(!cams?.length){ camDiv.textContent="ไม่พบกล้อง"; return; }
+    await LOGIN_QR.inst.start(cams[0].id,{fps:10,qrbox:250}, (txt)=>{
+      if(SOUND_BUSY) return; // ระหว่างเล่นเสียงไม่รับสแกน
+      const clean = sanitizeScan(txt);
+      $_('login-raw').value=clean; 
+      tryAutoLoginFromRaw(clean, true);
+    });
     LOGIN_QR.active=true;
-    flip.style.display = "inline-flex";
-    flip.disabled = cams.length<=1;
-
-    $_('login-scan-controls').style.display='flex';
-    $_('login-last').textContent='—';
-    LOGIN_QR.last=null;
   }catch(err){ $_('login-cam').textContent="เปิดกล้องไม่ได้: "+(err?.message||err); }
 }
-async function loginFlipCamera(){
-  if(!LOGIN_QR.active || !LOGIN_QR.cameras.length) return;
-  try{
-    const next = (LOGIN_QR.idx + 1) % LOGIN_QR.cameras.length;
-    await LOGIN_QR.inst.stop();
-    await LOGIN_QR.inst.start(LOGIN_QR.cameras[next].id,{fps:10,qrbox:250}, onLoginScan);
-    LOGIN_QR.idx = next; applyLoginMirror();
-  }catch(err){ $_('login-cam').textContent="สลับกล้องไม่ได้: "+(err?.message||err); }
-}
-function onLoginScan(txt){
-  const clean = sanitizeScan(txt);
-  LOGIN_QR.last = clean;
-  $_('login-last').textContent = clean;
-}
-async function acceptLoginScan(){
-  if(!LOGIN_QR.last){ notify("ยังไม่พบข้อมูลจากกล้อง"); return; }
-  $_('login-raw').value = LOGIN_QR.last;
-  await tryAutoLoginFromRaw(LOGIN_QR.last, true);
-}
-function clearLoginPending(){ LOGIN_QR.last=null; $_('login-last').textContent='—'; }
 function fillEmployeeUI(emp){ $_('emp-id').textContent=emp.code||'—'; }
 function confirmLogin(auto=false){
   const code=$_('emp-id').textContent.trim(); 
   if(!code||code==='—'){ if(!auto) notify("ยังไม่ได้อ่านรหัสพนักงานจากบัตร"); return; }
   USER={code};
-  try{ if(LOGIN_QR.active&&LOGIN_QR.inst){ LOGIN_QR.inst.stop(); LOGIN_QR.active=false; $_('btn-login-flip').style.display="none"; } }catch{}
+  try{ if(LOGIN_QR.active&&LOGIN_QR.inst){ LOGIN_QR.inst.stop(); LOGIN_QR.active=false; } }catch{}
   document.getElementById("login-screen").style.display="none";
   document.getElementById("view-checker").removeAttribute("aria-hidden");
-  setText("user-pill",`รหัสพนักงาน: ${USER.code}`); $_("user-pill").style.display="inline-block"; $_("btn-logout").style.display="inline-block";
+  setText("user-pill",`รหัสพนักงาน: ${USER.code}`); $_("user-pill").style.display="inline-flex"; $_("btn-logout").style.display="inline-block";
   enableUI(true); notify(`เข้าสู่ระบบสำเร็จ: ${USER.code}`, 3000);
   EXPECT='prod'; enforceExpectUI();
 }
@@ -1025,100 +1455,46 @@ async function logout(){
 }
 function enableUI(on){
   $_("in-prod").readOnly = !on; $_("in-cust").readOnly = !on;
+  $_("btn-prod").disabled = !on; $_("btn-cust").disabled = !on;
   if(on) enforceExpectUI();
 }
 
-/* ==================== QR OVERLAY ส่วนกลาง ==================== */
-async function openScanner(target, opts={}){
-  if(ACTION_LOCK){ notify("กรุณารอสัญญาณเสียงสิ้นสุด"); return; }
-  SCAN_QR.target = target;
-  SCAN_QR.chainNext = !!opts.chainNext && target==='prod';
-  SCAN_QR.lastDecoded = null;
-  SCAN_QR.paused = true;
-  SCAN_QR.shotArmed = false;
-
-  $_('qr-target-name').textContent = TARGET_LABEL[target] || '—';
-  $_('qr-last').textContent = '—';
-  $_('qr-overlay').style.display = 'flex';
-
-  if(!SCAN_QR.inst) SCAN_QR.inst = new Html5Qrcode('qr-region');
-
-  try{
-    const cams = await Html5Qrcode.getCameras();
-    if(!cams?.length){ $_('qr-region').textContent="ไม่พบกล้อง"; return; }
-    SCAN_QR.cameras = cams;
-
-    const env = cams.find(c=>/back|rear|environment/i.test(c.label));
-    let idx = env ? cams.indexOf(env) : 0;
-
-    const startIdx = async (i)=>{
-      await SCAN_QR.inst.start(cams[i].id, {fps:10, qrbox:250}, onOverlayScan);
-      SCAN_QR.idx = i; applyOverlayMirror();
-    };
-
-    try{ await startIdx(idx); }
-    catch{ const alt = (idx+1)%cams.length; await startIdx(alt); }
-
-    SCAN_QR.active = true;
-    $_('btn-flip').disabled = cams.length<=1;
-
-  }catch(err){
-    $_('qr-region').textContent = "เปิดกล้องไม่ได้: " + (err?.message || err);
-  }
+/* =============== MD3 Ripple (lightweight, non-intrusive) =============== */
+function attachRipple(root=document){
+  const targets = root.querySelectorAll('.ripple-container, button, .parent, .nav button');
+  targets.forEach(el=>{
+    if(el.__hasRipple) return;
+    el.__hasRipple = true;
+    el.addEventListener('click', (e)=>{
+      if(el.disabled) return;
+      const rect = el.getBoundingClientRect();
+      const r = Math.max(rect.width, rect.height) * 0.5;
+      const span = document.createElement('span');
+      span.className = 'ripple';
+      span.style.width = span.style.height = `${r*2}px`;
+      span.style.left = `${e.clientX - rect.left}px`;
+      span.style.top  = `${e.clientY - rect.top}px`;
+      el.appendChild(span);
+      span.addEventListener('animationend', ()=>span.remove());
+    }, {passive:true});
+  });
 }
-function onOverlayScan(decodedText){
-  if(SCAN_QR.paused || !SCAN_QR.shotArmed) return;
-  const clean = sanitizeScan(decodedText);
-  SCAN_QR.lastDecoded = clean;
 
-  SCAN_QR.paused = true;
-  SCAN_QR.shotArmed = false;
-  clearTimeout(SCAN_QR.shotTimer);
-  applyDecoded(clean);
-}
-function shotOnce(){
-  if(!SCAN_QR.active){ return; }
-  if(ACTION_LOCK){ notify("กรุณารอสัญญาณเสียงสิ้นสุด"); return; }
-  SCAN_QR.lastDecoded = null;
-  SCAN_QR.paused = false;
-  SCAN_QR.shotArmed = true;
+/* =========================== BOOT ========================== */
+(async function boot(){
+  await ensureDB();
+  initAudioFiles();
+  switchView('checker');
+  try{ const res=await loadCSV(); CSV_ROWS=res.data||[]; if(!CSV_ROWS.length) throw new Error("CSV ว่าง"); detectColumns(CSV_ROWS); }
+  catch(e){ console.error(e); }
+  hookKeyboard();
+  enforceExpectUI();
+  $_("login-raw").focus();
+  toggleSidebar(true);
 
-  clearTimeout(SCAN_QR.shotTimer);
-  SCAN_QR.shotTimer = setTimeout(()=>{
-    if(SCAN_QR.shotArmed){
-      SCAN_QR.paused = true;
-      SCAN_QR.shotArmed = false;
-      notify("ไม่พบ Qr-code ในเฟรมนี้ ลองกดอีกครั้ง");
-    }
-  }, 1800);
-}
-async function applyDecoded(text){
-  await closeScanner();
-  if(SCAN_QR.target==='prod'){
-    $_('in-prod').value = text; await parseProduction();
-    if(SCAN_QR.chainNext) openScanner('cust');
-  }else if(SCAN_QR.target==='cust'){
-    $_('in-cust').value = text; await parseCustomer();
-  }else if(SCAN_QR.target==='login'){
-    $_('login-raw').value = text; await tryAutoLoginFromRaw(text, true);
-  }
-}
-async function flipScanner(){
-  if(!SCAN_QR.active || !SCAN_QR.cameras.length) return;
-  try{
-    const next = (SCAN_QR.idx + 1) % SCAN_QR.cameras.length;
-    await SCAN_QR.inst.stop();
-    await SCAN_QR.inst.start(SCAN_QR.cameras[next].id, {fps:10, qrbox:250}, onOverlayScan);
-    SCAN_QR.idx = next; applyOverlayMirror();
-  }catch(err){
-    notify("สลับกล้องไม่ได้: "+(err?.message||err));
-  }
-}
-async function closeScanner(){
-  try{ if(SCAN_QR.active && SCAN_QR.inst){ await SCAN_QR.inst.stop(); } }catch{}
-  SCAN_QR.active=false;
-  $_('qr-overlay').style.display='none';
-}
+  // init ripple for current DOM
+  attachRipple(document);
+})();
 </script>
 </body>
 </html>
