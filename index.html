@@ -6,351 +6,65 @@
   <title>PRD Smart-TAG — Production vs Customer</title>
   <meta name="x-build" content="2025-09-03 r45-nav-hierarchy-lines">
   <style>
-    /* =========================
-       Material Design 3 Tokens
-       ========================= */
-    :root{
-      color-scheme: light;
-
-      /* Brand */
-      --prd:#d60000;
-      --smart:#042157;
-
-      /* MD3 Light (base) */
-      --md-sys-color-primary:#2563eb;
-      --md-sys-color-on-primary:#ffffff;
-      --md-sys-color-primary-container:#dbeafe;
-      --md-sys-color-on-primary-container:#0b3aa6;
-
-      --md-sys-color-secondary:#6b7280;
-      --md-sys-color-on-secondary:#ffffff;
-      --md-sys-color-secondary-container:#e5e7eb;
-      --md-sys-color-on-secondary-container:#1f2937;
-
-      --md-sys-color-surface:#f8fafc;
-      --md-sys-color-surface-container:#ffffff;
-      --md-sys-color-on-surface:#1f2a44;
-      --md-sys-color-surface-variant:#eef2f7;
-      --md-sys-color-on-surface-variant:#475569;
-
-      --md-sys-color-outline:#cbd5e1;
-      --md-sys-color-outline-variant:#e2e8f0;
-
-      --md-sys-color-error:#b91c1c;
-      --md-sys-color-on-error:#ffffff;
-      --md-sys-color-error-container:#fde8e8;
-      --md-sys-color-on-error-container:#7f1d1d;
-
-      --md-sys-color-success:#0f7a3a;
-      --md-sys-color-success-container:#e8f7ee;
-
-      /* Elevation */
-      --elev-0:none;
-      --elev-1:0 1px 2px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.05);
-      --elev-2:0 4px 10px rgba(0,0,0,.08), 0 8px 16px rgba(0,0,0,.06);
-      --elev-3:0 8px 24px rgba(0,0,0,.10), 0 16px 32px rgba(0,0,0,.08);
-
-      /* Map to old vars */
-      --bg:var(--md-sys-color-surface);
-      --card:var(--md-sys-color-surface-container);
-      --text:var(--md-sys-color-on-surface);
-      --muted:#6b7280;
-      --line:var(--md-sys-color-outline-variant);
-      --accent:var(--md-sys-color-primary);
-      --accent-weak:var(--md-sys-color-primary-container);
-
-      --ok:var(--md-sys-color-success);
-      --ok-bg:var(--md-sys-color-success-container);
-      --ng:var(--md-sys-color-error);
-      --ng-bg:var(--md-sys-color-error-container);
-
-      --btnborder:#d1d5db;
-      --toast:#111827; --toast-text:#f9fafb;
-
-      --side-bg:#ffffff; --side-text:#1f2937; --side-hover:#f3f4f6;
-      --topbar-bg:#ffffff;
-
-      --fixed-bg:#FEF9C3; --fixed-text:#92400e;
-
-      --title-1: clamp(18px, 2.2vw, 22px);
-      --title-2: 16px; --label: 12px;
-
-      --radius-xs:8px; --radius-sm:10px; --radius-md:12px; --radius-lg:14px; --radius-xl:16px;
-
-      --dur-fast:120ms; --dur:180ms; --easing:cubic-bezier(.2,.0,.2,1);
-    }
-
-    /* Dark theme (explicit) */
-    html[data-theme="dark"]{
-      color-scheme: dark;
-
-      --md-sys-color-primary:#8ab4ff; --md-sys-color-on-primary:#001b3d;
-      --md-sys-color-primary-container:#1e293b; --md-sys-color-on-primary-container:#cfe1ff;
-
-      --md-sys-color-surface:#0b1220;
-      --md-sys-color-surface-container:#0f172a;
-      --md-sys-color-on-surface:#e5e7eb;
-      --md-sys-color-surface-variant:#111827;
-      --md-sys-color-on-surface-variant:#9ca3af;
-
-      --md-sys-color-outline:#334155;
-      --md-sys-color-outline-variant:#1f2937;
-
-      --side-bg:#0f172a; --side-text:#e5e7eb; --side-hover:#111827;
-      --topbar-bg:#0f172a;
-      --toast:#111827; --toast-text:#e5e7eb; --btnborder:#334155;
-
-      /* Stronger result colors + black text */
-      --ok-bg:#22c55e;
-      --ng-bg:#ef4444;
-      --fixed-bg:#fde047;
-      --fixed-text:#111111;
-    }
-
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; background:var(--bg); color:var(--text);
-      font-family: ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Thai",Arial,sans-serif;
-      -webkit-tap-highlight-color:transparent;
-    }
-    :where(button,input,select,textarea,[role="button"]):focus-visible{
-      outline:3px solid color-mix(in oklab, var(--accent) 60%, #ffffff);
-      outline-offset:2px; border-radius:var(--radius-md);
-    }
-
-    /* ================= Topbar ================= */
-    .topbar{position:sticky; top:0; z-index:1000; display:flex; align-items:center; gap:12px;
-      height:64px; padding:10px 14px; background:var(--topbar-bg); border-bottom:1px solid var(--line);
-      backdrop-filter:saturate(1.2) blur(8px);}
-    .menu-btn{
-      display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px;
-      border-radius:var(--radius-md); border:1px solid var(--md-sys-color-outline-variant);
-      background:var(--card); cursor:pointer; font-size:18px;
-      box-shadow:var(--elev-1);
-      transition:transform var(--dur) var(--easing), background var(--dur) var(--easing), border-color var(--dur) var(--easing);
-      position:relative; overflow:hidden;
-    }
-    .menu-btn:hover{ background:color-mix(in oklab, var(--accent-weak) 18%, var(--card)); }
-    .menu-btn:active{ transform:translateY(1px); }
-    .brand-inline{display:flex; align-items:baseline; gap:10px; line-height:1; user-select:none;}
-    .brand-prd{font-family:"LilyUPC","Tahoma","Noto Sans Thai",sans-serif;font-weight:900;font-style:italic;color:var(--prd);font-size:30px;letter-spacing:.5px}
-    .brand-smart{font-family:"LilyUPC","Tahoma","Noto Sans Thai",sans-serif;font-weight:900;color:var(--smart);font-size:26px;letter-spacing:.3px}
-    html[data-theme="dark"] .brand-smart{ color:#ffffff; } /* Smart-Tag white in dark */
-    .spacer{flex:1}
-
-    .topbar-right{display:flex; align-items:center; gap:10px}
-
-    /* ========== Global MD3 Buttons (unchanged from previous version) ========== */
-    button{
-      appearance:none; -webkit-appearance:none;
-      border:1px solid var(--btnborder); background:var(--card); color:var(--text);
-      border-radius:14px; padding:10px 14px; line-height:1;
-      font-weight:700; font-size:14px; cursor:pointer;
-      box-shadow:var(--elev-1);
-      transition: background var(--dur) var(--easing), border-color var(--dur) var(--easing), box-shadow var(--dur) var(--easing), transform var(--dur-fast) var(--easing);
-    }
-    button:hover{ background: color-mix(in oklab, var(--card) 88%, var(--accent-weak) 12%); border-color: color-mix(in oklab, var(--btnborder) 65%, var(--accent) 35%); }
-    button:active{ transform: translateY(1px); box-shadow: var(--elev-0); }
-    button[disabled]{ opacity:.55; cursor:not-allowed; box-shadow:var(--elev-0); }
-
-    button.primary{ background:var(--accent); color:var(--md-sys-color-on-primary); border-color: transparent; }
-    button.primary:hover{ background: color-mix(in oklab, var(--accent) 92%, #000 8%); }
-    button.primary:active{ background: color-mix(in oklab, var(--accent) 85%, #000 15%); }
-
-    button.danger{ background: color-mix(in oklab, var(--ng-bg) 72%, #000 0%); color:#000; border-color: color-mix(in oklab, var(--ng-bg) 65%, #000 35%); }
-    button.danger:hover{ background: color-mix(in oklab, var(--ng-bg) 82%, #000 0%); }
-    button.danger:active{ background: color-mix(in oklab, var(--ng-bg) 90%, #000 0%); }
-
-    /* ================= Layout + sidebar ================= */
-    .layout{display:grid; grid-template-columns: 260px 1fr; min-height:calc(100vh - 64px); transition:grid-template-columns var(--dur) var(--easing)}
-    .layout.collapsed{grid-template-columns: 0 1fr;}
-    .side{background:var(--side-bg); color:var(--side-text); padding:18px 14px; position:sticky; top:64px; height:calc(100vh - 64px);
-      border-right:1px solid var(--line); display:flex; flex-direction:column; gap:14px; transition:transform var(--dur) var(--easing), opacity var(--dur) var(--easing);}
-    .layout.collapsed .side{ transform:translateX(-100%); opacity:0; pointer-events:none; }
-
-    /* ======== NAV: hierarchy styles per request ======== */
-    .nav{display:flex; flex-direction:column; gap:6px; margin-top:6px}
-
-    /* Head (parent): bold + flush-left */
-    .parent{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:12px 12px; border-radius:12px; cursor:pointer; position:relative; overflow:hidden;
-      font-weight:800; /* << ตัวหนา */
-    }
-    .parent:hover{ background:color-mix(in oklab, var(--accent-weak) 25%, transparent); }
-    .caret{font-size:12px; opacity:.8; transition:transform var(--dur) var(--easing)}
-    .parent.expanded .caret{ transform:rotate(90deg); }
-
-    /* Submenu group: has connector vertical line from parent */
-    .submenu{
-      display:none; flex-direction:column; gap:6px;
-      margin-top:4px;
-      padding:6px 0 6px 26px; /* indent group */
-      position:relative;
-    }
-    .submenu.show{display:flex;}
-    .submenu::before{
-      content:""; position:absolute; left:14px; top:2px; bottom:2px; width:2px;
-      background: var(--md-sys-color-outline-variant); border-radius:2px;
-    }
-
-    /* Submenu items: thin font, left connector ├─ */
-    .submenu button{
-      text-align:left; width:100%;
-      padding:10px 12px 10px 26px;  /* indent item text */
-      border-radius:12px; border:1px solid transparent;
-      background:transparent; color:var(--side-text); cursor:pointer; font-size:14px;
-      font-weight:500; /* << บางกว่าหัวข้อใหญ่ */
-      position:relative;
-    }
-    /* Small horizontal connector from the vertical line to the item */
-    .submenu button::before{
-      content:""; position:absolute; left:14px; top:50%; width:12px; height:2px;
-      background: var(--md-sys-color-outline-variant); transform:translateY(-50%);
-      border-radius:2px;
-    }
-    .submenu button:hover{ background:var(--side-hover); }
-    .submenu button.active{
-      background:var(--accent-weak); border-color:#dbeafe;
-      color: color-mix(in oklab, var(--accent) 45%, var(--side-text));
-    }
-
-    /* Non-submenu top-level nav buttons (e.g., Print/Create) keep MD3 look */
-    .nav > button:not(.parent){
-      font-weight:700; border-radius:12px; border:1px solid transparent; box-shadow:none;
-      background:transparent; color:var(--side-text); min-height:44px; text-align:left;
-      padding:10px 12px;
-    }
-    .nav > button:not(.parent):hover{ background:color-mix(in oklab, var(--accent-weak) 20%, transparent); }
-    .nav > button:not(.parent).active{ background:var(--accent-weak); border-color:#dbeafe; color: color-mix(in oklab, var(--accent) 45%, var(--side-text)); }
-
-    /* ================= Main ================= */
-    .wrap{max-width:100% !important; margin:0; padding:24px 32px;}
-    .howto{border:1px solid #f1d36a;background:#fffbcc;border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:center;margin:12px 0 18px;box-shadow:var(--elev-1)}
-    .howto .focus-msg{font-weight:900;color:#111;text-align:center;white-space:pre-line}
-
-    .card{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--elev-1)}
-    .card h3{margin:0 0 8px;font-size:16px; color:var(--md-sys-color-on-surface-variant); font-weight:700}
-    .card.compact{padding:10px}
-    .cmp-top-grid{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-    .cmp-bottom{margin-top:16px}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-
-    input[type=text], input[type=date], input[type=password]{
-      flex:1;min-width:220px;padding:11px 12px;border-radius:12px;border:1px solid var(--btnborder);
-      background:var(--card);color:var(--text);outline:none;
-      transition:border-color var(--dur) var(--easing), box-shadow var(--dur) var(--easing), background var(--dur) var(--easing)
-    }
-    input::placeholder{color:#9ca3af}
-    input[readonly]{background:color-mix(in oklab, var(--card) 85%, #0000 15%)}
-    input[type=text]:hover, input[type=date]:hover, input[type=password]:hover{border-color: color-mix(in oklab, var(--accent) 40%, var(--btnborder)); background: color-mix(in oklab, var(--card) 92%, var(--accent-weak) 8%)}
-    input[type=text]:focus, input[type=date]:focus, input[type=password]:focus{border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in oklab, var(--accent) 25%, transparent)}
-
-    /* Result banner + compare table (unchanged) */
-    .result-banner{display:none;align-items:center;justify-content:center;border-radius:16px;padding:22px;font-weight:900;letter-spacing:.5px;text-align:center;margin-bottom:10px;font-size:clamp(28px,6vw,56px);box-shadow:var(--elev-1)}
-    .banner-ok{background:var(--ok-bg);color:var(--ok);border:1px solid #86efac}
-    .banner-ng{background:var(--ng-bg);color:var(--ng);border:1px solid #fca5a5}
-    html[data-theme="dark"] .banner-ok,
-    html[data-theme="dark"] .banner-ng{ color:#000000 !important; } /* black text on strong bg */
-
-    .cmp{width:100%; border-collapse:separate; border-spacing:0; margin-top:10px; font-size:13px; overflow:hidden; border-radius:12px}
-    .cmp th,.cmp td{padding:12px 12px; border-bottom:1px solid var(--line)}
-    .cmp thead th{background:var(--md-sys-color-surface-variant); color:var(--md-sys-color-on-surface-variant); text-align:left; position:sticky; top:0; z-index:1}
-    .cmp tbody tr:hover{ background:color-mix(in oklab, var(--accent-weak) 12%, transparent) }
-
-    .ok-row{ background:var(--ok-bg) !important; color:var(--ok) !important; font-weight:800 }
-    .ng-row{ background:var(--ng-bg) !important; color:var(--ng) !important; font-weight:800 }
-    .fixed-row{ background:var(--fixed-bg) !important; color:var(--fixed-text) !important; font-weight:800 }
-    html[data-theme="dark"] .ok-row,
-    html[data-theme="dark"] .ng-row,
-    html[data-theme="dark"] .fixed-row{ color:#000000 !important; }
-
-    #log-totals{display:flex;gap:14px;align-items:center;font-size:13px;padding:10px 12px;background:var(--md-sys-color-surface-variant);border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
-    #log-totals .dot{width:8px;height:8px;border-radius:999px;display:inline-block;margin-right:6px;background:#9ca3af}
-    #log-totals .ok .dot{background:color-mix(in oklab, var(--ok-bg) 80%, #000)}
-    #log-totals .ng .dot{background:color-mix(in oklab, var(--ng-bg) 80%, #000)}
-    #log-totals .fixed .dot{background:color-mix(in oklab, var(--fixed-bg) 80%, #000)}
-    #log-totals b{font-size:14px}
-
-    .toast{position:fixed;right:18px;top:76px;z-index:9999;background:var(--toast);color:var(--toast-text);border:1px solid color-mix(in oklab, var(--toast) 70%, #fff);border-radius:16px;padding:10px 14px;box-shadow:var(--elev-3);opacity:0;transform:translateY(-8px) scale(.98);pointer-events:none;transition:opacity var(--dur) var(--easing),transform var(--dur) var(--easing);max-width:min(80vw,420px)}
-    .toast.show{opacity:1;transform:translateY(0) scale(1)}
-
+    :root{color-scheme:light;--prd:#d60000;--smart:#042157;--md-sys-color-primary:#2563eb;--md-sys-color-on-primary:#fff;--md-sys-color-primary-container:#dbeafe;--md-sys-color-on-primary-container:#0b3aa6;--md-sys-color-secondary:#6b7280;--md-sys-color-on-secondary:#fff;--md-sys-color-secondary-container:#e5e7eb;--md-sys-color-on-secondary-container:#1f2937;--md-sys-color-surface:#f8fafc;--md-sys-color-surface-container:#fff;--md-sys-color-on-surface:#1f2a44;--md-sys-color-surface-variant:#eef2f7;--md-sys-color-on-surface-variant:#475569;--md-sys-color-outline:#cbd5e1;--md-sys-color-outline-variant:#e2e8f0;--md-sys-color-error:#b91c1c;--md-sys-color-on-error:#fff;--md-sys-color-error-container:#fde8e8;--md-sys-color-on-error-container:#7f1d1d;--md-sys-color-success:#0f7a3a;--md-sys-color-success-container:#e8f7ee;--elev-0:none;--elev-1:0 1px 2px rgba(0,0,0,.06),0 2px 6px rgba(0,0,0,.05);--elev-2:0 4px 10px rgba(0,0,0,.08),0 8px 16px rgba(0,0,0,.06);--elev-3:0 8px 24px rgba(0,0,0,.10),0 16px 32px rgba(0,0,0,.08);--bg:var(--md-sys-color-surface);--card:var(--md-sys-color-surface-container);--text:var(--md-sys-color-on-surface);--muted:#6b7280;--line:var(--md-sys-color-outline-variant);--accent:var(--md-sys-color-primary);--accent-weak:var(--md-sys-color-primary-container);--ok:var(--md-sys-color-success);--ok-bg:var(--md-sys-color-success-container);--ng:var(--md-sys-color-error);--ng-bg:var(--md-sys-color-error-container);--btnborder:#d1d5db;--toast:#111827;--toast-text:#f9fafb;--side-bg:#fff;--side-text:#1f2937;--side-hover:#f3f4f6;--topbar-bg:#fff;--fixed-bg:#FEF9C3;--fixed-text:#92400e;--title-1:clamp(18px,2.2vw,22px);--title-2:16px;--label:12px;--radius-xs:8px;--radius-sm:10px;--radius-md:12px;--radius-lg:14px;--radius-xl:16px;--dur-fast:120ms;--dur:180ms;--easing:cubic-bezier(.2,.0,.2,1)}
+    html[data-theme="dark"]{color-scheme:dark;--md-sys-color-primary:#8ab4ff;--md-sys-color-on-primary:#001b3d;--md-sys-color-primary-container:#1e293b;--md-sys-color-on-primary-container:#cfe1ff;--md-sys-color-surface:#0b1220;--md-sys-color-surface-container:#0f172a;--md-sys-color-on-surface:#e5e7eb;--md-sys-color-surface-variant:#111827;--md-sys-color-on-surface-variant:#9ca3af;--md-sys-color-outline:#334155;--md-sys-color-outline-variant:#1f2937;--side-bg:#0f172a;--side-text:#e5e7eb;--side-hover:#111827;--topbar-bg:#0f172a;--toast:#111827;--toast-text:#e5e7eb;--btnborder:#334155;--ok-bg:#22c55e;--ng-bg:#ef4444;--fixed-bg:#fde047;--fixed-text:#111}
+    *{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Thai",Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+    :where(button,input,select,textarea,[role="button"]):focus-visible{outline:3px solid color-mix(in oklab,var(--accent) 60%,#fff);outline-offset:2px;border-radius:var(--radius-md)}
+    .topbar{position:sticky;top:0;z-index:1000;display:flex;align-items:center;gap:12px;height:64px;padding:10px 14px;background:var(--topbar-bg);border-bottom:1px solid var(--line);backdrop-filter:saturate(1.2) blur(8px)}
+    .menu-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);border:1px solid var(--md-sys-color-outline-variant);background:var(--card);cursor:pointer;font-size:18px;box-shadow:var(--elev-1);transition:transform var(--dur) var(--easing),background var(--dur) var(--easing),border-color var(--dur) var(--easing)}
+    .menu-btn:hover{background:color-mix(in oklab,var(--accent-weak) 18%,var(--card))}.menu-btn:active{transform:translateY(1px)}
+    .brand-inline{display:flex;align-items:baseline;gap:10px;line-height:1;user-select:none}.brand-prd{font-family:"LilyUPC","Tahoma","Noto Sans Thai",sans-serif;font-weight:900;font-style:italic;color:var(--prd);font-size:30px;letter-spacing:.5px}.brand-smart{font-family:"LilyUPC","Tahoma","Noto Sans Thai",sans-serif;font-weight:900;color:var(--smart);font-size:26px;letter-spacing:.3px}html[data-theme="dark"] .brand-smart{color:#fff}
+    .spacer{flex:1}.topbar-right{display:flex;align-items:center;gap:10px}.badge{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border:1px solid var(--btnborder);border-radius:999px;background:var(--card);font-size:12px}
+    button{appearance:none;-webkit-appearance:none;border:1px solid var(--btnborder);background:var(--card);color:var(--text);border-radius:14px;padding:10px 14px;line-height:1;font-weight:700;font-size:14px;cursor:pointer;box-shadow:var(--elev-1);transition:background var(--dur) var(--easing),border-color var(--dur) var(--easing),box-shadow var(--dur) var(--easing),transform var(--dur-fast) var(--easing)}
+    button:hover{background:color-mix(in oklab,var(--card) 88%,var(--accent-weak) 12%);border-color:color-mix(in oklab,var(--btnborder) 65%,var(--accent) 35%)}button:active{transform:translateY(1px);box-shadow:var(--elev-0)}button[disabled]{opacity:.55;cursor:not-allowed;box-shadow:var(--elev-0)}
+    button.primary{background:var(--accent);color:var(--md-sys-color-on-primary);border-color:transparent}button.primary:hover{background:color-mix(in oklab,var(--accent) 92%,#000 8%)}button.primary:active{background:color-mix(in oklab,var(--accent) 85%,#000 15%)}
+    button.danger{background:color-mix(in oklab,var(--ng-bg) 72%,#000 0%);color:#000;border-color:color-mix(in oklab,var(--ng-bg) 65%,#000 35%)}button.danger:hover{background:color-mix(in oklab,var(--ng-bg) 82%,#000 0%)}button.danger:active{background:color-mix(in oklab,var(--ng-bg) 90%,#000 0%)}
+    .layout{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 64px);transition:grid-template-columns var(--dur) var(--easing)}.layout.collapsed{grid-template-columns:0 1fr}
+    .side{background:var(--side-bg);color:var(--side-text);padding:18px 14px;position:sticky;top:64px;height:calc(100vh - 64px);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:14px;transition:transform var(--dur) var(--easing),opacity var(--dur) var(--easing)}
+    .layout.collapsed .side{transform:translateX(-100%);opacity:0;pointer-events:none}
+    .nav{display:flex;flex-direction:column;gap:6px;margin-top:6px}.parent{display:flex;align-items:center;justify-content:space-between;padding:12px 12px;border-radius:12px;cursor:pointer;position:relative;overflow:hidden;font-weight:800}.parent:hover{background:color-mix(in oklab,var(--accent-weak) 25%,transparent)}.caret{font-size:12px;opacity:.8;transition:transform var(--dur) var(--easing)}.parent.expanded .caret{transform:rotate(90deg)}
+    .submenu{display:none;flex-direction:column;gap:6px;margin-top:4px;padding:6px 0 6px 26px;position:relative}.submenu.show{display:flex}.submenu::before{content:"";position:absolute;left:14px;top:2px;bottom:2px;width:2px;background:var(--md-sys-color-outline-variant);border-radius:2px}
+    .submenu button{text-align:left;width:100%;padding:10px 12px 10px 26px;border-radius:12px;border:1px solid transparent;background:transparent;color:var(--side-text);cursor:pointer;font-size:14px;font-weight:500;position:relative}.submenu button::before{content:"";position:absolute;left:14px;top:50%;width:12px;height:2px;background:var(--md-sys-color-outline-variant);transform:translateY(-50%);border-radius:2px}.submenu button:hover{background:var(--side-hover)}.submenu button.active{background:var(--accent-weak);border-color:#dbeafe;color:color-mix(in oklab,var(--accent) 45%,var(--side-text))}
+    .nav > button:not(.parent){font-weight:700;border-radius:12px;border:1px solid transparent;box-shadow:none;background:transparent;color:var(--side-text);min-height:44px;text-align:left;padding:10px 12px}.nav > button:not(.parent):hover{background:color-mix(in oklab,var(--accent-weak) 20%,transparent)}.nav > button:not(.parent).active{background:var(--accent-weak);border-color:#dbeafe;color:color-mix(in oklab,var(--accent) 45%,var(--side-text))}
+    .wrap{max-width:100%!important;margin:0;padding:24px 32px}.howto{border:1px solid #f1d36a;background:#fffbcc;border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:center;margin:12px 0 18px;box-shadow:var(--elev-1)}.howto .focus-msg{font-weight:900;color:#111;text-align:center;white-space:pre-line}
+    .card{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--elev-1)}.card h3{margin:0 0 8px;font-size:16px;color:var(--md-sys-color-on-surface-variant);font-weight:700}.card.compact{padding:10px}
+    .cmp-top-grid{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}.cmp-bottom{margin-top:16px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    input[type=text],input[type=password],input[type=number],select{flex:1;min-width:220px;padding:11px 12px;border-radius:12px;border:1px solid var(--btnborder);background:var(--card);color:var(--text)}input::placeholder{color:#9ca3af}input[readonly]{background:color-mix(in oklab,var(--card) 85%,#0000 15%)}
+    input[type=text]:hover,input[type=password]:hover,input[type=number]:hover,select:hover{border-color:color-mix(in oklab,var(--accent) 40%,var(--btnborder));background:color-mix(in oklab,var(--card) 92%,var(--accent-weak) 8%)}input[type=text]:focus,input[type=password]:focus,input[type=number]:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in oklab,var(--accent) 25%,transparent)}
+    .result-banner{display:none;align-items:center;justify-content:center;border-radius:16px;padding:22px;font-weight:900;letter-spacing:.5px;text-align:center;margin-bottom:10px;font-size:clamp(28px,6vw,56px);box-shadow:var(--elev-1)}.banner-ok{background:var(--ok-bg);color:var(--ok);border:1px solid #86efac}.banner-ng{background:var(--ng-bg);color:var(--ng);border:1px solid #fca5a5}html[data-theme="dark"] .banner-ok,html[data-theme="dark"] .banner-ng{color:#000!important}
+    .cmp{width:100%;border-collapse:separate;border-spacing:0;margin-top:10px;font-size:13px;overflow:hidden;border-radius:12px}.cmp th,.cmp td{padding:12px 12px;border-bottom:1px solid var(--line)}.cmp thead th{background:var(--md-sys-color-surface-variant);color:var(--md-sys-color-on-surface-variant);text-align:left;position:sticky;top:0;z-index:1}.cmp tbody tr:hover{background:color-mix(in oklab,var(--accent-weak) 12%,transparent)}
+    .ok-row{background:var(--ok-bg)!important;color:var(--ok)!important;font-weight:800}.ng-row{background:var(--ng-bg)!important;color:var(--ng)!important;font-weight:800}.fixed-row{background:var(--fixed-bg)!important;color:var(--fixed-text)!important;font-weight:800}html[data-theme="dark"] .ok-row,html[data-theme="dark"] .ng-row,html[data-theme="dark"] .fixed-row{color:#000!important}
+    #log-totals{display:flex;gap:14px;align-items:center;font-size:13px;padding:10px 12px;background:var(--md-sys-color-surface-variant);border:1px solid var(--line);border-radius:12px;margin-bottom:8px}#log-totals .dot{width:8px;height:8px;border-radius:999px;display:inline-block;margin-right:6px;background:#9ca3af}#log-totals .ok .dot{background:color-mix(in oklab,var(--ok-bg) 80%,#000)}#log-totals .ng .dot{background:color-mix(in oklab,var(--ng-bg) 80%,#000)}#log-totals .fixed .dot{background:color-mix(in oklab,var(--fixed-bg) 80%,#000)}#log-totals b{font-size:14px}
+    .toast{position:fixed;right:18px;top:76px;z-index:9999;background:var(--toast);color:var(--toast-text);border:1px solid color-mix(in oklab,var(--toast) 70%,#fff);border-radius:16px;padding:10px 14px;box-shadow:var(--elev-3);opacity:0;transform:translateY(-8px) scale(.98);pointer-events:none;transition:opacity var(--dur) var(--easing),transform var(--dur) var(--easing);max-width:min(80vw,420px)}.toast.show{opacity:1;transform:translateY(0) scale(1)}
     .logs{border:1px solid var(--line);border-radius:12px;background:var(--card);overflow:auto;max-height:420px;box-shadow:var(--elev-1)}
-
-    table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
-    th,td{padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
-    th{position:sticky;top:0;background:var(--md-sys-color-surface-variant);text-align:left;color:var(--md-sys-color-on-surface-variant)}
-
-    /* Login */
-    .login-screen{position:fixed; inset:0; z-index:10000; background:rgba(11,18,32,.9); display:flex; align-items:center; justify-content:center; backdrop-filter: blur(6px)}
-    .login-panel{width:min(92vw,560px); background:var(--card); border-radius:18px; border:1px solid var(--line); box-shadow:var(--elev-3); overflow:hidden}
-    .login-panel header{background:var(--md-sys-color-surface-variant); border-bottom:1px solid var(--line); padding:16px 18px; font-weight:800; color:var(--md-sys-color-on-surface-variant)}
-    .login-panel .body{ padding:16px 18px }
-    .login-panel .foot{ padding:12px 18px; border-top:1px solid var(--line); display:flex; gap:8px; justify-content:flex-end }
-    .mutewarn{background:#fffbeb;color:#b45309;border:1px solid #fcd34d;padding:8px 10px;border-radius:12px;font-size:12px}
+    table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}th,td{padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}th{position:sticky;top:0;background:var(--md-sys-color-surface-variant);text-align:left;color:var(--md-sys-color-on-surface-variant)}
+    .login-screen{position:fixed;inset:0;z-index:10000;background:rgba(11,18,32,.9);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.login-panel{width:min(92vw,560px);background:var(--card);border-radius:18px;border:1px solid var(--line);box-shadow:var(--elev-3);overflow:hidden}.login-panel header{background:var(--md-sys-color-surface-variant);border-bottom:1px solid var(--line);padding:16px 18px;font-weight:800;color:var(--md-sys-color-on-surface-variant)}.login-panel .body{padding:16px 18px}.login-panel .foot{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:space-between;align-items:center}
+    .mutewarn{background:#fffbeb;color:#b45309;border:1px solid #fcd34d;padding:8px 10px;border-radius:12px;font-size:12px}.muted{color:#64748b}
     #login-cam{display:none}
-
-    /* Scrollbar styling */
-    .logs::-webkit-scrollbar{ width:12px; height:12px }
-    .logs::-webkit-scrollbar-track{ background:var(--md-sys-color-surface-variant); border-radius:10px }
-    .logs::-webkit-scrollbar-thumb{ background:#cbd5e1; border-radius:10px; border:3px solid var(--md-sys-color-surface-variant) }
-    html[data-theme="dark"] .logs::-webkit-scrollbar-thumb{ background:#64748b; border-color:var(--md-sys-color-surface-variant) }
-    .logs{ scrollbar-width:thin; scrollbar-color:#cbd5e1 var(--md-sys-color-surface-variant) }
-    html[data-theme="dark"] .logs{ scrollbar-color:#64748b var(--md-sys-color-surface-variant) }
-
-    /* ========== Theme switch (kept) ========== */
-    .theme-switch{
-      --sw-h:28px; --sw-w:56px; --knob:22px; --pad:3px;
-      position:relative; width:var(--sw-w); height:var(--sw-h);
-      border-radius:999px; border:1px solid var(--md-sys-color-outline-variant);
-      background:linear-gradient(180deg, var(--card), color-mix(in oklab, var(--card) 85%, #0000));
-      box-shadow:var(--elev-1); cursor:pointer; display:grid; grid-template-columns:1fr 1fr;
-      align-items:center; justify-items:center; padding:0 var(--pad);
-      margin-right:8px;
-    }
-    .theme-switch .icon{ font-size:14px; line-height:1; opacity:.95; user-select:none; pointer-events:none; transition:opacity var(--dur) var(--easing), transform var(--dur) var(--easing); }
-    .theme-switch[data-mode="light"] .moon{ opacity:.35; transform:scale(.92); }
-    .theme-switch[data-mode="dark"]  .sun{  opacity:.35; transform:scale(.92); }
-    .theme-switch .knob{ position:absolute; top:50%; left:var(--pad); width:var(--knob); height:var(--knob); transform:translate(0,-50%); transition:left var(--dur) var(--easing), background var(--dur) var(--easing), box-shadow var(--dur) var(--easing); border-radius:999px; background: var(--accent); box-shadow:0 2px 6px rgba(0,0,0,.25); }
-    .theme-switch[data-mode="dark"] .knob{ left: calc(100% - var(--knob) - var(--pad)); }
-
-    @media (max-width: 960px){
-      .layout{grid-template-columns: 0 1fr}
-      .side{transform:translateX(-100%); opacity:0; pointer-events:none}
-      .wrap{padding-left:16px; padding-right:16px}
-      .cmp-top-grid{ grid-template-columns: 1fr }
-    }
+    .theme-switch{--sw-h:28px;--sw-w:56px;--knob:22px;--pad:3px;position:relative;width:var(--sw-w);height:var(--sw-h);border-radius:999px;border:1px solid var(--md-sys-color-outline-variant);background:linear-gradient(180deg,var(--card),color-mix(in oklab,var(--card) 85%,#0000));box-shadow:var(--elev-1);cursor:pointer;display:grid;grid-template-columns:1fr 1fr;align-items:center;justify-items:center;padding:0 var(--pad);margin-right:8px}
+    .theme-switch .icon{font-size:14px;line-height:1;opacity:.95;user-select:none;pointer-events:none;transition:opacity var(--dur) var(--easing),transform var(--dur) var(--easing)}.theme-switch[data-mode="light"] .moon{opacity:.35;transform:scale(.92)}.theme-switch[data-mode="dark"] .sun{opacity:.35;transform:scale(.92)}.theme-switch .knob{position:absolute;top:50%;left:var(--pad);width:var(--knob);height:var(--knob);transform:translate(0,-50%);transition:left var(--dur) var(--easing),background var(--dur) var(--easing),box-shadow var(--dur) var(--easing);border-radius:999px;background:var(--accent);box-shadow:0 2px 6px rgba(0,0,0,.25)}.theme-switch[data-mode="dark"] .knob{left:calc(100% - var(--knob) - var(--pad))}
+    @media (max-width:960px){.layout{grid-template-columns:0 1fr}.side{transform:translateX(-100%);opacity:0;pointer-events:none}.wrap{padding-left:16px;padding-right:16px}.cmp-top-grid{grid-template-columns:1fr}}
+    .modal{position:fixed;inset:0;z-index:11000;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,.6);backdrop-filter:blur(6px)}.modal.show{display:flex}
+    .modal-card{width:min(92vw,720px);background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--elev-3);overflow:hidden}.modal-card header{background:var(--md-sys-color-surface-variant);border-bottom:1px solid var(--line);padding:14px 16px;font-weight:800;color:var(--md-sys-color-on-surface-variant)}.modal-card .body{padding:16px}.modal-card .foot{padding:12px 16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
   </style>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body>
-  <!-- Topbar -->
   <div class="topbar">
     <button id="btn-menu" class="menu-btn" aria-label="สลับเมนู">☰</button>
-    <div class="brand-inline">
-      <div class="brand-prd">PRD</div>
-      <div class="brand-smart">Smart-TAG</div>
-    </div>
+    <div class="brand-inline"><div class="brand-prd">PRD</div><div class="brand-smart">Smart-TAG</div></div>
     <div class="spacer"></div>
-
-    <!-- Theme switch -->
     <button id="theme-switch" class="theme-switch" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode" data-mode="light">
-      <span class="icon sun" aria-hidden="true">☀️</span>
-      <span class="icon moon" aria-hidden="true">🌙</span>
-      <span class="knob" aria-hidden="true"></span>
+      <span class="icon sun" aria-hidden="true">☀️</span><span class="icon moon" aria-hidden="true">🌙</span><span class="knob" aria-hidden="true"></span>
     </button>
-
     <div class="topbar-right">
       <span id="user-pill" class="badge" style="display:none"></span>
       <button id="btn-logout" onclick="logout()" style="display:none">ออกจากระบบ</button>
     </div>
   </div>
 
-  <!-- Layout -->
   <div id="app-layout" class="layout">
-    <!-- Sidebar -->
     <aside class="side" id="sidebar">
       <nav class="nav">
         <div id="parent-checker" class="parent" onclick="toggleSubmenu('checker')" role="button" aria-expanded="true" tabindex="0">
@@ -359,36 +73,17 @@
         <div id="submenu-checker" class="submenu show" aria-label="Submenu: Tag Match Checker">
           <button id="nav-checker" class="active" onclick="switchView('checker')">Tag Check</button>
           <button id="nav-logs" onclick="switchView('logs')">Scan Logs</button>
-          <button id="nav-rework" onclick="switchView('rework')">แก้ไขงาน NG</button>
         </div>
-
-        <!-- other top-level entries -->
-        <button id="nav-print" onclick="switchView('print')">Print Tag</button>
-        <button id="nav-create" onclick="switchView('create')">Create Tag</button>
       </nav>
-      <div style="margin-top:auto; font-size:12px; opacity:.7">© Paradise Plastic</div>
+      <div style="margin-top:auto;font-size:12px;opacity:.7">© Paradise Plastic</div>
     </aside>
 
-    <!-- Compare view -->
     <main id="view-checker" class="wrap" aria-hidden="true">
       <div class="howto"><div id="focus-msg" class="focus-msg"></div></div>
-
       <div class="cmp-top-grid">
-        <div class="card">
-          <h3>แท็กผลิต (Production Tag)</h3>
-          <div class="row">
-            <input id="in-prod" type="text" placeholder="สแกน Qr-code ที่แท็กฝ่ายผลิต แล้วกด Enter" readonly />
-          </div>
-        </div>
-
-        <div class="card">
-          <h3>แท็กลูกค้า (Customer Tag)</h3>
-          <div class="row">
-            <input id="in-cust" type="text" placeholder="สแกน Qr-code ที่แท็กลูกค้า แล้วกด Enter" readonly />
-          </div>
-        </div>
+        <div class="card"><h3>แท็กผลิต (Production Tag)</h3><div class="row"><input id="in-prod" type="text" placeholder="สแกน Qr-code ที่แท็กฝ่ายผลิต แล้วกด Enter" readonly /></div></div>
+        <div class="card"><h3>แท็กลูกค้า (Customer Tag)</h3><div class="row"><input id="in-cust" type="text" placeholder="สแกน Qr-code ที่แท็กลูกค้า แล้วกด Enter" readonly /></div></div>
       </div>
-
       <div class="cmp-bottom">
         <div class="card result-card">
           <h3>ผลการตรวจสอบ</h3>
@@ -406,18 +101,19 @@
       </div>
     </main>
 
-    <!-- Logs view -->
     <main id="view-logs" class="wrap" style="display:none">
-      <h2 style="margin:0 0 12px; font-size:var(--title-1);">Scan Logs</h2>
-
+      <h2 style="margin:0 0 12px;font-size:var(--title-1)">Scan Logs</h2>
       <div class="card">
-        <div class="row" style="gap:12px; align-items:flex-end">
+        <div class="row" style="gap:12px;align-items:flex-end">
           <div class="muted"></div>
-          <div style="margin-left:auto; display:flex; gap:8px; align-items:center">
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <label style="font-weight:600">กรอกรหัสผ่านเพื่อลบข้อมูล</label>
             <input id="admin-pass" type="password" placeholder="Password">
             <button class="danger" onclick="handleClearLogs()">ล้าง Logs ทั้งหมด</button>
             <button onclick="exportFilteredLogs()">ดาวน์โหลดข้อมูล (ตามตัวกรอง)</button>
+            <span class="badge" id="csv-status" title="สถานะ CSV">CSV: not set</span>
+            <button onclick="connectCsvFile()">เชื่อมไฟล์ CSV</button>
+            <label class="badge" style="gap:6px"><input id="csv-auto" type="checkbox" onchange="toggleCsvAuto(this.checked)">บันทึกลง CSV อัตโนมัติ</label>
           </div>
         </div>
       </div>
@@ -425,7 +121,7 @@
       <div class="card compact">
         <h3>ตัวกรอง</h3>
         <div class="filters">
-          <input type="date" id="flt-start"> <span>—</span> <input type="date" id="flt-end">
+          <input type="date" id="flt-start"><span>—</span><input type="date" id="flt-end">
           <button class="primary" onclick="applyFilters()">กรอง</button>
           <button onclick="clearFilters()">ล้าง</button>
         </div>
@@ -433,7 +129,6 @@
 
       <div class="card">
         <h3>รายการสแกน</h3>
-
         <div id="log-totals" aria-live="polite">
           <span class="all">รวมทั้งหมด: <b id="sum-total">0</b></span>
           <span class="ok"><span class="dot"></span>OK: <b id="sum-ok">0</b></span>
@@ -441,906 +136,448 @@
           <span class="fixed"><span class="dot"></span>แก้ไขแล้ว: <b id="sum-fixed">0</b></span>
           <span class=""><span class="dot"></span>ยังไม่แก้ไข: <b id="sum-unfixed">0</b></span>
         </div>
-
         <div class="logs" style="margin-top:10px">
           <table id="log-table-view">
             <thead>
               <tr>
-                <th>เวลา/วันที่</th><th>รหัสพนักงาน</th>
-                <th>Material</th><th>Part Number</th><th>Part Name</th><th>Qty.</th>
-                <th>Part Number</th><th>Qty.</th><th>Status</th><th>ผู้แก้ไข</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </main>
-
-    <!-- Rework NG view -->
-    <main id="view-rework" class="wrap" style="display:none">
-      <h2 style="margin:0 0 12px; font-size:var(--title-1);">แก้ไขงาน NG</h2>
-
-      <!-- รายการงาน -->
-      <div id="rw-list-card" class="card">
-        <h3 class="rw-title">
-          <span>รายการงาน NG ที่ต้องแก้ไข</span>
-          <span class="stat">ยังไม่แก้ไข: <b id="rw-unfixed">0</b></span>
-          <span class="stat">แก้ไขแล้ว: <b id="rw-fixed">0</b></span>
-        </h3>
-        <div class="logs" style="margin-top:10px">
-          <table id="rw-table">
-            <thead>
-              <tr>
-                <th>เวลา/วันที่</th><th>รหัสพนักงาน</th>
-                <th>PN(ผลิต)</th><th>Qty(ผลิต)</th>
+                <th>เวลา/วันที่</th><th>Checker</th>
+                <th>Material</th><th>PN(ผลิต)</th><th>Part Name</th><th>Qty(ผลิต)</th>
+                <th>วันที่ผลิต</th><th>Operator1</th><th>Operator2</th><th>Operator3</th>
                 <th>PN(ลูกค้า)</th><th>Qty(ลูกค้า)</th>
-                <th>จัดการ</th>
+                <th>Status</th><th>ผู้แก้ไข</th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
         </div>
       </div>
-
-      <!-- แผงสแกนแก้ไข -->
-      <div id="rw-panel" class="card" style="display:none; margin-top:12px">
-        <h3>ยืนยันการแก้ไข</h3>
-        <div class="howto"><div id="rw-focus" class="focus-msg"></div></div>
-
-        <div class="cmp-top-grid">
-          <div class="card" style="padding:12px">
-            <h3 style="margin:0 0 8px">สแกนแท็กผลิต (Production Tag)</h3>
-            <div class="row">
-              <input id="rw-in-prod" type="text" placeholder="สแกนแท็กผลิต แล้วกด Enter" />
-            </div>
-          </div>
-          <div class="card" style="padding:12px">
-            <h3 style="margin:0 0 8px">สแกนแท็กลูกค้า (Customer Tag)</h3>
-            <div class="row">
-              <input id="rw-in-cust" type="text" placeholder="สแกนแท็กลูกค้า แล้วกด Enter" />
-            </div>
-          </div>
-        </div>
-
-        <div class="row" style="margin-top:12px; gap:8px">
-          <button onclick="rwCancel()">ยกเลิก</button>
-          <span class="muted">ระบบจะตรวจอัตโนมัติเมื่อสแกนครบทั้งสองแท็ก</span>
-        </div>
-      </div>
-    </main>
-
-    <!-- Placeholders -->
-    <main id="view-print" class="wrap" style="display:none">
-      <h2 style="margin:0 0 12px; font-size:var(--title-1);">Print Tag</h2>
-      <div class="card">พื้นที่นี้เตรียมไว้สำหรับระบบพิมพ์แท็ก</div>
-    </main>
-    <main id="view-create" class="wrap" style="display:none">
-      <h2 style="margin:0 0 12px; font-size:var(--title-1);">Create Tag</h2>
-      <div class="card">พื้นที่นี้เตรียมไว้สำหรับสร้าง/ออกแบบแท็ก</div>
     </main>
   </div>
 
-  <!-- Toast -->
+  <!-- Supervisor Modal -->
+  <div id="sup-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="sup-title">
+    <div class="modal-card">
+      <header id="sup-title">หัวหน้างานยืนยันการแก้ไข NG</header>
+      <div class="body" id="sup-step-auth">
+        <div class="mutewarn" style="margin-bottom:10px">พบผลลัพธ์ <b>NG</b> ระบบถูกล็อค ให้ <b>หัวหน้างาน (admin)</b> สแกนบัตรเพื่อปลดล็อค</div>
+        <div class="row" style="margin-top:10px"><input id="sup-code" type="text" placeholder="สแกนบัตรหัวหน้างาน" /></div>
+        <div class="muted" style="margin-top:8px">อนุญาตเฉพาะรหัสที่อยู่ในรายชื่อพนักงาน และ Role = admin</div>
+      </div>
+
+      <div class="body" id="sup-step-scan" style="display:none">
+        <div class="howto"><div id="rw-focus" class="focus-msg"></div></div>
+        <div class="cmp-top-grid">
+          <div class="card" style="padding:12px">
+            <h3 style="margin:0 0 8px">สแกนแท็กผลิต (Production Tag)</h3>
+            <div class="row"><input id="rw-in-prod" type="text" placeholder="สแกนแท็กผลิต แล้วกด Enter" /></div>
+          </div>
+          <div class="card" style="padding:12px">
+            <h3 style="margin:0 0 8px">สแกนแท็กลูกค้า (Customer Tag)</h3>
+            <div class="row"><input id="rw-in-cust" type="text" placeholder="สแกนแท็กลูกค้า แล้วกด Enter" /></div>
+          </div>
+        </div>
+        <div class="cmp-bottom">
+          <div class="card result-card">
+            <h3>ผลการตรวจสอบ (ยืนยันการแก้ไข)</h3>
+            <div id="rw-banner" class="result-banner" role="status" aria-live="polite"></div>
+            <table class="cmp" id="rw-cmp-table" aria-label="รายละเอียดผลการตรวจสอบ (แก้ไข)">
+              <thead><tr><th>หัวข้อ</th><th>ผลิต</th><th>ลูกค้า</th></tr></thead>
+              <tbody>
+                <tr id="rw-cmp-pn"><td>Part Number</td><td id="rw-cmp-pn-prod">—</td><td id="rw-cmp-pn-cust">—</td></tr>
+                <tr id="rw-cmp-name"><td>Part Name</td><td id="rw-cmp-name-prod">—</td><td id="rw-cmp-name-cust">—</td></tr>
+                <tr id="rw-cmp-qty"><td>Qty.</td><td id="rw-cmp-qty-prod">—</td><td id="rw-cmp-qty-cust">—</td></tr>
+                <tr id="rw-cmp-mat"><td>Material</td><td id="rw-cmp-mat-prod">—</td><td id="rw-cmp-mat-cust">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="foot"><button onclick="supCancel()">ออกจากกระบวนการ</button></div>
+    </div>
+  </div>
+
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <!-- Login Overlay -->
+  <!-- Login -->
   <div id="login-screen" class="login-screen" aria-modal="true" role="dialog">
     <div class="login-panel">
       <header>เข้าสู่ระบบ</header>
       <div class="body">
-        <div class="mutewarn" style="margin-bottom:10px">
-          เข้าสู่ระบบด้วยการสแกน Qr-code ที่บัตรพนักงาน (สแกนเนอร์ USB หรือกด “เปิดกล้องสแกนบัตร”)
-        </div>
-        <div class="row">
-          <button id="btn-login-cam" onclick="toggleLoginCamera()">เปิดกล้องสแกนบัตร</button>
-        </div>
-        <div id="login-cam" style="margin-top:10px; display:none"></div>
+        <div class="mutewarn" style="margin-bottom:10px">เข้าสู่ระบบด้วยการ <b>สแกน Qr-code ที่บัตรพนักงาน</b> เท่านั้น</div>
+        <div class="row" style="margin-top:10px"><input id="login-raw" type="text" placeholder="สแกนบัตรพนักงาน" style="flex:1" /></div>
         <div class="row" style="margin-top:10px">
-          <input id="login-raw" type="text" placeholder="104XXXXXXX หรือ URL ที่มี ?PersonCode=" style="flex:1" />
-        </div>
-        <div class="row" style="margin-top:10px">
-          <span class="badge">รหัสพนักงาน: <b id="emp-id">—</b></span>
+          <span class="badge">ผู้ใช้: <b id="emp-name">—</b></span>
+          <span class="badge" id="emp-role-pill" style="display:none">Role: <b id="emp-role">—</b></span>
         </div>
       </div>
-      <div class="foot"><span class="muted">ระบบล็อกอินอัตโนมัติเมื่ออ่านรหัสพนักงานได้</span></div>
+      <div class="foot"><span class="muted">ระบบจะล็อกอินอัตโนมัติเมื่ออ่านรหัสจากบัตร และพบในไฟล์พนักงาน</span><button id="btn-emp-quick" onclick="loadEmpMaster()">โหลดรายชื่อ</button></div>
     </div>
   </div>
 
 <script>
-/* ===== Theme switch (unchanged logic) ===== */
-function applyTheme(mode){
-  const html = document.documentElement;
-  html.dataset.theme = mode;
-  localStorage.setItem('themeMode', mode);
-  const sw = document.getElementById('theme-switch');
-  sw.dataset.mode = mode;
-  sw.setAttribute('aria-checked', mode==='dark' ? 'true' : 'false');
-}
-function initTheme(){
-  const saved = localStorage.getItem('themeMode') || 'light';
-  applyTheme(saved);
-  const sw = document.getElementById('theme-switch');
-  sw.addEventListener('click', ()=>{
-    const next = (document.documentElement.dataset.theme==='dark') ? 'light' : 'dark';
-    applyTheme(next);
-  });
-}
+/* ===== Theme / UI ===== */
+function applyTheme(mode){const html=document.documentElement;html.dataset.theme=mode;localStorage.setItem('themeMode',mode);const sw=document.getElementById('theme-switch');sw.dataset.mode=mode;sw.setAttribute('aria-checked',mode==='dark'?'true':'false');}
+function initTheme(){applyTheme(localStorage.getItem('themeMode')||'light');document.getElementById('theme-switch').addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'))}
+function switchView(name){for(const id of ['checker','logs']){const main=document.getElementById('view-'+id);const btn=document.getElementById(id==='checker'?'nav-checker':('nav-'+id));if(main) main.style.display=(id===name)?'block':'none';if(btn) btn.classList.toggle('active',id===name)}if(name==='logs') renderLogsView()}
+function toggleSubmenu(key){const s=document.getElementById('submenu-'+key),p=document.getElementById('parent-'+key);if(!s||!p)return;s.classList.toggle('show');p.classList.toggle('expanded')}
+function toggleSidebar(force){const l=document.getElementById('app-layout');const want=(typeof force==='boolean')?force:!l.classList.contains('collapsed');l.classList.toggle('collapsed',want)}
+document.addEventListener('DOMContentLoaded',()=>document.getElementById('btn-menu').addEventListener('click',()=>toggleSidebar()))
 
-/* ===== Existing app JS below (unchanged except where previously improved) ===== */
-function switchView(name){
-  for(const id of ['checker','logs','rework','print','create']){
-    const main = document.getElementById('view-'+id);
-    const btn  = document.getElementById(id==='checker'?'nav-checker':('nav-'+id));
-    if(main) main.style.display = (id===name)?'block':'none';
-    if(btn)  btn.classList.toggle('active', id===name);
-  }
-  const parent = document.getElementById('parent-checker');
-  if(parent){
-    const anyActive = document.getElementById('nav-checker').classList.contains('active')
-                   || document.getElementById('nav-logs').classList.contains('active')
-                   || document.getElementById('nav-rework').classList.contains('active');
-    parent.classList.toggle('active', anyActive);
-  }
-  if(name==='logs'){ renderLogsView(); }
-  if(name==='rework'){ renderReworkView(); }
-}
-function toggleSubmenu(key){
-  const sub = document.getElementById('submenu-'+key);
-  const parent = document.getElementById('parent-'+key);
-  if(!sub||!parent) return;
-  sub.classList.toggle('show');
-  parent.classList.toggle('expanded');
-}
-function toggleSidebar(force){
-  const layout = document.getElementById('app-layout');
-  const want = (typeof force==='boolean') ? force : !layout.classList.contains('collapsed');
-  layout.classList.toggle('collapsed', want);
-}
-document.addEventListener('DOMContentLoaded', ()=>document.getElementById('btn-menu').addEventListener('click', ()=>toggleSidebar()));
+/* ===== State ===== */
+let CSV_ROWS=[];let MAT_COL=null,PN_COL=null,NAME_COL=null;
+let PROD={mat:"",pn:"",name:"",qty:null,date:"",op1:"",op2:"",op3:""};
+let CUST={pn:"",qty:null,name:"",mat:""};
+let EMP_MAP=new Map();let EMP_COL_CODE=null,EMP_COL_ROLE=null,EMP_COL_NAME=null,EMP_COL_FIRST=null,EMP_COL_LAST=null;
+let SUP_QR={inst:null,active:false},LOGIN_QR={inst:null,active:false};
+let USER={code:null,role:null,name:null};
+let LOGIN_CODE=null;
+let SESSION_LOCK=false,BUSY=false,EXPECT='prod';
+let RW_EXPECT='prod',RW_PROD={mat:"",pn:"",name:"",qty:null},RW_CUST={pn:"",qty:null,name:"",mat:""},RW_TARGET=null;
+let SOUND_BUSY=false,SUP={code:null,role:null,active:false};
+let CSV_SINK={handle:null,enabled:false,headerWrote:false};
 
-let CSV_ROWS = [];
-let MAT_COL = null, PN_COL = null, NAME_COL = null;
-
-let PROD = { mat:"", pn:"", name:"", qty:null };
-let CUST = { pn:"", qty:null, name:"", mat:"" };
-
-let LOGIN_QR = { inst:null, active:false };
-let USER = { code:null };
-
-let SESSION_LOCK = false;
-let BUSY = false;
-let EXPECT = 'prod';
-
-let RW_EXPECT='prod', RW_PROD={mat:"", pn:"", name:"", qty:null}, RW_CUST={pn:"", qty:null, name:"", mat:""};
-let RW_TARGET=null;
-
-let SOUND_BUSY=false;
-
-/* Helpers, audio, parsing, compare, logs, rework, keyboard, login …
-   (same as the previous version you confirmed) */
-const $_ = id => document.getElementById(id);
-const setText = (id, v)=>($_(id).textContent = v);
-const norm = s => (s??"").toString().trim();
-function sanitizeScan(s){ return (s??"").replace(/[\u200B-\u200D\u2060\uFEFF]/g,'').replace(/[\u0000-\u001F\u007F]/g,'').trim(); }
-const toNum = x => { if(x===null||x===undefined||x==="") return null; const n=parseFloat((x+"").replace(/,/g,"")); return Number.isFinite(n)?n:null; };
-const normPN = s => norm(s).replace(/\s+/g,"").toUpperCase();
-const normPNNoDash = s => normPN(s).replace(/-/g,"");
-function cleanMat(s){ const t=norm(s).replace(/\s+/g,""); const n=Number(t); if(Number.isFinite(n)) return String(Math.trunc(n)); const d=t.match(/\d+/g); return d?d.join(""):t; }
-function normName(x){ return norm(x).replace(/\s+/g,' ').trim().toUpperCase(); }
-function esc(s){ return (s??"").toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+/* ===== Utils ===== */
+const $_=id=>document.getElementById(id);
+const setText=(id,v)=>{const el=$_(id);if(el) el.textContent=v};
+const norm=s=>(s??"").toString().trim();
+function sanitizeScan(s){return (s??"").replace(/[\u200B-\u200D\u2060\uFEFF]/g,'').replace(/[\u0000-\u001F\u007F]/g,'').trim()}
+const toNum=x=>{if(x===null||x===undefined||x==="")return null;const n=parseFloat((x+"").replace(/,/g,""));return Number.isFinite(n)?n:null}
+const normPN=s=>norm(s).replace(/\s+/g,"").toUpperCase();
+const normPNNoDash=s=>normPN(s).replace(/-/g,"");
+function cleanMat(s){const t=norm(s).replace(/\s+/g,"");const n=Number(t);if(Number.isFinite(n))return String(Math.trunc(n));const d=t.match(/\d+/g);return d?d.join(""):t}
+function normName(x){return norm(x).replace(/\s+/g,' ').trim().toUpperCase()}
+function esc(s){return (s??"").toString().replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&gt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 let toastTimer=null,audioCtx=null;
-function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
-function resumeAudio(){ try{ if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch{} }
-
-function synthBell(durationMs=600){
-  ensureAudio(); resumeAudio();
-  const c = audioCtx, t = c.currentTime;
-  const g = c.createGain(); g.gain.setValueAtTime(0.0001, t);
-  const o1 = c.createOscillator(); o1.type='sine'; o1.frequency.setValueAtTime(1500, t);
-  const o2 = c.createOscillator(); o2.type='sine'; o2.frequency.setValueAtTime(2000, t); o2.detune.setValueAtTime(6, t);
-  g.gain.exponentialRampToValueAtTime(0.9, t+0.01);
-  g.gain.exponentialRampToValueAtTime(0.0001, t+durationMs/1000);
-  o1.connect(g); o2.connect(g); g.connect(c.destination);
-  o1.start(t); o2.start(t);
-  o1.stop(t+durationMs/1000); o2.stop(t+durationMs/1000);
-}
-
-const SOUND_BASE = 'sound/';
-let audioOK=null, audioNG=null, audioInvalidProd=null, audioInvalidCust=null, audioInvalidLogin=null, audioBell=null,
-    audioMismatchPN=null, audioMismatchQty=null;
-
-function initAudioFiles(){
-  try{
-    audioOK           = new Audio(SOUND_BASE + 'ok.mp3');
-    audioNG           = new Audio(SOUND_BASE + 'ng.mp3');
-    audioInvalidProd  = new Audio(SOUND_BASE + 'invalid_prod.mp3');
-    audioInvalidCust  = new Audio(SOUND_BASE + 'invalid_cust.mp3');
-    audioInvalidLogin = new Audio(SOUND_BASE + 'invalid_login.mp3');
-    audioBell         = new Audio(SOUND_BASE + 'bell.mp3');
-    audioMismatchPN   = new Audio(SOUND_BASE + 'mismatch_pn.mp3');
-    audioMismatchQty  = new Audio(SOUND_BASE + 'mismatch_qty.mp3');
-    [audioOK, audioNG, audioInvalidProd, audioInvalidCust, audioInvalidLogin, audioBell, audioMismatchPN, audioMismatchQty]
-      .forEach(a=>{ if(a){ a.preload='auto'; a.crossOrigin='anonymous'; }});
-  }catch{}
-}
-
-function unlockAudio(){
-  try{
-    [audioOK, audioNG, audioInvalidProd, audioInvalidCust, audioInvalidLogin, audioBell, audioMismatchPN, audioMismatchQty].forEach(a=>{
-      if(!a) return;
-      const v=a.volume; a.volume=0;
-      const p=a.play();
-      if(p && typeof p.then==='function'){
-        p.then(()=>{ a.pause(); a.currentTime=0; a.volume=v; }).catch(()=>{ a.volume=v; });
-      }else{ a.pause(); a.currentTime=0; a.volume=v; }
-    });
-  }catch{}
-}
-
+function ensureAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)()}
+function resumeAudio(){try{ if(audioCtx&&audioCtx.state==='suspended') audioCtx.resume()}catch{}}
+function synthBell(ms=600){ensureAudio();resumeAudio();const c=audioCtx,t=c.currentTime;const g=c.createGain();g.gain.setValueAtTime(0.0001,t);const o1=c.createOscillator();o1.type='sine';o1.frequency.setValueAtTime(1500,t);const o2=c.createOscillator();o2.type='sine';o2.frequency.setValueAtTime(2000,t);o2.detune.setValueAtTime(6,t);g.gain.exponentialRampToValueAtTime(0.9,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+ms/1000);o1.connect(g);o2.connect(g);g.connect(c.destination);o1.start(t);o2.start(t);o1.stop(t+ms/1000);o2.stop(t+ms/1000)}
+const SOUND_BASE='sound/';let audioOK=null,audioNG=null,audioInvalidProd=null,audioInvalidCust=null,audioInvalidLogin=null,audioBell=null,audioMismatchPN=null,audioMismatchQty=null;
+const SOUND_FILE_REWORK_OK='rework_ok.mp3',SOUND_FILE_REWORK_NG='rework_ng.mp3',SOUND_FILE_REWORK_MISMATCH_PN='rework_mismatch_pn.mp3',SOUND_FILE_REWORK_MISMATCH_QTY='rework_mismatch_qty.mp3';
+let audioReworkOK=null,audioReworkNG=null,audioReworkMismatchPN=null,audioReworkMismatchQty=null;
+function initAudioFiles(){try{
+  audioOK=new Audio(SOUND_BASE+'ok.mp3');audioNG=new Audio(SOUND_BASE+'ng.mp3');audioInvalidProd=new Audio(SOUND_BASE+'invalid_prod.mp3');audioInvalidCust=new Audio(SOUND_BASE+'invalid_cust.mp3');audioInvalidLogin=new Audio(SOUND_BASE+'invalid_login.mp3');audioBell=new Audio(SOUND_BASE+'bell.mp3');audioMismatchPN=new Audio(SOUND_BASE+'mismatch_pn.mp3');audioMismatchQty=new Audio(SOUND_BASE+'mismatch_qty.mp3');
+  audioReworkOK=new Audio(SOUND_BASE+SOUND_FILE_REWORK_OK);audioReworkNG=new Audio(SOUND_BASE+SOUND_FILE_REWORK_NG);audioReworkMismatchPN=new Audio(SOUND_BASE+SOUND_FILE_REWORK_MISMATCH_PN);audioReworkMismatchQty=new Audio(SOUND_BASE+SOUND_FILE_REWORK_MISMATCH_QTY);
+  [audioOK,audioNG,audioInvalidProd,audioInvalidCust,audioInvalidLogin,audioBell,audioMismatchPN,audioMismatchQty,audioReworkOK,audioReworkNG,audioReworkMismatchPN,audioReworkMismatchQty].forEach(a=>{if(a){a.preload='auto';a.crossOrigin='anonymous'}})
+}catch{}}
+function unlockAudio(){try{[audioOK,audioNG,audioInvalidProd,audioInvalidCust,audioInvalidLogin,audioBell,audioMismatchPN,audioMismatchQty,audioReworkOK,audioReworkNG,audioReworkMismatchPN,audioReworkMismatchQty].forEach(a=>{if(!a)return;const v=a.volume;a.volume=0;const p=a.play();if(p&&typeof p.then==='function'){p.then(()=>{a.pause();a.currentTime=0;a.volume=v}).catch(()=>{a.volume=v})}else{a.pause();a.currentTime=0;a.volume=v}})}catch{}}
 function setScanLock(on){
-  SOUND_BUSY = !!on;
-  const prodIn=$_("in-prod"), custIn=$_("in-cust");
-  if(prodIn) prodIn.readOnly = on || (EXPECT!=='prod');
-  if(custIn) custIn.readOnly = on || (EXPECT!=='cust');
-  const rpi=$_("rw-in-prod"), rci=$_("rw-in-cust");
-  if(rpi) rpi.readOnly = on || (RW_EXPECT!=='prod');
-  if(rci) rci.readOnly = on || (RW_EXPECT!=='cust');
-  const li=$_("login-raw"); if(li) li.readOnly = on ? true : false;
+  SOUND_BUSY=!!on;
+  const prodIn=$_("in-prod"),custIn=$_("in-cust");if(prodIn) prodIn.readOnly=on||(EXPECT!=='prod');if(custIn) custIn.readOnly=on||(EXPECT!=='cust');
+  const rpi=$_("rw-in-prod"),rci=$_("rw-in-cust");if(rpi) rpi.readOnly=false;if(rci) rci.readOnly=false;
+  const li=$_("login-raw");if(li) li.readOnly=false;const si=$_("sup-code");if(si) si.readOnly=false;
 }
+function playAudioAwait(a,ms=700){return new Promise(res=>{try{if(!a) throw new Error('no audio');a.currentTime=0;const done=()=>{a.removeEventListener('ended',done);res()};a.addEventListener('ended',done,{once:true});const p=a.play();if(p&&typeof p.then==='function'){p.catch(()=>{synthBell(ms);setTimeout(res,ms)})}else{setTimeout(res,900)}}catch{synthBell(ms);setTimeout(res,ms)}})}
+async function toastMp3Lock(msg,a,el,ms=700){setScanLock(true);showToast(msg);await playAudioAwait(a,ms);setScanLock(false);try{el?.focus()}catch{}}
+function notify(msg,ms=5000){try{audioBell&&audioBell.play().catch(()=>synthBell(300))}catch{synthBell(300)}showToast(msg,ms)}
+function showToast(msg,ms=2200){const t=$_("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),ms)}
+function formatDateTime(dt){const p=n=>String(n).padStart(2,'0');return `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())} ${p(dt.getHours())}:${p(dt.getMinutes())}:${p(dt.getSeconds())}`}
+function updateFocusBanner(){setText("focus-msg",EXPECT==='prod'?"กรุณาสแกนแท็กฝ่ายผลิต Please scan the Production TAG.":"กรุณาสแกนแท็กลูกค้า Please scan the Customer TAG.")}
+function updateRwFocus(){setText("rw-focus",RW_EXPECT==='prod'?"กรุณาสแกนแท็กผลิต (โหมดยืนยันโดยหัวหน้างาน)":"กรุณาสแกนแท็กลูกค้า (โหมดยืนยันโดยหัวหน้างาน)")}
 
-function playAudioAwait(audioEl, fallbackMs=700){
-  return new Promise((resolve)=>{
-    try{
-      if(!audioEl) throw new Error('no audio element');
-      audioEl.currentTime = 0;
-      const done = ()=>{ audioEl.removeEventListener('ended', done); resolve(); };
-      audioEl.addEventListener('ended', done, {once:true});
-      const p = audioEl.play();
-      if(p && typeof p.then==='function'){
-        p.catch(()=>{ audioEl.removeEventListener('ended', done); synthBell(fallbackMs); setTimeout(resolve, fallbackMs); });
-      }else{
-        setTimeout(resolve, 900);
+/* ===== Data load ===== */
+function loadCSV(){return new Promise((resolve,reject)=>{Papa.parse("bom_export.csv",{download:true,header:true,skipEmptyLines:true,complete:res=>resolve(res),error:err=>reject(err)})})}
+function detectColumns(rows){const cols=Object.keys(rows[0]||{});MAT_COL=cols.find(c=>/check[_\s]?material|(^|[^a-z])mat(erial)?([^a-z]|$)|material|code/i.test(c))||cols[0];PN_COL=cols.find(c=>/customermaterial|part[\s_]?number|^pn$|partno/i.test(c))||cols[1]||cols[0];NAME_COL=cols.find(c=>/customer[_\s]?description|part[\s_]?name|description|desc/i.test(c))||cols[2]||cols[0]}
+function mapPnToDetails(pn){const target=normPNNoDash(pn);if(!CSV_ROWS.length||!PN_COL)return {mat:null,name:null};const row=CSV_ROWS.find(r=>normPNNoDash(r[PN_COL]||"")===target);if(!row)return {mat:null,name:null};return {mat:norm(row[MAT_COL]||""),name:norm(row[NAME_COL]||"")}}
+function loadEmpMaster(fromFile){
+  return new Promise(resolve=>{
+    const finish=(rows)=>{
+      if(!rows.length){notify("ไฟล์พนักงานว่างหรืออ่านไม่ได้");return resolve(false)}
+      const cols=Object.keys(rows[0]||{});
+      const pick=(re,alt)=>cols.find(c=>re.test(c))||alt||null;
+      EMP_COL_CODE=pick(/^(emp(id)?|employee(code)?|person(code)?|code|รหัสพนักงาน)$/i,cols[0]);
+      EMP_COL_ROLE=pick(/^(role|สิทธิ์|สิทธิการใช้งาน|ตำแหน่ง)$/i,cols[1]);
+      EMP_COL_NAME=pick(/^(name|ชื่อ(\s*-?\s*นามสกุล)?|display\s*name)$/i,null);
+      EMP_COL_FIRST=pick(/^(first(name)?|ชื่อ)$/i,null);
+      EMP_COL_LAST=pick(/^(last(name)?|นามสกุล)$/i,null);
+      EMP_MAP.clear();
+      for(const r of rows){
+        const code=sanitizeScan(r[EMP_COL_CODE]||""); if(!code) continue;
+        const role=String(r[EMP_COL_ROLE]||"").trim().toLowerCase();
+        const first=(EMP_COL_FIRST?String(r[EMP_COL_FIRST]||""):"").trim();
+        const last=(EMP_COL_LAST?String(r[EMP_COL_LAST]||""):"").trim();
+        const single=(EMP_COL_NAME?String(r[EMP_COL_NAME]||""):"").trim();
+        const name=(single || [first,last].filter(Boolean).join(" ")).trim();
+        EMP_MAP.set(code,{role,name,first,last});
       }
-    }catch{
-      synthBell(fallbackMs); setTimeout(resolve, fallbackMs);
-    }
-  });
+      notify(`โหลดรายชื่อพนักงานแล้ว: ${EMP_MAP.size} รายการ`); resolve(true);
+    };
+    const done=res=>finish(res?.data||[]);
+    if(fromFile instanceof File){Papa.parse(fromFile,{header:true,skipEmptyLines:true,complete:res=>done(res)})}
+    else{Papa.parse("man_data.csv",{download:true,header:true,skipEmptyLines:true,complete:res=>done(res),error:()=>resolve(false)})}
+  })
 }
+const getEmpInfo=code=>code?EMP_MAP.get(code)||null:null;
+const getEmpRole=code=>getEmpInfo(code)?.role||"";
 
-async function toastMp3Lock(message, audioEl, focusEl, fallbackMs=700){
-  setScanLock(true);
-  showToast(message);
-  await playAudioAwait(audioEl, fallbackMs);
-  setScanLock(false);
-  try{ focusEl?.focus(); }catch{}
-}
+/* ===== Tag detect ===== */
+function isLikelyProd(raw){const t=norm(raw).split("|").map(x=>x.trim());if(t.length<5||t.length>7)return false;const name=t[0]||"",pn=t[1]||"",qty=t[2]||"",date=t[3]||"";const pnOk=/[A-Za-z]/.test(pn)&&/^[A-Za-z0-9._-]{3,}$/.test(pn);const qtyOk=/^\d+(\.\d+)?$/.test(qty);const nameOk=name.length>0;const dateOk=date.length>0;return pnOk&&qtyOk&&nameOk&&dateOk}
+function isLikelyCust(raw){const s=norm(raw),t=s.split("|");if(t.length<3)return false;const base=(t[1]||"").trim(),sfx=(t[2]||"").trim(),q3=(t[3]||"").trim(),q4=(t[4]||"").trim();const pn=base+sfx;const pnOk=/[A-Za-z]/.test(pn)&&/^[A-Za-z0-9-]{3,}$/.test(pn);const hasQty=(/^\d+(\.\d+)?$/.test(q3))||(/^\d+(\.\d+)?$/.test(q4));return pnOk&&hasQty}
+function classifyTag(raw){const p=isLikelyProd(raw),c=isLikelyCust(raw);if(p&&!c)return 'prod';if(c&&!p)return 'cust';if(p&&c){const parts=norm(raw).split("|");return parts.length>=5?'prod':'cust'}return 'unknown'}
 
-function notify(msg, ms=5000){
-  try{ audioBell && audioBell.play().catch(()=>synthBell(300)); }catch{ synthBell(300); }
-  showToast(msg, ms);
+/* ===== UI helpers ===== */
+function setBanner(ok,prefix=''){const b=$_(prefix?`${prefix}-banner`:'banner');b.className="result-banner "+(ok?"banner-ok":"banner-ng");b.textContent=ok?"OK":"NG";b.style.display="flex"}
+function setCmpUI(prefix,prod,cust,flags){
+  const P=x=>`${prefix?prefix+'-':''}${x}`;
+  setText(P("cmp-pn-prod"),prod.pn||"—"); setText(P("cmp-qty-prod"),prod.qty??"—"); setText(P("cmp-name-prod"),prod.name||"—"); setText(P("cmp-mat-prod"),prod.mat||"—");
+  setText(P("cmp-pn-cust"),cust.pn||"—"); setText(P("cmp-qty-cust"),cust.qty??"—"); setText(P("cmp-name-cust"),cust.name||"—"); setText(P("cmp-mat-cust"),cust.mat||"—");
+  ["pn","qty","name","mat"].forEach(k=>{const tr=$_((prefix?prefix+'-':'')+`cmp-${k}`);tr.classList.remove("ok-row","ng-row");tr.classList.add(flags[k]?"ok-row":"ng-row")});
+  setBanner(flags.ok,prefix||'');
 }
+function computeMatch(prod,cust){
+  const pnOk=(!!prod.pn&&!!cust.pn)&&(normPN(prod.pn)===normPN(cust.pn)||normPNNoDash(prod.pn)===normPNNoDash(cust.pn));
+  const qtyOk=toNum(prod.qty)!=null&&toNum(cust.qty)!=null&&toNum(prod.qty)===toNum(cust.qty);
+  const nameOk=!!prod.name&&!!cust.name&&(normName(prod.name)===normName(cust.name));
+  const matOk=!!prod.mat&&!!cust.mat&&(cleanMat(prod.mat)===cleanMat(cust.mat));
+  return {pn:pnOk,qty:qtyOk,name:nameOk,mat:matOk,ok:(pnOk&&qtyOk)}
+}
+function enforceExpectUI(){const on=EXPECT==='prod';const pi=$_("in-prod"),ci=$_("in-cust");pi.readOnly=SOUND_BUSY||!on;ci.readOnly=SOUND_BUSY||on;if(!SOUND_BUSY){(on?pi:ci).focus()}updateFocusBanner()}
+function enforceRwUI(){const on=RW_EXPECT==='prod';const pi=$_("rw-in-prod"),ci=$_("rw-in-cust");if(!SOUND_BUSY){(on?pi:ci)?.focus()}updateRwFocus()}
 
-function showToast(msg, ms=2200){
-  const t=$_("toast");
-  t.textContent=msg; t.classList.add("show");
-  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),ms);
-}
+/* ===== Reset ===== */
+function hardReset(){$_("in-prod").value="";$_("in-cust").value="";PROD={mat:"",pn:"",name:"",qty:null,date:"",op1:"",op2:"",op3:""};CUST={pn:"",qty:null,name:"",mat:""};$_("banner").style.display="none";["cmp-pn","cmp-qty","cmp-name","cmp-mat"].forEach(id=>$_(id).classList.remove("ok-row","ng-row"));["cmp-pn-prod","cmp-pn-cust","cmp-name-prod","cmp-name-cust","cmp-qty-prod","cmp-qty-cust","cmp-mat-prod","cmp-mat-cust"].forEach(id=>setText(id,"—"));SESSION_LOCK=false;EXPECT='prod';enforceExpectUI()}
+function maybeResetBeforeProdScan(){if(SESSION_LOCK) hardReset()}
 
-function formatDateTime(dt){ const p=n=>String(n).padStart(2,'0'); return `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())} ${p(dt.getHours())}:${p(dt.getMinutes())}:${p(dt.getSeconds())}`; }
-function updateFocusBanner(){
-  $_("focus-msg").textContent = EXPECT==='prod'
-    ? `กรุณาสแกนแท็กฝ่ายผลิต Please scan the Production TAG.`
-    : `กรุณาสแกนแท็กลูกค้า Please scan the Customer TAG.`;
-}
-function updateRwFocus(){
-  $_("rw-focus").textContent = RW_EXPECT==='prod'
-    ? `กรุณาสแกนแท็กผลิต (โหมดแก้ไขงาน NG)`
-    : `กรุณาสแกนแท็กลูกค้า (โหมดแก้ไขงาน NG)`;
-}
-
-function loadCSV(){ return new Promise((resolve,reject)=>{ Papa.parse("bom_export.csv",{download:true,header:true,skipEmptyLines:true,complete:res=>resolve(res),error:err=>reject(err)}); }); }
-function detectColumns(rows){
-  const cols = Object.keys(rows[0]||{});
-  MAT_COL  = cols.find(c=>/check[_\s]?material|(^|[^a-z])mat(erial)?([^a-z]|$)|material|code/i.test(c)) || cols[0];
-  PN_COL   = cols.find(c=>/customermaterial|part[\s_]?number|^pn$|partno/i.test(c)) || cols[1] || cols[0];
-  NAME_COL = cols.find(c=>/customer[_\s]?description|part[\s_]?name|description|desc/i.test(c)) || cols[2] || cols[0];
-}
-
-function mapMatToPart(mat){
-  if(!CSV_ROWS.length || !MAT_COL || !PN_COL || !NAME_COL) return {pn:null,name:null};
-  const key = cleanMat(mat);
-  let hit = CSV_ROWS.find(r => cleanMat(r[MAT_COL]) === key);
-  if(!hit){
-    const target = Number(key);
-    if(Number.isFinite(target)) hit = CSV_ROWS.find(r => Number(cleanMat(r[MAT_COL])) === target);
-  }
-  return hit ? { pn:norm(hit[PN_COL]), name:norm(hit[NAME_COL]) } : {pn:null, name:null};
-}
-function mapPnToDetails(pn){
-  const target = normPNNoDash(pn);
-  if(!CSV_ROWS.length || !PN_COL) return {mat:null, name:null};
-  const row = CSV_ROWS.find(r => normPNNoDash(r[PN_COL]||"") === target);
-  if(!row) return {mat:null, name:null};
-  return { mat: norm(row[MAT_COL]||""), name: norm(row[NAME_COL]||"") };
-}
-
-function isLikelyProd(raw){
-  const s = norm(raw); const parts = s.split("|");
-  if(parts.length!==2) return false;
-  const mat = parts[0].trim(), qty = parts[1].trim();
-  return /^[A-Za-z0-9._-]{3,}$/.test(mat) && /^\d+(\.\d+)?$/.test(qty);
-}
-function isLikelyCust(raw){
-  const s = norm(raw);
-  const t = s.split("|");
-  if(t.length < 3) return false;
-  const pnBase = (t[1]||"").trim();
-  const pnSfx  = (t[2]||"").trim();
-  const qty3   = (t[3]||"").trim();
-  const qty4   = (t[4]||"").trim();
-  const pnCandidate = pnBase + pnSfx;
-  const pnLooksOk = /[A-Za-z]/.test(pnCandidate) && /^[A-Za-z0-9-]{3,}$/.test(pnCandidate);
-  const hasQty = (/^\d+(\.\d+)?$/.test(qty3)) || (/^\d+(\.\d+)?$/.test(qty4));
-  return pnLooksOk && hasQty;
-}
-function classifyTag(raw){
-  const p = isLikelyProd(raw);
-  const c = isLikelyCust(raw);
-  if(p && !c) return 'prod';
-  if(c && !p) return 'cust';
-  return 'unknown';
-}
-
-function enforceExpectUI(){
-  const prodOK = EXPECT==='prod';
-  const prodIn = $_("in-prod"), custIn = $_("in-cust");
-  prodIn.readOnly = SOUND_BUSY || !prodOK;  custIn.readOnly = SOUND_BUSY || prodOK;
-  if(!SOUND_BUSY){ if(prodOK){ prodIn.focus(); } else { custIn.focus(); } }
-  updateFocusBanner();
-}
-function enforceRwUI(){
-  const prodOK = RW_EXPECT==='prod';
-  const prodIn = $_("rw-in-prod"), custIn = $_("rw-in-cust");
-  prodIn.readOnly = SOUND_BUSY || !prodOK;  custIn.readOnly = SOUND_BUSY || prodOK;
-  if(!SOUND_BUSY){ if(prodOK){ prodIn.focus(); } else { custIn.focus(); } }
-  updateRwFocus();
-}
-
-function hardReset(){
-  $_("in-prod").value = ""; $_("in-cust").value = "";
-  PROD = {mat:"",pn:"",name:"",qty:null}; CUST={pn:"",qty:null,name:"",mat:""};
-  $_("banner").style.display="none";
-  for(const id of ["cmp-pn","cmp-qty","cmp-name","cmp-mat"]){ $_(id).classList.remove("ok-row","ng-row"); }
-  for(const id of ["cmp-pn-prod","cmp-pn-cust","cmp-name-prod","cmp-name-cust","cmp-qty-prod","cmp-qty-cust","cmp-mat-prod","cmp-mat-cust"]){ setText(id,"—"); }
-  SESSION_LOCK=false; EXPECT='prod'; enforceExpectUI();
-}
-function maybeResetBeforeProdScan(){ if(SESSION_LOCK) hardReset(); }
-
+/* ===== Main parse ===== */
 async function parseProduction(){
-  if(BUSY || SOUND_BUSY) return;
-  if(!USER.code){ notify("กรุณาเข้าสู่ระบบก่อนใช้งาน"); return; }
-  if(EXPECT!=='prod'){ notify("ต้องสแกน ‘แท็กผลิต’ ก่อน"); enforceExpectUI(); return; }
+  if(BUSY||SOUND_BUSY) return;if(!USER.code){notify("กรุณาเข้าสู่ระบบก่อนใช้งาน");return}if(EXPECT!=='prod'){notify("ต้องสแกน ‘แท็กผลิต’ ก่อน");enforceExpectUI();return}
   maybeResetBeforeProdScan();
-
-  const el = $_("in-prod");
-  const raw = el.value.trim();
-  const type = classifyTag(raw);
-  if(type!=='prod'){
-    el.value="";
-    await toastMp3Lock("Qr code ไม่ถูกต้อง: โปรดสแกนแท็ก ‘ผลิต’", audioInvalidProd, el);
-    enforceExpectUI();
-    return;
-  }
-
+  const el=$_("in-prod"), raw=el.value.trim(), type=classifyTag(raw);
+  if(type!=='prod'){el.value="";await toastMp3Lock("Qr code ไม่ถูกต้อง: โปรดสแกนแท็ก ‘ผลิต’",audioInvalidProd,el);enforceExpectUI();return}
   BUSY=true;
-  const [mat, qty] = raw.split("|");
-  PROD.mat = norm(mat||""); 
-  PROD.qty = toNum(qty||"");
-  const m = mapMatToPart(PROD.mat); 
-  PROD.pn=m.pn||""; 
-  PROD.name=m.name||"";
-
-  setText("cmp-pn-prod",  PROD.pn || "—");
-  setText("cmp-name-prod",PROD.name || "—");
-  setText("cmp-qty-prod", PROD.qty ?? "—");
-  setText("cmp-mat-prod", PROD.mat || "—");
-
-  EXPECT='cust'; 
-  enforceExpectUI();
-  BUSY=false;
+  const t=raw.split("|").map(x=>x.trim());const name=t[0]||"",pn=t[1]||"",qty=t[2]||"",date=t[3]||"",op1=t[4]||"",op2=t[5]||"",op3=t[6]||"";
+  PROD.pn=norm(pn);PROD.name=norm(name);PROD.qty=toNum(qty);PROD.date=date;PROD.op1=op1;PROD.op2=op2;PROD.op3=op3;
+  const det=mapPnToDetails(PROD.pn);PROD.mat=det.mat||"";if(!PROD.name) PROD.name=det.name||"";
+  setText("cmp-pn-prod",PROD.pn||"—");setText("cmp-name-prod",PROD.name||"—");setText("cmp-qty-prod",PROD.qty??"—");setText("cmp-mat-prod",PROD.mat||"—");
+  EXPECT='cust';enforceExpectUI();BUSY=false
 }
-
 async function parseCustomer(){
-  if(BUSY || SOUND_BUSY) return;
-  if(!USER.code){ notify("กรุณาเข้าสู่ระบบก่อนใช้งาน"); return; }
-  if(EXPECT!=='cust'){ notify("ต้องสแกน ‘แท็กลูกค้า’ ถัดจากแท็กผลิต"); enforceExpectUI(); return; }
-
-  const el = $_("in-cust");
-  const raw = el.value.trim();
-  const type = classifyTag(raw);
-  if(type!=='cust'){
-    el.value="";
-    await toastMp3Lock("Qr code ไม่ถูกต้อง: โปรดสแกนแท็ก ‘ลูกค้า’", audioInvalidCust, el);
-    enforceExpectUI();
-    return;
-  }
-
-  BUSY=true;
-  const t = raw.split("|");
-  const base = (t[1]||"").trim(); 
-  const sfx  = (t[2]||"").trim();
-  const qty  = (t[4]||"").trim() || (t[3]||"").trim();
-  CUST.pn  = norm(base + sfx); 
-  CUST.qty = toNum(qty);
-
-  const det = mapPnToDetails(CUST.pn);
-  CUST.name = det.name || ""; 
-  CUST.mat  = det.mat  || "";
-
-  setText("cmp-pn-cust",  CUST.pn  || "—");
-  setText("cmp-name-cust",CUST.name|| "—");
-  setText("cmp-qty-cust", CUST.qty ?? "—");
-  setText("cmp-mat-cust", CUST.mat || "—");
-
-  await compareNow(); 
-  BUSY=false;
+  if(BUSY||SOUND_BUSY) return;if(!USER.code){notify("กรุณาเข้าสู่ระบบก่อนใช้งาน");return}if(EXPECT!=='cust'){notify("ต้องสแกน ‘แท็กลูกค้า’ ถัดจากแท็กผลิต");enforceExpectUI();return}
+  const el=$_("in-cust"), raw=el.value.trim(), type=classifyTag(raw);
+  if(type!=='cust'){el.value="";await toastMp3Lock("Qr code ไม่ถูกต้อง: โปรดสแกนแท็ก ‘ลูกค้า’",audioInvalidCust,el);enforceExpectUI();return}
+  BUSY=true;const t=raw.split("|");const base=(t[1]||"").trim(),sfx=(t[2]||"").trim();const qty=(t[4]||"").trim()||(t[3]||"").trim();
+  CUST.pn=norm(base+sfx);CUST.qty=toNum(qty);const det=mapPnToDetails(CUST.pn);CUST.name=det.name||"";CUST.mat=det.mat||"";
+  setText("cmp-pn-cust",CUST.pn||"—");setText("cmp-name-cust",CUST.name||"—");setText("cmp-qty-cust",CUST.qty??"—");setText("cmp-mat-cust",CUST.mat||"—");
+  await compareNow();BUSY=false
 }
 
-function showBanner(ok){ const b=$_("banner"); b.className="result-banner "+(ok?"banner-ok":"banner-ng"); b.textContent=ok?"OK":"NG"; b.style.display="flex"; }
-function clearMainInputsForNext(){ $_("in-prod").value=""; $_("in-cust").value=""; EXPECT='prod'; enforceExpectUI(); }
-
-/* Fast-continue OK */
+/* ===== Compare + Log ===== */
+function clearMainInputsForNext(){$_("in-prod").value="";$_("in-cust").value="";EXPECT='prod';enforceExpectUI()}
 async function compareNow(){
-  const pnOk   = (!!PROD.pn && !!CUST.pn) && (normPN(PROD.pn)===normPN(CUST.pn) || normPNNoDash(PROD.pn)===normPNNoDash(CUST.pn));
-  const qtyOk  = toNum(PROD.qty)!=null && toNum(CUST.qty)!=null && toNum(PROD.qty)===toNum(CUST.qty);
-  const nameOk = !!PROD.name && !!CUST.name && (normName(PROD.name)===normName(CUST.name));
-  const matOk  = !!PROD.mat  && !!CUST.mat  && (cleanMat(PROD.mat)===cleanMat(CUST.mat));
-  const ok = pnOk && qtyOk;
-
-  showBanner(ok);
-
-  for(const id of ["cmp-pn","cmp-qty","cmp-name","cmp-mat"]){ const tr=$_(id); tr.classList.remove("ok-row","ng-row"); }
-  $_("cmp-pn").classList.add(pnOk ? "ok-row" : "ng-row");
-  $_("cmp-qty").classList.add(qtyOk ? "ok-row" : "ng-row");
-  $_("cmp-name").classList.add(nameOk? "ok-row" : "ng-row");
-  $_("cmp-mat").classList.add(matOk ? "ok-row" : "ng-row");
-
-  if(ok){
-    clearMainInputsForNext();
-    setScanLock(true);
-    (async()=>{ try{ await playAudioAwait(audioOK, 400); }catch{} })();
-    setTimeout(()=>setScanLock(false), 180);
-    (async()=>{ try{ await saveLog(true); }catch(e){ console.error(e); } })();
+  const flags=computeMatch(PROD,CUST);
+  setCmpUI("",PROD,CUST,flags);
+  if(flags.ok){
+    clearMainInputsForNext();setScanLock(true);(async()=>{try{await playAudioAwait(audioOK,400)}catch{}})();setTimeout(()=>setScanLock(false),180);(async()=>{try{await saveLog(true)}catch(e){console.error(e)}})();
   }else{
-    let msg="", snd=null;
-    if(!pnOk){ msg="แท็กไม่ตรงกัน"; snd=audioMismatchPN; }
-    else if(!qtyOk){ msg="จำนวนชิ้นงานไม่ตรงกัน"; snd=audioMismatchQty; }
-
-    clearMainInputsForNext();
-    await toastMp3Lock(msg||"NG", snd||audioNG, $_("in-prod"));
-    await saveLog(false);
+    await toastMp3Lock("NG",audioNG,$_('in-prod'));await saveLog(false);startSupervisorFlow()
   }
-
-  SESSION_LOCK = false;
+  SESSION_LOCK=false
 }
 
-function summarizeLogs(list){
-  const total = list.length;
-  let ok=0, ng=0, fixed=0;
-  for(const r of list){
-    const s = (r.result||"").toUpperCase();
-    if(s==="OK") ok++;
-    else if(s==="NG"){
-      ng++;
-      if(r.fixed) fixed++;
-    }
-  }
-  return {total, ok, ng, fixed, unfixed: Math.max(ng-fixed,0)};
-}
-
+/* ===== Logs (IndexedDB + CSV) ===== */
+function summarizeLogs(list){const total=list.length;let ok=0,ng=0,fixed=0;for(const r of list){const s=(r.result||"").toUpperCase();if(s==="OK") ok++;else if(s==="NG"){ng++;if(r.fixed) fixed++}}return {total,ok,ng,fixed,unfixed:Math.max(ng-fixed,0)}}
 async function renderLogsView(){
   try{
-    const listAll = await getAllLogs();
-    const list = filterLogs(listAll);
-    const tb = $_("log-table-view").querySelector("tbody");
-    tb.innerHTML="";
+    const listAll=await getAllLogs();const list=filterLogs(listAll);const tb=$_("log-table-view").querySelector("tbody");tb.innerHTML="";
     for(const r of list){
-      const statusTxt = (r.result||"").toUpperCase()==="NG" ? (r.fixed ? "NG(แก้ไขแล้ว)" : "NG") : (r.result||"");
-      const cls = (r.result||"").toUpperCase()==="OK" ? "ok-row" : (r.fixed ? "fixed-row" : "ng-row");
-      tb.insertAdjacentHTML("beforeend", `<tr class="${cls}">
-        <td>${esc(r.ts||"")}</td><td>${esc(r.emp||"")}</td>
+      const statusTxt=(r.result||"").toUpperCase()==="NG"?(r.fixed?"NG(แก้ไขแล้ว)":"NG"):(r.result||"");
+      const cls=(r.result||"").toUpperCase()==="OK"?"ok-row":(r.fixed?"fixed-row":"ng-row");
+      const checkerName=getEmpInfo(r.emp||"")?.name || r.emp || "";
+      tb.insertAdjacentHTML("beforeend",`<tr class="${cls}">
+        <td>${esc(r.ts||"")}</td><td>${esc(checkerName)}</td>
         <td>${esc(r.mat||"")}</td><td>${esc(r.prodPN||"")}</td><td>${esc(r.name||"")}</td><td>${esc(r.prodQty??"")}</td>
+        <td>${esc(r.prodDate||"")}</td><td>${esc(r.op1||"")}</td><td>${esc(r.op2||"")}</td><td>${esc(r.op3||"")}</td>
         <td>${esc(r.custPN||"")}</td><td>${esc(r.custQty??"")}</td><td>${esc(statusTxt)}</td><td>${esc(r.fixedBy||"")}</td>
-      </tr>`);
+      </tr>`)
     }
-    const {total, ok, ng, fixed, unfixed} = summarizeLogs(list);
-    $_("sum-total").textContent = total;
-    $_("sum-ok").textContent = ok;
-    $_("sum-ng").textContent = ng;
-    $_("sum-fixed").textContent = fixed;
-    $_("sum-unfixed").textContent = unfixed;
-  }catch(e){ console.error(e); notify("อ่านข้อมูล Logs ไม่สำเร็จ"); }
+    const {total,ok,ng,fixed,unfixed}=summarizeLogs(list);setText("sum-total",total);setText("sum-ok",ok);setText("sum-ng",ng);setText("sum-fixed",fixed);setText("sum-unfixed",unfixed);
+  }catch(e){console.error(e);notify("อ่านข้อมูล Logs ไม่สำเร็จ")}
 }
-
-function filterLogs(list){
-  const s = ($_("flt-start").value||"").trim();
-  const e = ($_("flt-end").value||"").trim();
-  return (list||[]).filter(r=>{
-    const dt = (r.ts||"").slice(0,10);
-    if(s && dt && dt < s) return false;
-    if(e && dt && dt > e) return false;
-    return true;
-  });
-}
-function applyFilters(){ renderLogsView(); }
-function clearFilters(){ $_("flt-start").value=""; $_("flt-end").value=""; renderLogsView(); }
-
-const DB_NAME="prd-logs", STORE="scanLogs";
-let DB = null;
-function ensureDB(){
-  if(DB) return Promise.resolve();
-  return new Promise((resolve, reject)=>{
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if(!db.objectStoreNames.contains(STORE)){
-        db.createObjectStore(STORE, {autoIncrement:true});
-      }
-    };
-    req.onsuccess = () => { DB=req.result; DB.onversionchange = ()=>{ try{ DB.close(); }catch{} }; resolve(); };
-    req.onerror = () => reject(req.error);
-  });
-}
-function addLog(row){
-  return ensureDB().then(()=>new Promise((resolve, reject)=>{
-    const tx = DB.transaction(STORE, "readwrite", {durability:"strict"});
-    const req = tx.objectStore(STORE).add(row);
-    req.onsuccess = ()=>resolve(req.result);
-    req.onerror = ()=>reject(req.error);
-  }));
-}
-function getAllLogs(){
-  return ensureDB().then(()=>new Promise((resolve, reject)=>{
-    const tx = DB.transaction(STORE, "readonly");
-    const store = tx.objectStore(STORE);
-    const out = [];
-    const req = store.openCursor();
-    req.onsuccess = e=>{
-      const cur = e.target.result;
-      if(cur){ out.push(Object.assign({_key:cur.key}, cur.value)); cur.continue(); }
-      else resolve(out);
-    };
-    req.onerror = ()=>reject(req.error);
-  }));
-}
-function updateLogByKey(key, patch){
-  return ensureDB().then(()=>new Promise((resolve, reject)=>{
-    const tx = DB.transaction(STORE, "readwrite");
-    const store = tx.objectStore(STORE);
-    const getReq = store.get(key);
-    getReq.onsuccess = ()=>{
-      const val = getReq.result || {};
-      Object.assign(val, patch);
-      const putReq = store.put(val, key);
-      putReq.onsuccess = ()=>resolve();
-      putReq.onerror  = ()=>reject(putReq.error);
-    };
-    getReq.onerror = ()=>reject(getReq.error);
-  }));
-}
-function clearAllLogs(){
-  return ensureDB().then(()=>new Promise((resolve, reject)=>{
-    const tx = DB.transaction(STORE, "readwrite");
-    tx.objectStore(STORE).clear();
-    tx.oncomplete=()=>resolve();
-    tx.onerror=()=>reject(tx.error);
-  }));
-}
-function csvEscape(v){ const s=(v??"").toString().replace(/"/g,'""'); return /[",\n]/.test(s)?`"${s}"`:s; }
+function filterLogs(list){const s=($_("flt-start").value||"").trim();const e=($_("flt-end").value||"").trim();return (list||[]).filter(r=>{const dt=(r.ts||"").slice(0,10);if(s&&dt&&dt<s)return false;if(e&&dt&&dt>e)return false;return true})}
+function applyFilters(){renderLogsView()}function clearFilters(){$_("flt-start").value="";$_("flt-end").value="";renderLogsView()}
+const DB_NAME="prd-logs",STORE="scanLogs";let DB=null;
+function ensureDB(){if(DB) return Promise.resolve();return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE,{autoIncrement:true})};req.onsuccess=()=>{DB=req.result;DB.onversionchange=()=>{try{DB.close()}catch{}};resolve()};req.onerror=()=>reject(req.error)})}
+function addLog(row){return ensureDB().then(()=>new Promise((resolve,reject)=>{const tx=DB.transaction(STORE,"readwrite",{durability:"strict"});const req=tx.objectStore(STORE).add(row);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)}))}
+function getAllLogs(){return ensureDB().then(()=>new Promise((resolve,reject)=>{const tx=DB.transaction(STORE,"readonly");const store=tx.objectStore(STORE);const out=[];const req=store.openCursor();req.onsuccess=e=>{const cur=e.target.result;if(cur){out.push(Object.assign({_key:cur.key},cur.value));cur.continue()}else resolve(out)};req.onerror=()=>reject(req.error)}))}
+function updateLogByKey(key,patch){return ensureDB().then(()=>new Promise((resolve,reject)=>{const tx=DB.transaction(STORE,"readwrite");const st=tx.objectStore(STORE);const g=st.get(key);g.onsuccess=()=>{const val=g.result||{};Object.assign(val,patch);const p=st.put(val,key);p.onsuccess=()=>resolve();p.onerror=()=>reject(p.error)};g.onerror=()=>reject(g.error)}))}
+function clearAllLogs(){return ensureDB().then(()=>new Promise((resolve,reject)=>{const tx=DB.transaction(STORE,"readwrite");tx.objectStore(STORE).clear();tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error)}))}
+function csvEscape(v){const s=(v??"").toString().replace(/"/g,'""');return /[",\n]/.test(s)?`"${s}"`:s}
 async function saveLog(ok){
-  const now = new Date();
-  const rowObj = {
-    ts: formatDateTime(now),
-    emp: USER.code || "",
-    mat: PROD.mat,
-    prodPN: PROD.pn,
-    name: PROD.name,
-    prodQty: PROD.qty,
-    custPN: CUST.pn,
-    custQty: CUST.qty,
-    result: ok ? "OK" : "NG",
-    fixed: false,
-    fixedBy: "",
-    fixedAt: ""
-  };
-  try{ await addLog(rowObj); }catch(e){ console.error(e); notify("บันทึกลง IndexedDB ไม่สำเร็จ"); }
+  const now=new Date();
+  const row={ts:formatDateTime(now),emp:USER.code||"",mat:PROD.mat,prodPN:PROD.pn,name:PROD.name,prodQty:PROD.qty,prodDate:PROD.date||"",op1:PROD.op1||"",op2:PROD.op2||"",op3:PROD.op3||"",custPN:CUST.pn,custQty:CUST.qty,result:ok?"OK":"NG",fixed:false,fixedBy:"",fixedAt:""};
+  try{await addLog(row)}catch(e){console.error(e);notify("บันทึกลง IndexedDB ไม่สำเร็จ")}
+  try{await appendCsvRow(row)}catch(e){console.error(e)}
 }
 async function exportFilteredLogs(){
-  const rows = filterLogs(await getAllLogs());
-  const header = ["timestamp","employee_code","material","prod_part_number","part_name","prod_qty","cust_part_number","cust_qty","status","fixed","fixed_by","fixed_at"];
-  const lines = [header.join(",")];
-  for(const r of rows){
-    const vals = [r.ts,r.emp,r.mat,r.prodPN,r.name,r.prodQty,r.custPN,r.custQty,r.result,(r.fixed?"TRUE":"FALSE"),r.fixedBy||"",r.fixedAt||""].map(csvEscape);
-    lines.push(vals.join(","));
+  const rows=filterLogs(await getAllLogs());
+  const header=["timestamp","employee_code","material","prod_part_number","part_name","prod_qty","prod_date","operator1","operator2","operator3","cust_part_number","cust_qty","status","fixed","fixed_by","fixed_at"];
+  const lines=[header.join(",")];
+  for(const r of rows){const vals=[r.ts,r.emp,r.mat,r.prodPN,r.name,r.prodQty,r.prodDate||"",r.op1||"",r.op2||"",r.op3||"",r.custPN,r.custQty,r.result,(r.fixed?"TRUE":"FALSE"),r.fixedBy||"",r.fixedAt||""].map(csvEscape);lines.push(vals.join(","))}
+  const blob=new Blob([`\ufeff${lines.join("\n")}`],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`logs_filtered_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.csv`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url)
+}
+/* CSV auto-append (FS Access API) */
+const csvHeaderLine=()=> "timestamp,employee_code,material,prod_part_number,part_name,prod_qty,prod_date,operator1,operator2,operator3,cust_part_number,cust_qty,status,fixed,fixed_by,fixed_at\n";
+const rowToCsvLine=r=>[r.ts,r.emp,r.mat,r.prodPN,r.name,r.prodQty,r.prodDate||"",r.op1||"",r.op2||"",r.op3||"",r.custPN,r.custQty,r.result,(r.fixed?"TRUE":"FALSE"),r.fixedBy||"",r.fixedAt||""].map(csvEscape).join(",")+"\n";
+function updateCsvUi(){const b=$_('csv-status');if(b) b.textContent=CSV_SINK.handle?(CSV_SINK.enabled?"CSV: connected (auto)":"CSV: connected"):"CSV: not set";const chk=$_('csv-auto');if(chk) chk.checked=!!CSV_SINK.enabled&&!!CSV_SINK.handle}
+async function connectCsvFile(){try{if(!('showSaveFilePicker' in window)){notify("เบราว์เซอร์ไม่รองรับ File System Access API");return}const handle=await window.showSaveFilePicker({suggestedName:"scan_logs.csv",types:[{description:"CSV",accept:{"text/csv":[".csv"]}}]});CSV_SINK.handle=handle;CSV_SINK.enabled=true;await ensureCsvHeader();updateCsvUi();notify("เชื่อมไฟล์ CSV สำเร็จ")}catch(e){if(e?.name!=="AbortError") notify("เชื่อมไฟล์ CSV ไม่สำเร็จ")}}
+async function ensureCsvHeader(){if(!CSV_SINK.handle) return;const f=await CSV_SINK.handle.getFile();if(f.size===0){const w=await CSV_SINK.handle.createWritable();await w.write(csvHeaderLine());await w.close()}}
+function toggleCsvAuto(on){CSV_SINK.enabled=!!on&&!!CSV_SINK.handle;updateCsvUi()}
+async function appendCsvRow(r){if(!CSV_SINK.enabled||!CSV_SINK.handle) return;try{const f=await CSV_SINK.handle.getFile();const w=await CSV_SINK.handle.createWritable({keepExistingData:true});await w.write({type:"write",position:f.size||0,data:rowToCsvLine(r)});await w.close()}catch(e){CSV_SINK.enabled=false;updateCsvUi();notify("เขียน CSV ไม่สำเร็จ: ปิดการบันทึกอัตโนมัติ");throw e}}
+
+/* ===== Supervisor flow ===== */
+const validateSupervisorAdmin=code=>getEmpRole(code)==='admin';
+function showSupModal(step){
+  const m=$_('sup-modal'),a=$_('sup-step-auth'),s=$_('sup-step-scan');
+  m.classList.add('show');
+  a.style.display=(step==='auth')?'block':'none';
+  s.style.display=(step==='scan')?'block':'none';
+  if(step==='auth'){
+    const sc=$_('sup-code'); if(sc){sc.value=""; sc.focus()}
   }
-  const blob = new Blob([`\ufeff${lines.join("\n")}`], {type:"text/csv;charset=utf-8"});
-  const url = URL.createObjectURL(blob); const a=document.createElement("a");
-  a.href=url; a.download=`logs_filtered_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.csv`;
-  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  if(step==='scan'){
+    // เคลียร์ช่องสแกน rework ทุกครั้งก่อนเริ่ม
+    RW_PROD={mat:"",pn:"",name:"",qty:null};
+    RW_CUST={pn:"",qty:null,name:"",mat:""};
+    const rpi=$_("rw-in-prod"),rci=$_("rw-in-cust");
+    if(rpi) rpi.value=""; if(rci) rci.value="";
+    rwResetCmpUI();
+    RW_EXPECT='prod';enforceRwUI();setScanLock(false)
+  }
 }
-async function handleClearLogs(){
-  const pass = ($_("admin-pass").value||"").trim();
-  if(pass!=="adminpe"){ notify("รหัสผ่านไม่ถูกต้อง"); return; }
-  try{ await clearAllLogs(); $_("admin-pass").value=""; renderLogsView(); notify("ล้าง Logs ทั้งหมดแล้ว"); }
-  catch(e){ console.error(e); notify("ล้าง Logs ไม่สำเร็จ"); }
-}
-
-async function renderReworkView(){
-  try{
-    const all = await getAllLogs();
-    const ngs = all.filter(r => (r.result||"").toUpperCase()==="NG");
-    const unfixed = ngs.filter(r => !r.fixed);
-    const fixed = ngs.filter(r => r.fixed);
-
-    $_("rw-unfixed").textContent = unfixed.length;
-    $_("rw-fixed").textContent = fixed.length;
-
-    const tb = $_("rw-table").querySelector("tbody");
-    tb.innerHTML = "";
-    for(const r of unfixed){
-      tb.insertAdjacentHTML("beforeend", `<tr>
-        <td>${esc(r.ts||"")}</td><td>${esc(r.emp||"")}</td>
-        <td>${esc(r.prodPN||"")}</td><td>${esc(r.prodQty??"")}</td>
-        <td>${esc(r.custPN||"")}</td><td>${esc(r.custQty??"")}</td>
-        <td><button class="primary" onclick='rwStart(${r._key})'>แก้ไข</button></td>
-      </tr>`);
-    }
-    if(!unfixed.length){
-      $_("rw-panel").style.display="none";
-    }
-    $_("rw-list-card").style.display="block";
-  }catch(e){ console.error(e); notify("โหลดรายการงาน NG ไม่สำเร็จ"); }
-}
-
-async function rwStart(key){
-  const all = await getAllLogs();
-  const row = all.find(r=>r._key===key);
-  if(!row){ notify("ไม่พบรายการ"); return; }
-  RW_TARGET = {key, row};
-  RW_PROD = {mat:"", pn:"", name:"", qty:null};
-  RW_CUST = {pn:"", qty:null, name:"", mat:""};
-  RW_EXPECT='prod';
-  $_("rw-in-prod").value=""; $_("rw-in-cust").value="";
-  $_("rw-list-card").style.display="none";
-  $_("rw-panel").style.display="block";
-  enforceRwUI();
-}
-
-function rwCancel(){
+function hideSupModal(){$_('sup-modal').classList.remove('show')}
+async function startSupervisorFlow(){
+  setScanLock(true);
+  SUP={code:null,role:null,active:true};
   RW_TARGET=null;
-  $_("rw-panel").style.display="none";
-  $_("rw-list-card").style.display="block";
+  // รีเซ็ตทุกช่องทุกครั้ง
+  RW_PROD={mat:"",pn:"",name:"",qty:null};
+  RW_CUST={pn:"",qty:null,name:"",mat:""};
+  rwResetCmpUI();
+  const rpi=$_("rw-in-prod"),rci=$_("rw-in-cust"); if(rpi) rpi.value=""; if(rci) rci.value="";
+  const sc=$_('sup-code'); if(sc) sc.value="";
+  showSupModal('auth');
+  setScanLock(false)
 }
-
-async function rwParseProduction(){
-  if(!RW_TARGET || SOUND_BUSY) return;
-  if(RW_EXPECT!=='prod'){ notify("โปรดสแกนแท็กลูกค้า"); enforceRwUI(); return; }
-  const el=$_("rw-in-prod");
-  const raw = el.value.trim();
-  const type = classifyTag(raw);
-  if(type!=='prod'){
-    el.value="";
-    await toastMp3Lock("รูปแบบแท็กผลิตไม่ถูกต้อง", audioInvalidProd, el);
-    enforceRwUI();
-    return;
-  }
-  const [mat, qty] = raw.split("|");
-  RW_PROD.mat = norm(mat||""); 
-  RW_PROD.qty = toNum(qty||"");
-  const m = mapMatToPart(RW_PROD.mat); 
-  RW_PROD.pn=m.pn||""; 
-  RW_PROD.name=m.name||"";
-  RW_EXPECT='cust'; enforceRwUI();
-}
-
-async function rwParseCustomer(){
-  if(!RW_TARGET || SOUND_BUSY) return;
-  if(RW_EXPECT!=='cust'){ notify("โปรดสแกนแท็กผลิตก่อน"); enforceRwUI(); return; }
-  const el=$_("rw-in-cust");
-  const raw = el.value.trim();
-  const type = classifyTag(raw);
-  if(type!=='cust'){
-    el.value="";
-    await toastMp3Lock("รูปแบบแท็กลูกค้าไม่ถูกต้อง", audioInvalidCust, el);
-    enforceRwUI();
-    return;
-  }
-  const t = raw.split("|");
-  const base = (t[1]||"").trim(); 
-  const sfx  = (t[2]||"").trim();
-  const qty  = (t[4]||"").trim() || (t[3]||"").trim();
-  RW_CUST.pn  = norm(base + sfx); 
-  RW_CUST.qty = toNum(qty);
-  const det = mapPnToDetails(RW_CUST.pn);
-  RW_CUST.name = det.name || ""; 
-  RW_CUST.mat  = det.mat  || "";
-
-  await rwCompareAndCommit();
-}
-
-async function rwCompareAndCommit(){
-  const pnOk  = (!!RW_PROD.pn && !!RW_CUST.pn) && (normPN(RW_PROD.pn)===normPN(RW_CUST.pn) || normPNNoDash(RW_PROD.pn)===normPNNoDash(RW_CUST.pn));
-  const qtyOk = toNum(RW_PROD.qty)!=null && toNum(RW_CUST.qty)!=null && toNum(RW_PROD.qty)===toNum(RW_CUST.qty);
-
-  if(pnOk && qtyOk){
-    setScanLock(true);
-    (async()=>{ try{ await playAudioAwait(audioOK, 400); }catch{} })();
-    setTimeout(()=>setScanLock(false), 180);
-    showToast("การแก้ไขเสร็จสมบูรณ์");
-    const now = new Date();
-    await updateLogByKey(RW_TARGET.key, { fixed:true, fixedBy: USER.code||"", fixedAt: formatDateTime(now) });
-    RW_TARGET=null;
-    $_("rw-panel").style.display="none";
-    $_("rw-list-card").style.display="block";
-    await renderReworkView();
-    await renderLogsView();
-    return;
-  }
-
-  let msg="", snd=null;
-  if(!pnOk){ msg="แท็กไม่ตรงกัน"; snd=audioMismatchPN; }
-  else if(!qtyOk){ msg="จำนวนชิ้นงานไม่ตรงกัน"; snd=audioMismatchQty; }
-
-  $_("rw-in-prod").value=""; $_("rw-in-cust").value="";
-  RW_PROD={mat:"", pn:"", name:"", qty:null}; RW_CUST={pn:"", qty:null, name:"", mat:""};
-  RW_EXPECT='prod'; enforceRwUI();
-
-  await toastMp3Lock(msg||"NG", snd||audioNG, $_("rw-in-prod"));
-}
-
-function guardInputChannel(el, must){
-  el.addEventListener("beforeinput", e=>{
-    if(SOUND_BUSY){ e.preventDefault(); return; }
-    if((must==='prod' && EXPECT!=='prod') || (must==='cust' && EXPECT!=='cust')){ e.preventDefault(); notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’"); enforceExpectUI(); }
-  });
-  el.addEventListener("paste", e=>{
-    if(SOUND_BUSY){ e.preventDefault(); return; }
-    if((must==='prod' && EXPECT!=='prod') || (must==='cust' && EXPECT!=='cust')){ e.preventDefault(); notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’"); enforceExpectUI(); }
-  });
-  el.addEventListener("focus", ()=>{
-    if((must==='prod' && EXPECT!=='prod') || (must==='cust' && EXPECT!=='cust')){ notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’"); enforceExpectUI(); }
-  });
-}
-function guardRwChannel(el, must){
-  el.addEventListener("beforeinput", e=>{
-    if(SOUND_BUSY){ e.preventDefault(); return; }
-    if((must==='prod' && RW_EXPECT!=='prod') || (must==='cust' && RW_EXPECT!=='cust')){ e.preventDefault(); notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’ (แก้ไขงาน)":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’ (แก้ไขงาน)"); enforceRwUI(); }
-  });
-  el.addEventListener("paste", e=>{
-    if(SOUND_BUSY){ e.preventDefault(); return; }
-    if((must==='prod' && RW_EXPECT!=='prod') || (must==='cust' && RW_EXPECT!=='cust')){ e.preventDefault(); notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’ (แก้ไขงาน)":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’ (แก้ไขงาน)"); enforceRwUI(); }
-  });
-  el.addEventListener("focus", ()=>{
-    if((must==='prod' && RW_EXPECT!=='prod') || (must==='cust' && RW_EXPECT!=='cust')){ notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’ (แก้ไขงาน)":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’ (แก้ไขงาน)"); enforceRwUI(); }
-  });
-}
-
-function hookKeyboard(){
-  const prodIn=$_("in-prod"), custIn=$_("in-cust");
-  prodIn.addEventListener("keydown", e=>{
-    if(SOUND_BUSY){ e.preventDefault(); return; }
-    if(EXPECT!=='prod'){ e.preventDefault(); notify("ตอนนี้ต้องสแกน ‘แท็กลูกค้า’"); enforceExpectUI(); return; }
-    if(e.key!=="Enter" && SESSION_LOCK){ maybeResetBeforeProdScan(); }
-    if(e.key==="Enter"){ e.preventDefault(); parseProduction(); }
-  });
-  custIn.addEventListener("keydown", e=>{
-    if(SOUND_BUSY){ e.preventDefault(); return; }
-    if(EXPECT!=='cust'){ e.preventDefault(); notify("กรุณาสแกน ‘แท็กผลิต’ ก่อน"); enforceExpectUI(); return; }
-    if(e.key==="Enter"){ e.preventDefault(); parseCustomer(); }
-  });
-  guardInputChannel(prodIn,'prod'); 
-  guardInputChannel(custIn,'cust');
-
-  const rp=$_("rw-in-prod"), rc=$_("rw-in-cust");
-  rp?.addEventListener("keydown", e=>{ if(SOUND_BUSY){ e.preventDefault(); return; } if(RW_EXPECT!=='prod'){ e.preventDefault(); notify("โปรดสแกนแท็กลูกค้า"); enforceRwUI(); return; } if(e.key==="Enter"){ e.preventDefault(); rwParseProduction(); }});
-  rc?.addEventListener("keydown", e=>{ if(SOUND_BUSY){ e.preventDefault(); return; } if(RW_EXPECT!=='cust'){ e.preventDefault(); notify("โปรดสแกนแท็กผลิตก่อน"); enforceRwUI(); return; } if(e.key==="Enter"){ e.preventDefault(); rwParseCustomer(); }});
-  guardRwChannel(rp,'prod');
-  guardRwChannel(rc,'cust');
-
-  const loginInput = $_('login-raw');
-  let loginDeb=null;
-  loginInput.addEventListener('input', ()=>{
-    clearTimeout(loginDeb);
-    loginDeb=setTimeout(()=>{
-      tryAutoLoginFromRaw(loginInput.value);
-    }, 50);
-  });
-  loginInput.addEventListener('keydown', e=>{
-    if(SOUND_BUSY){ e.preventDefault(); return; }
-    if(e.key==='Enter'){ e.preventDefault(); tryAutoLoginFromRaw(loginInput.value, true); }
-  });
-
-  document.body.addEventListener('click', ()=>{ ensureAudio(); unlockAudio(); }, {once:true});
-}
-
 function parseEmployeePayload(raw){
-  const out={code:""};
-  if(!raw) return out;
-  const s = sanitizeScan(raw);
-  try{ const u=new URL(s.startsWith("http")?s:("https://dummy.local/?"+s)); const pc=u.searchParams.get("PersonCode")||u.searchParams.get("personcode"); if(pc){ out.code=sanitizeScan(pc); return out; } }catch{}
-  try{ const o=JSON.parse(s); out.code=sanitizeScan(o.PersonCode||o.personcode||o.id||o.empid||o.code||""); if(out.code) return out; }catch{}
-  if(/[?&=]/.test(s)){ const qs=s.includes("?")?s.split("?")[1]:s; const p=new URLSearchParams(qs); const v=p.get("PersonCode")||p.get("personcode")||p.get("id")||p.get("empid")||p.get("code")||""; if(v){ out.code=sanitizeScan(v); return out; } }
-  if(/[=:].+/.test(s)){ for(const p of s.split(/[;|,\n]/)){ const [k0,...v]=p.split(/[=:]/); const k=(k0||"").trim().toLowerCase(); const vv=sanitizeScan(v.join(":")); if(["personcode","id","empid","employeeid","รหัส","รหัสพนักงาน","code"].includes(k)) { out.code=out.code||vv; } } if(out.code) return out; }
-  const m=s.match(/(PersonCode|รหัสพนักงาน|รหัส|code)\s*[:：]?\s*([A-Za-z0-9\-_]+)/i); if(m){ out.code=sanitizeScan(m[2]); return out; }
-  if(/^[A-Za-z0-9\-_]{5,}$/.test(s)){ out.code=s; return out; }
-  return out;
+  const out={code:""};if(!raw)return out;const s=sanitizeScan(raw);
+  try{const u=new URL(s.startsWith("http")?s:("https://dummy.local/?"+s));const pc=u.searchParams.get("PersonCode")||u.searchParams.get("personcode");if(pc){out.code=sanitizeScan(pc);return out}}catch{}
+  try{const o=JSON.parse(s);out.code=sanitizeScan(o.PersonCode||o.personcode||o.id||o.empid||o.code||"");if(out.code)return out}catch{}
+  if(/[?&=]/.test(s)){const qs=s.includes("?")?s.split("?")[1]:s;const p=new URLSearchParams(qs);const v=p.get("PersonCode")||p.get("personcode")||p.get("id")||p.get("empid")||p.get("code")||"";if(v){out.code=sanitizeScan(v);return out}}
+  if(/[=:].+/.test(s)){for(const p of s.split(/[;|,\n]/)){const [k0,...v]=p.split(/[=:]/);const k=(k0||"").trim().toLowerCase();const vv=sanitizeScan(v.join(":"));if(["personcode","id","empid","employeeid","รหัส","รหัสพนักงาน","code"].includes(k)){out.code=out.code||vv}}if(out.code)return out}
+  return out
 }
-async function tryAutoLoginFromRaw(val, force=false){
-  const emp=parseEmployeePayload(val);
-  fillEmployeeUI(emp);
+async function supAuthProceed(){
+  const raw=($_('sup-code').value||"").trim();const emp=parseEmployeePayload(raw);const code=emp.code;
+  if(!code){notify("สแกนบัตรหัวหน้างานไม่สำเร็จ");return}
+  if(!EMP_MAP.size){notify("ยังไม่พบไฟล์รายชื่อพนักงาน กรุณาโหลดก่อน");return}
+  if(!validateSupervisorAdmin(code)){await toastMp3Lock("ไม่มีสิทธิ์เข้าใช้งาน (ต้องเป็น admin)",audioInvalidLogin,$_('sup-code'));return}
+  SUP.code=code;SUP.role='admin';
+  const all=await getAllLogs();const ngs=all.filter(r=>(r.result||"").toUpperCase()==="NG"&&!r.fixed);ngs.sort((a,b)=>b._key-a._key);
+  if(!ngs.length){notify("ไม่พบรายการ NG ที่ต้องแก้ไข");SUP.active=false;setScanLock(false);hideSupModal();return}
+  RW_TARGET={key:ngs[0]._key,row:ngs[0]};showSupModal('scan')
+}
+function trySupAutoSupervisor(val){
+  const emp=parseEmployeePayload(val);const code=emp.code;
+  if(!code||!EMP_MAP.size)return;
+  if(validateSupervisorAdmin(code)){
+    const sc=$_('sup-code'); if(sc) sc.value=val; // แสดงค่าที่สแกน
+    supAuthProceed()
+  }
+}
 
-  if(emp.code && (force || /^[A-Za-z0-9\-_]{5,}$/.test(emp.code))){
-    confirmLogin(true);
-    return;
-  }
-  if(force){
-    const el=$_('login-raw');
-    el.value="";
-    await toastMp3Lock("ไม่พบรหัสพนักงานใน Qr-code / รูปแบบไม่ถูกต้อง", audioInvalidLogin, el);
-  }
+/* ===== Rework scan ===== */
+function rwResetCmpUI(){$_("rw-banner").style.display="none";["rw-cmp-pn","rw-cmp-name","rw-cmp-qty","rw-cmp-mat"].forEach(id=>$_(id).classList.remove("ok-row","ng-row"));["rw-cmp-pn-prod","rw-cmp-name-prod","rw-cmp-qty-prod","rw-cmp-mat-prod","rw-cmp-pn-cust","rw-cmp-name-cust","rw-cmp-qty-cust","rw-cmp-mat-cust"].forEach(id=>setText(id,"—"))}
+async function rwParseProduction(){
+  if(!RW_TARGET||SOUND_BUSY)return;if(RW_EXPECT!=='prod'){notify("โปรดสแกนแท็กลูกค้า");enforceRwUI();return}
+  const el=$_("rw-in-prod"),raw=el.value.trim(),type=classifyTag(raw);
+  if(type!=='prod'){el.value="";await toastMp3Lock("รูปแบบแท็กผลิตไม่ถูกต้อง",audioInvalidProd,el);enforceRwUI();return}
+  const t=raw.split("|").map(x=>x.trim());const name=t[0]||"",pn=t[1]||"",qty=t[2]||"";
+  RW_PROD.pn=norm(pn);RW_PROD.name=norm(name);RW_PROD.qty=toNum(qty);const det=mapPnToDetails(RW_PROD.pn);RW_PROD.mat=det.mat||"";if(!RW_PROD.name) RW_PROD.name=det.name||"";
+  setText("rw-cmp-pn-prod",RW_PROD.pn||"—");setText("rw-cmp-name-prod",RW_PROD.name||"—");setText("rw-cmp-qty-prod",RW_PROD.qty??"—");setText("rw-cmp-mat-prod",RW_PROD.mat||"—");
+  RW_EXPECT='cust';enforceRwUI()
 }
-async function toggleLoginCamera(){
-  try{
-    const camDiv=$_('login-cam'), btn=$_('btn-login-cam');
-    if(LOGIN_QR.active){ try{ await LOGIN_QR.inst.stop(); }catch{} camDiv.style.display="none"; btn.textContent="เปิดกล้องสแกนบัตร"; LOGIN_QR.active=false; return; }
-    camDiv.style.display="block"; btn.textContent="ปิดกล้องสแกนบัตร";
-    if(!LOGIN_QR.inst) LOGIN_QR.inst=new Html5Qrcode(camDiv.id);
-    const cams=await Html5Qrcode.getCameras(); if(!cams?.length){ camDiv.textContent="ไม่พบกล้อง"; return; }
-    await LOGIN_QR.inst.start(cams[0].id,{fps:10,qrbox:250}, (txt)=>{
-      if(SOUND_BUSY) return;
-      const clean = sanitizeScan(txt);
-      $_('login-raw').value=clean; 
-      tryAutoLoginFromRaw(clean, true);
-    });
-    LOGIN_QR.active=true;
-  }catch(err){ $_('login-cam').textContent="เปิดกล้องไม่ได้: "+(err?.message||err); }
+async function rwParseCustomer(){
+  if(!RW_TARGET||SOUND_BUSY)return;if(RW_EXPECT!=='cust'){notify("โปรดสแกนแท็กผลิตก่อน");enforceRwUI();return}
+  const el=$_("rw-in-cust"),raw=el.value.trim(),type=classifyTag(raw);
+  if(type!=='cust'){el.value="";await toastMp3Lock("รูปแบบแท็กลูกค้าไม่ถูกต้อง",audioInvalidCust,el);enforceRwUI();return}
+  const t=raw.split("|").map(x=>x.trim());const base=(t[1]||""),sfx=(t[2]||""),qty=(t[4]||"")||(t[3]||"");
+  RW_CUST.pn=norm(base+sfx);RW_CUST.qty=toNum(qty);const det=mapPnToDetails(RW_CUST.pn);RW_CUST.name=det.name||"";RW_CUST.mat=det.mat||"";
+  setText("rw-cmp-pn-cust",RW_CUST.pn||"—");setText("rw-cmp-name-cust",RW_CUST.name||"—");setText("rw-cmp-qty-cust",RW_CUST.qty??"—");setText("rw-cmp-mat-cust",RW_CUST.mat||"—");
+  await rwCompareAndCommit()
 }
-function fillEmployeeUI(emp){ $_('emp-id').textContent=emp.code||'—'; }
+async function rwCompareAndCommit(){
+  const flags=computeMatch(RW_PROD,RW_CUST);
+  setCmpUI("rw",RW_PROD,RW_CUST,flags);
+  if(flags.ok){
+    setScanLock(false);(async()=>{try{await playAudioAwait(audioReworkOK||audioOK,400)}catch{}})();showToast("ยืนยันการแก้ไขเสร็จสมบูรณ์");
+    const now=new Date();
+    if(RW_TARGET){try{await updateLogByKey(RW_TARGET.key,{fixed:true,fixedBy:SUP.code||"",fixedAt:formatDateTime(now)})}catch(e){console.error(e);notify("อัปเดตสถานะ NG เป็น fixed ไม่สำเร็จ")}}
+    PROD={...PROD, ...RW_PROD}; CUST={...CUST, ...RW_CUST};
+    setCmpUI("",PROD,CUST,computeMatch(PROD,CUST));
+    hideSupModal(); switchView('checker'); EXPECT='prod'; enforceExpectUI();
+    $_("in-prod").value=""; $_("in-cust").value="";
+    SUP.active=false;SUP.code=null;SUP.role=null;RW_TARGET=null;
+    await renderLogsView(); return
+  }
+  let msg="",snd=null;if(!flags.pn){msg="แท็กไม่ตรงกัน";snd=audioReworkMismatchPN||audioMismatchPN}else if(!flags.qty){msg="จำนวนชิ้นงานไม่ตรงกัน";snd=audioReworkMismatchQty||audioMismatchQty}else{msg="แก้ไขไม่ถูกต้อง";snd=audioReworkNG||audioNG}
+  $_("rw-in-prod").value="";$_("rw-in-cust").value="";RW_PROD={mat:"",pn:"",name:"",qty:null};RW_CUST={pn:"",qty:null,name:"",mat:""};RW_EXPECT='prod';enforceRwUI();await toastMp3Lock(msg||"NG",snd,$_("rw-in-prod"))
+}
+function supCancel(){hideSupModal();notify("ยุติกระบวนการยืนยัน หัวหน้างานต้องเริ่มใหม่")}
+
+/* ===== Keyboard ===== */
+function isScanLikeInput(s){const t=sanitizeScan(s||"");if(!t)return false;if(t.includes("PersonCode=")||t.includes("personcode="))return true;if(t.trim().startsWith("{")&&t.includes("PersonCode"))return true;if(/[;|,&=]/.test(t)&&/(personcode|emp(id)?|employee|code|รหัส)/i.test(t))return true;return false}
+function guardInputChannel(el,must){
+  el.addEventListener("beforeinput",e=>{if(SOUND_BUSY){e.preventDefault();return}if((must==='prod'&&EXPECT!=='prod')||(must==='cust'&&EXPECT!=='cust')){e.preventDefault();notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’");enforceExpectUI()}})
+  el.addEventListener("paste",e=>{if(SOUND_BUSY){e.preventDefault();return}if((must==='prod'&&EXPECT!=='prod')||(must==='cust'&&EXPECT!=='cust')){e.preventDefault();notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’");enforceExpectUI()}})
+  el.addEventListener("focus",()=>{if((must==='prod'&&EXPECT!=='prod')||(must==='cust'&&EXPECT!=='cust')){notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’");enforceExpectUI()}})
+}
+function guardRwChannel(el){el.addEventListener("beforeinput",e=>{if(SOUND_BUSY){e.preventDefault();return}});el.addEventListener("paste",e=>{if(SOUND_BUSY){e.preventDefault();return}});el.addEventListener("focus",()=>{enforceRwUI()})}
+function hookKeyboard(){
+  const prod=$_("in-prod"),cust=$_("in-cust");
+  prod.addEventListener("keydown",e=>{if(SOUND_BUSY){e.preventDefault();return}if(EXPECT!=='prod'){e.preventDefault();notify("ตอนนี้ต้องสแกน ‘แท็กลูกค้า’");enforceExpectUI();return}if(e.key!=="Enter"&&SESSION_LOCK){maybeResetBeforeProdScan()}if(e.key==="Enter"){e.preventDefault();parseProduction()}})
+  cust.addEventListener("keydown",e=>{if(SOUND_BUSY){e.preventDefault();return}if(EXPECT!=='cust'){e.preventDefault();notify("กรุณาสแกน ‘แท็กผลิต’ ก่อน");enforceExpectUI();return}if(e.key==="Enter"){e.preventDefault();parseCustomer()}})
+  guardInputChannel(prod,'prod');guardInputChannel(cust,'cust');
+  const rp=$_("rw-in-prod"),rc=$_("rw-in-cust");
+  rp?.addEventListener("keydown",e=>{if(SOUND_BUSY){e.preventDefault();return}if(e.key==="Enter"){e.preventDefault();rwParseProduction()}})
+  rc?.addEventListener("keydown",e=>{if(SOUND_BUSY){e.preventDefault();return}if(e.key==="Enter"){e.preventDefault();rwParseCustomer()}})
+  guardRwChannel(rp);guardRwChannel(rc);
+  const login=$_('login-raw');let deb=null;login.addEventListener('input',()=>{clearTimeout(deb);deb=setTimeout(()=>{tryAutoLoginFromRaw(login.value)},60)});login.addEventListener('keydown',e=>{if(SOUND_BUSY){e.preventDefault();return}if(e.key==='Enter'){e.preventDefault();tryAutoLoginFromRaw(login.value,true)}})
+  const sup=$_('sup-code');let sdeb=null;sup.addEventListener('input',()=>{clearTimeout(sdeb);sdeb=setTimeout(()=>{trySupAutoSupervisor(sup.value)},60)})
+  document.body.addEventListener('click',()=>{ensureAudio();unlockAudio()},{once:true})
+}
+
+/* ===== Login ===== */
+function tryAutoLoginFromRaw(val,force=false){
+  const looks=isScanLikeInput(val);if(!looks){if(force){(async()=>{await toastMp3Lock("ต้องสแกนบัตรเท่านั้น",audioInvalidLogin,$_('login-raw'))})()}setText('emp-name','—');$_('emp-role-pill').style.display='none';LOGIN_CODE=null;return}
+  const emp=parseEmployeePayload(val);LOGIN_CODE=emp.code||null;fillEmployeeUI(LOGIN_CODE);if(LOGIN_CODE){confirmLogin(true);return}
+  if(force){const el=$_('login-raw');el.value="";(async()=>{await toastMp3Lock("ไม่พบรหัสพนักงานใน Qr-code / รูปแบบไม่ถูกต้อง",audioInvalidLogin,el)})()}
+}
+function fillEmployeeUI(code){
+  const info=getEmpInfo(code||"");
+  setText('emp-name',info?.name||'—');
+  if(info){setText('emp-role',info.role||'-');$_('emp-role-pill').style.display='inline-flex'}else{$_('emp-role-pill').style.display='none'}
+}
 function confirmLogin(auto=false){
-  const code=$_('emp-id').textContent.trim(); 
-  if(!code||code==='—'){ if(!auto) notify("ยังไม่ได้อ่านรหัสพนักงานจากบัตร"); return; }
-  USER={code};
-  try{ if(LOGIN_QR.active&&LOGIN_QR.inst){ LOGIN_QR.inst.stop(); LOGIN_QR.active=false; } }catch{}
-  document.getElementById("login-screen").style.display="none";
-  document.getElementById("view-checker").removeAttribute("aria-hidden");
-  setText("user-pill",`รหัสพนักงาน: ${USER.code}`); $_("user-pill").style.display="inline-flex"; $_("btn-logout").style.display="inline-block";
-  enableUI(true); notify(`เข้าสู่ระบบสำเร็จ: ${USER.code}`, 3000);
-  EXPECT='prod'; enforceExpectUI();
+  const code=LOGIN_CODE; if(!code){if(!auto) notify("ยังไม่ได้อ่านรหัสพนักงานจากบัตร");return}
+  if(!EMP_MAP.size){notify("ยังไม่โหลดไฟล์พนักงาน (man_data.csv)");return}
+  const info=getEmpInfo(code);if(!info){(async()=>{await toastMp3Lock("ไม่มีสิทธิ์เข้าใช้งาน (ไม่พบรหัสในไฟล์)",audioInvalidLogin,$_('login-raw'))})();return}
+  USER={code,role:info.role||"",name:info.name||code};
+  try{if(LOGIN_QR.active&&LOGIN_QR.inst){LOGIN_QR.inst.stop();LOGIN_QR.active=false}}catch{}
+  $_("login-screen").style.display="none";$_("view-checker").removeAttribute("aria-hidden");
+  setText("user-pill",`ผู้ใช้: ${USER.name}`); $_("user-pill").style.display="inline-flex"; $_("btn-logout").style.display="inline-block";
+  enableUI(true); notify(`เข้าสู่ระบบสำเร็จ: ${USER.name}`,3000); EXPECT='prod'; enforceExpectUI()
 }
-async function logout(){
-  try{ if(LOGIN_QR.active && LOGIN_QR.inst) await LOGIN_QR.inst.stop(); }catch{}
-  USER={code:null}; enableUI(false); $_("user-pill").style.display="none"; $_("btn-logout").style.display="none";
-  hardReset(); $_("login-screen").style.display="flex"; document.getElementById("view-checker").setAttribute("aria-hidden","true");
-  $_("login-raw").value=""; $_("emp-id").textContent="—"; $_("login-raw").focus();
-}
-function enableUI(on){
-  $_("in-prod").readOnly = !on; $_("in-cust").readOnly = !on;
-  if(on) enforceExpectUI();
-}
+async function logout(){try{if(LOGIN_QR.active&&LOGIN_QR.inst) await LOGIN_QR.inst.stop()}catch{}USER={code:null,role:null,name:null};enableUI(false);$_("user-pill").style.display="none";$_("btn-logout").style.display="none";hardReset();$_("login-screen").style.display="flex";$_("view-checker").setAttribute("aria-hidden","true");$_("login-raw").value="";setText("emp-name","—");$_("emp-role-pill").style.display="none";$_("login-raw").focus()}
+function enableUI(on){$_("in-prod").readOnly=!on;$_("in-cust").readOnly=!on;if(on) enforceExpectUI()}
 
+/* ===== Boot ===== */
 (async function boot(){
-  initTheme();
-  await ensureDB();
-  initAudioFiles();
-  switchView('checker');
-  try{ const res=await loadCSV(); CSV_ROWS=res.data||[]; if(!CSV_ROWS.length) throw new Error("CSV ว่าง"); detectColumns(CSV_ROWS); }
-  catch(e){ console.error(e); }
-  hookKeyboard();
-  enforceExpectUI();
-  $_("login-raw").focus();
-  toggleSidebar(true);
+  initTheme();await ensureDB();initAudioFiles();switchView('checker');
+  try{const res=await loadCSV();CSV_ROWS=res.data||[];if(!CSV_ROWS.length) throw new Error("CSV ว่าง");detectColumns(CSV_ROWS)}catch(e){console.error(e)}
+  hookKeyboard();enforceExpectUI();try{await loadEmpMaster()}catch{}
+  updateCsvUi();$_("login-raw").focus();toggleSidebar(true)
 })();
+async function handleClearLogs(){const pwd=($_('admin-pass').value||"").trim();if(pwd!=="1234"){notify("รหัสผ่านไม่ถูกต้อง");return}await clearAllLogs();notify("ล้าง Logs แล้ว");renderLogsView()}
 </script>
 </body>
 </html>
