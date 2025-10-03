@@ -43,7 +43,15 @@
     #login-cam{display:none}
     .theme-switch{--sw-h:28px;--sw-w:56px;--knob:22px;--pad:3px;position:relative;width:var(--sw-w);height:var(--sw-h);border-radius:999px;border:1px solid var(--md-sys-color-outline-variant);background:linear-gradient(180deg,var(--card),color-mix(in oklab,var(--card) 85%,#0000));box-shadow:var(--elev-1);cursor:pointer;display:grid;grid-template-columns:1fr 1fr;align-items:center;justify-items:center;padding:0 var(--pad);margin-right:8px}
     .theme-switch .icon{font-size:14px;line-height:1;opacity:.95;user-select:none;pointer-events:none;transition:opacity var(--dur) var(--easing),transform var(--dur) var(--easing)}.theme-switch[data-mode="light"] .moon{opacity:.35;transform:scale(.92)}.theme-switch[data-mode="dark"] .sun{opacity:.35;transform:scale(.92)}.theme-switch .knob{position:absolute;top:50%;left:var(--pad);width:var(--knob);height:var(--knob);transform:translate(0,-50%);transition:left var(--dur) var(--easing),background var(--dur) var(--easing),box-shadow var(--dur) var(--easing);border-radius:999px;background:var(--accent);box-shadow:0 2px 6px rgba(0,0,0,.25)}.theme-switch[data-mode="dark"] .knob{left:calc(100% - var(--knob) - var(--pad))}
-    @media (max-width:960px){.layout{grid-template-columns:0 1fr}.side{transform:translateX(-100%);opacity:0;pointer-events:none}.wrap{padding-left:16px;padding-right:16px}.cmp-top-grid{grid-template-columns:1fr}}
+    /* ==== มือถือ: ให้เมนูเปิดได้จริงเมื่อไม่ collapsed ==== */
+    @media (max-width:960px){
+      .layout{grid-template-columns:0 1fr}
+      .layout:not(.collapsed){grid-template-columns:min(85vw,260px) 1fr}
+      .side{transform:translateX(-100%);opacity:0;pointer-events:none}
+      .layout:not(.collapsed) .side{transform:none;opacity:1;pointer-events:auto}
+      .wrap{padding-left:16px;padding-right:16px}
+      .cmp-top-grid{grid-template-columns:1fr}
+    }
     .modal{position:fixed;inset:0;z-index:11000;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,.6);backdrop-filter:blur(6px)}.modal.show{display:flex}
     .modal-card{width:min(92vw,720px);background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--elev-3);overflow:hidden}.modal-card header{background:var(--md-sys-color-surface-variant);border-bottom:1px solid var(--line);padding:14px 16px;font-weight:800;color:var(--md-sys-color-on-surface-variant)}.modal-card .body{padding:16px}.modal-card .foot{padding:12px 16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
   </style>
@@ -530,24 +538,43 @@ async function rwCompareAndCommit(){
 function supCancel(){hideSupModal();notify("ยุติกระบวนการยืนยัน หัวหน้างานต้องเริ่มใหม่")}
 
 /* ===== Keyboard ===== */
+/* helper: รองรับ Enter บนมือถือและสแกนเนอร์ */
+function bindScanEnter(el, handler){
+  if(!el) return;
+  el.addEventListener('keydown', e=>{ if(SOUND_BUSY) {e.preventDefault();return} if(e.key==='Enter'){ e.preventDefault(); handler() }});
+  el.addEventListener('keypress', e=>{ if(e.key==='Enter'){ e.preventDefault(); handler() }});
+  el.addEventListener('change', ()=> handler());
+  el.addEventListener('input', e=>{
+    const v=el.value||"";
+    if(e.inputType==='insertLineBreak' || /\n$/.test(v)){
+      el.value=v.replace(/\n+$/,'');
+      handler();
+    }
+  });
+}
 function isScanLikeInput(s){const t=sanitizeScan(s||"");if(!t)return false;if(t.includes("PersonCode=")||t.includes("personcode="))return true;if(t.trim().startsWith("{")&&t.includes("PersonCode"))return true;if(/[;|,&=]/.test(t)&&/(personcode|emp(id)?|employee|code|รหัส)/i.test(t))return true;return false}
 function guardInputChannel(el,must){
-  el.addEventListener("beforeinput",e=>{if(SOUND_BUSY){e.preventDefault();return}if((must==='prod'&&EXPECT!=='prod')||(must==='cust'&&EXPECT!=='cust')){e.preventDefault();notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’");enforceExpectUI()}})
-  el.addEventListener("paste",e=>{if(SOUND_BUSY){e.preventDefault();return}if((must==='prod'&&EXPECT!=='prod')||(must==='cust'&&EXPECT!=='cust')){e.preventDefault();notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’");enforceExpectUI()}})
-  el.addEventListener("focus",()=>{if((must==='prod'&&EXPECT!=='prod')||(must==='cust'&&EXPECT!=='cust')){notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’");enforceExpectUI()}})
-}
-function guardRwChannel(el){el.addEventListener("beforeinput",e=>{if(SOUND_BUSY){e.preventDefault();return}});el.addEventListener("paste",e=>{if(SOUND_BUSY){e.preventDefault();return}});el.addEventListener("focus",()=>{enforceRwUI()})}
+  el.addEventListener("beforeinput",e=>{if(SOUND_BUSY){e.preventDefault();return}if((must==='prod'&&EXPECT!=='prod')||(must==='cust'&&EXPECT!=='cust')){e.preventDefault();notify(must==='prod'?"ตอนนี้ต้องสแกน ‘แท็กผลิต’":"ตอนนี้ต้องสแกน ‘แท็กลูกค้า’");enforceExpectUI()}})}
+function guardRwChannel(el){el.addEventListener("beforeinput",e=>{if(SOUND_BUSY){e.preventDefault();return}});el.addEventListener("focus",()=>{enforceRwUI()})}
 function hookKeyboard(){
   const prod=$_("in-prod"),cust=$_("in-cust");
-  prod.addEventListener("keydown",e=>{if(SOUND_BUSY){e.preventDefault();return}if(EXPECT!=='prod'){e.preventDefault();notify("ตอนนี้ต้องสแกน ‘แท็กลูกค้า’");enforceExpectUI();return}if(e.key!=="Enter"&&SESSION_LOCK){maybeResetBeforeProdScan()}if(e.key==="Enter"){e.preventDefault();parseProduction()}})
-  cust.addEventListener("keydown",e=>{if(SOUND_BUSY){e.preventDefault();return}if(EXPECT!=='cust'){e.preventDefault();notify("กรุณาสแกน ‘แท็กผลิต’ ก่อน");enforceExpectUI();return}if(e.key==="Enter"){e.preventDefault();parseCustomer()}})
+  bindScanEnter(prod, parseProduction);
+  bindScanEnter(cust, parseCustomer);
   guardInputChannel(prod,'prod');guardInputChannel(cust,'cust');
+
   const rp=$_("rw-in-prod"),rc=$_("rw-in-cust");
-  rp?.addEventListener("keydown",e=>{if(SOUND_BUSY){e.preventDefault();return}if(e.key==="Enter"){e.preventDefault();rwParseProduction()}})
-  rc?.addEventListener("keydown",e=>{if(SOUND_BUSY){e.preventDefault();return}if(e.key==="Enter"){e.preventDefault();rwParseCustomer()}})
+  bindScanEnter(rp, rwParseProduction);
+  bindScanEnter(rc, rwParseCustomer);
   guardRwChannel(rp);guardRwChannel(rc);
-  const login=$_('login-raw');let deb=null;login.addEventListener('input',()=>{clearTimeout(deb);deb=setTimeout(()=>{tryAutoLoginFromRaw(login.value)},60)});login.addEventListener('keydown',e=>{if(SOUND_BUSY){e.preventDefault();return}if(e.key==='Enter'){e.preventDefault();tryAutoLoginFromRaw(login.value,true)}})
-  const sup=$_('sup-code');let sdeb=null;sup.addEventListener('input',()=>{clearTimeout(sdeb);sdeb=setTimeout(()=>{trySupAutoSupervisor(sup.value)},60)})
+
+  const login=$_('login-raw');let deb=null;
+  bindScanEnter(login, ()=>tryAutoLoginFromRaw(login.value,true));
+  login.addEventListener('input',()=>{clearTimeout(deb);deb=setTimeout(()=>{tryAutoLoginFromRaw(login.value)},60)});
+
+  const sup=$_('sup-code');let sdeb=null;
+  bindScanEnter(sup, supAuthProceed);
+  sup.addEventListener('input',()=>{clearTimeout(sdeb);sdeb=setTimeout(()=>{trySupAutoSupervisor(sup.value)},60)});
+
   document.body.addEventListener('click',()=>{ensureAudio();unlockAudio()},{once:true})
 }
 
