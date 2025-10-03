@@ -435,7 +435,6 @@ function showSupModal(step){
     const sc=$_('sup-code'); if(sc){sc.value=""; sc.focus()}
   }
   if(step==='scan'){
-    // เคลียร์ช่องสแกน rework ทุกครั้งก่อนเริ่ม
     RW_PROD={mat:"",pn:"",name:"",qty:null};
     RW_CUST={pn:"",qty:null,name:"",mat:""};
     const rpi=$_("rw-in-prod"),rci=$_("rw-in-cust");
@@ -449,7 +448,6 @@ async function startSupervisorFlow(){
   setScanLock(true);
   SUP={code:null,role:null,active:true};
   RW_TARGET=null;
-  // รีเซ็ตทุกช่องทุกครั้ง
   RW_PROD={mat:"",pn:"",name:"",qty:null};
   RW_CUST={pn:"",qty:null,name:"",mat:""};
   rwResetCmpUI();
@@ -470,7 +468,11 @@ async function supAuthProceed(){
   const raw=($_('sup-code').value||"").trim();const emp=parseEmployeePayload(raw);const code=emp.code;
   if(!code){notify("สแกนบัตรหัวหน้างานไม่สำเร็จ");return}
   if(!EMP_MAP.size){notify("ยังไม่พบไฟล์รายชื่อพนักงาน กรุณาโหลดก่อน");return}
-  if(!validateSupervisorAdmin(code)){await toastMp3Lock("ไม่มีสิทธิ์เข้าใช้งาน (ต้องเป็น admin)",audioInvalidLogin,$_('sup-code'));return}
+  if(!validateSupervisorAdmin(code)){
+    await toastMp3Lock("ไม่มีสิทธิ์เข้าใช้งาน (ต้องเป็น admin)",audioInvalidLogin,$_('sup-code'));
+    const sc=$_('sup-code'); if(sc){sc.value=""; sc.focus()}
+    return
+  }
   SUP.code=code;SUP.role='admin';
   const all=await getAllLogs();const ngs=all.filter(r=>(r.result||"").toUpperCase()==="NG"&&!r.fixed);ngs.sort((a,b)=>b._key-a._key);
   if(!ngs.length){notify("ไม่พบรายการ NG ที่ต้องแก้ไข");SUP.active=false;setScanLock(false);hideSupModal();return}
@@ -480,8 +482,11 @@ function trySupAutoSupervisor(val){
   const emp=parseEmployeePayload(val);const code=emp.code;
   if(!code||!EMP_MAP.size)return;
   if(validateSupervisorAdmin(code)){
-    const sc=$_('sup-code'); if(sc) sc.value=val; // แสดงค่าที่สแกน
+    const sc=$_('sup-code'); if(sc) sc.value=val;
     supAuthProceed()
+  }else{
+    const sc=$_('sup-code'); if(sc){sc.value=""; sc.focus()}
+    (async()=>{await toastMp3Lock("สิทธิ์ไม่ถูกต้อง: ต้องเป็น admin",audioInvalidLogin,$_('sup-code'))})()
   }
 }
 
