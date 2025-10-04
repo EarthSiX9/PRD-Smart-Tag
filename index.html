@@ -10,7 +10,7 @@
     html[data-theme="dark"]{color-scheme:dark;--md-sys-color-primary:#8ab4ff;--md-sys-color-on-primary:#001b3d;--md-sys-color-primary-container:#1e293b;--md-sys-color-on-primary-container:#cfe1ff;--md-sys-color-surface:#0b1220;--md-sys-color-surface-container:#0f172a;--md-sys-color-on-surface:#e5e7eb;--md-sys-color-surface-variant:#111827;--md-sys-color-on-surface-variant:#9ca3af;--md-sys-color-outline:#334155;--md-sys-color-outline-variant:#1f2937;--side-bg:#0f172a;--side-text:#e5e7eb;--side-hover:#111827;--topbar-bg:#0f172a;--toast:#111827;--toast-text:#e5e7eb;--btnborder:#334155;--ok-bg:#22c55e;--ng-bg:#ef4444;--fixed-bg:#fde047;--fixed-text:#111}
     *{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Thai",Arial,sans-serif;-webkit-tap-highlight-color:transparent}
     :where(button,input,select,textarea,[role="button"]):focus-visible{outline:3px solid color-mix(in oklab,var(--accent) 60%,#fff);outline-offset:2px;border-radius:var(--radius-md)}
-    .topbar{position:sticky;top:0;z-index:1000;display:flex;align-items:center;gap:12px;height:64px;padding:10px 14px;background:var(--topbar-bg);border-bottom:1px solid var(--line);backdrop-filter:saturate(1.2) blur(8px)}
+    .topbar{position:sticky;top:0;z-index:1000;display:flex;align-items:center;gap:12px;height:64px;padding:10px 14px;background:var(--topbar-bg);border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
     .menu-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-md);border:1px solid var(--md-sys-color-outline-variant);background:var(--card);cursor:pointer;font-size:18px;box-shadow:var(--elev-1);transition:transform var(--dur) var(--easing),background var(--dur) var(--easing),border-color var(--dur) var(--easing)}
     .menu-btn:hover{background:color-mix(in oklab,var(--accent-weak) 18%,var(--card))}.menu-btn:active{transform:translateY(1px)}
     .brand-inline{display:flex;align-items:baseline;gap:10px;line-height:1;user-select:none}.brand-prd{font-family:"LilyUPC","Tahoma","Noto Sans Thai",sans-serif;font-weight:900;font-style:italic;color:var(--prd);font-size:30px;letter-spacing:.5px}.brand-smart{font-family:"LilyUPC","Tahoma","Noto Sans Thai",sans-serif;font-weight:900;color:var(--smart);font-size:26px;letter-spacing:.3px}html[data-theme="dark"] .brand-smart{color:#fff}
@@ -43,7 +43,6 @@
     #login-cam{display:none}
     .theme-switch{--sw-h:28px;--sw-w:56px;--knob:22px;--pad:3px;position:relative;width:var(--sw-w);height:var(--sw-h);border-radius:999px;border:1px solid var(--md-sys-color-outline-variant);background:linear-gradient(180deg,var(--card),color-mix(in oklab,var(--card) 85%,#0000));box-shadow:var(--elev-1);cursor:pointer;display:grid;grid-template-columns:1fr 1fr;align-items:center;justify-items:center;padding:0 var(--pad);margin-right:8px}
     .theme-switch .icon{font-size:14px;line-height:1;opacity:.95;user-select:none;pointer-events:none;transition:opacity var(--dur) var(--easing),transform var(--dur) var(--easing)}.theme-switch[data-mode="light"] .moon{opacity:.35;transform:scale(.92)}.theme-switch[data-mode="dark"] .sun{opacity:.35;transform:scale(.92)}.theme-switch .knob{position:absolute;top:50%;left:var(--pad);width:var(--knob);height:var(--knob);transform:translate(0,-50%);transition:left var(--dur) var(--easing),background var(--dur) var(--easing),box-shadow var(--dur) var(--easing);border-radius:999px;background:var(--accent);box-shadow:0 2px 6px rgba(0,0,0,.25)}.theme-switch[data-mode="dark"] .knob{left:calc(100% - var(--knob) - var(--pad))}
-    /* ==== มือถือ: ให้เมนูเปิดได้จริงเมื่อไม่ collapsed ==== */
     @media (max-width:960px){
       .layout{grid-template-columns:0 1fr}
       .layout:not(.collapsed){grid-template-columns:min(85vw,260px) 1fr}
@@ -169,7 +168,8 @@
       <div class="body" id="sup-step-auth">
         <div class="mutewarn" style="margin-bottom:10px">พบผลลัพธ์ <b>NG</b> ระบบถูกล็อค ให้ <b>หัวหน้างาน (admin)</b> สแกนบัตรเพื่อปลดล็อค</div>
         <div class="row" style="margin-top:10px"><input id="sup-code" type="text" placeholder="สแกนบัตรหัวหน้างาน" /></div>
-        <div class="muted" style="margin-top:8px">อนุญาตเฉพาะรหัสที่อยู่ในรายชื่อพนักงาน และ Role = admin</div>
+        <!-- ข้อความแจ้งเตือนใต้ช่องสแกน -->
+        <div id="sup-hint" class="muted" role="alert" aria-live="polite" style="margin-top:8px"></div>
       </div>
 
       <div class="body" id="sup-step-scan" style="display:none">
@@ -215,7 +215,7 @@
         <div class="mutewarn" style="margin-bottom:10px">เข้าสู่ระบบด้วยการ <b>สแกน Qr-code ที่บัตรพนักงาน</b> เท่านั้น</div>
         <div class="row" style="margin-top:10px"><input id="login-raw" type="text" placeholder="สแกนบัตรพนักงาน" style="flex:1" /></div>
         <div class="row" style="margin-top:10px">
-          <span class="badge">ผู้ใช้: <b id="emp-name">—</b></span>
+          <span class="badge">ชื่อพนักงาน: <b id="emp-name">—</b></span>
           <span class="badge" id="emp-role-pill" style="display:none">Role: <b id="emp-role">—</b></span>
         </div>
       </div>
@@ -286,26 +286,34 @@ function updateRwFocus(){setText("rw-focus",RW_EXPECT==='prod'?"กรุณา�
 /* ===== Data load ===== */
 function loadCSV(){return new Promise((resolve,reject)=>{Papa.parse("bom_export.csv",{download:true,header:true,skipEmptyLines:true,complete:res=>resolve(res),error:err=>reject(err)})})}
 function detectColumns(rows){const cols=Object.keys(rows[0]||{});MAT_COL=cols.find(c=>/check[_\s]?material|(^|[^a-z])mat(erial)?([^a-z]|$)|material|code/i.test(c))||cols[0];PN_COL=cols.find(c=>/customermaterial|part[\s_]?number|^pn$|partno/i.test(c))||cols[1]||cols[0];NAME_COL=cols.find(c=>/customer[_\s]?description|part[\s_]?name|description|desc/i.test(c))||cols[2]||cols[0]}
-function mapPnToDetails(pn){const target=normPNNoDash(pn);if(!CSV_ROWS.length||!PN_COL)return {mat:null,name:null};const row=CSV_ROWS.find(r=>normPNNoDash(r[PN_COL]||"")===target);if(!row)return {mat:null,name:null};return {mat:norm(row[MAT_COL]||""),name:norm(row[NAME_COL]||"")}}
+
+/* ===== โหลดรายชื่อพนักงาน ===== */
 function loadEmpMaster(fromFile){
   return new Promise(resolve=>{
     const finish=(rows)=>{
       if(!rows.length){notify("ไฟล์พนักงานว่างหรืออ่านไม่ได้");return resolve(false)}
       const cols=Object.keys(rows[0]||{});
       const pick=(re,alt)=>cols.find(c=>re.test(c))||alt||null;
+
       EMP_COL_CODE=pick(/^(emp(id)?|employee(code)?|person(code)?|code|รหัสพนักงาน)$/i,cols[0]);
       EMP_COL_ROLE=pick(/^(role|สิทธิ์|สิทธิการใช้งาน|ตำแหน่ง)$/i,cols[1]);
-      EMP_COL_NAME=pick(/^(name|ชื่อ(\s*-?\s*นามสกุล)?|display\s*name)$/i,null);
+
       EMP_COL_FIRST=pick(/^(first(name)?|ชื่อ)$/i,null);
-      EMP_COL_LAST=pick(/^(last(name)?|นามสกุล)$/i,null);
+      EMP_COL_LAST =pick(/^(last(name)?|นามสกุล)$/i,null);
+      EMP_COL_NAME=pick(/^(full[\s_-]?name|display[\s_-]?name|ชื่อ\s*[-]?\s*นามสกุล|ชื่อและนามสกุล)$/i,null);
+
       EMP_MAP.clear();
       for(const r of rows){
         const code=sanitizeScan(r[EMP_COL_CODE]||""); if(!code) continue;
         const role=String(r[EMP_COL_ROLE]||"").trim().toLowerCase();
+
         const first=(EMP_COL_FIRST?String(r[EMP_COL_FIRST]||""):"").trim();
-        const last=(EMP_COL_LAST?String(r[EMP_COL_LAST]||""):"").trim();
+        const last =(EMP_COL_LAST ?String(r[EMP_COL_LAST ]||""):"").trim();
         const single=(EMP_COL_NAME?String(r[EMP_COL_NAME]||""):"").trim();
-        const name=(single || [first,last].filter(Boolean).join(" ")).trim();
+
+        const joined=[first,last].filter(Boolean).join(" ");
+        const name=(joined || single || "").trim();
+
         EMP_MAP.set(code,{role,name,first,last});
       }
       notify(`โหลดรายชื่อพนักงานแล้ว: ${EMP_MAP.size} รายการ`); resolve(true);
@@ -318,10 +326,35 @@ function loadEmpMaster(fromFile){
 const getEmpInfo=code=>code?EMP_MAP.get(code)||null:null;
 const getEmpRole=code=>getEmpInfo(code)?.role||"";
 
-/* ===== Tag detect ===== */
-function isLikelyProd(raw){const t=norm(raw).split("|").map(x=>x.trim());if(t.length<5||t.length>7)return false;const name=t[0]||"",pn=t[1]||"",qty=t[2]||"",date=t[3]||"";const pnOk=/[A-Za-z]/.test(pn)&&/^[A-Za-z0-9._-]{3,}$/.test(pn);const qtyOk=/^\d+(\.\d+)?$/.test(qty);const nameOk=name.length>0;const dateOk=date.length>0;return pnOk&&qtyOk&&nameOk&&dateOk}
-function isLikelyCust(raw){const s=norm(raw),t=s.split("|");if(t.length<3)return false;const base=(t[1]||"").trim(),sfx=(t[2]||"").trim(),q3=(t[3]||"").trim(),q4=(t[4]||"").trim();const pn=base+sfx;const pnOk=/[A-Za-z]/.test(pn)&&/^[A-Za-z0-9-]{3,}$/.test(pn);const hasQty=(/^\d+(\.\d+)?$/.test(q3))||(/^\d+(\.\d+)?$/.test(q4));return pnOk&&hasQty}
-function classifyTag(raw){const p=isLikelyProd(raw),c=isLikelyCust(raw);if(p&&!c)return 'prod';if(c&&!p)return 'cust';if(p&&c){const parts=norm(raw).split("|");return parts.length>=5?'prod':'cust'}return 'unknown'}
+/* ===== Tag detect (ผ่อนปรน) ===== */
+function isLikelyProd(raw){
+  const s=sanitizeScan(raw);
+  const t=s.split("|").map(x=>x.trim());
+  if(t.length<4 || t.length>8) return false;
+  const name=t[0]||"", pn=t[1]||"", qty=t[2]||"";
+  const pnOk=/[A-Za-z0-9]/.test(pn)&&/^[A-Za-z0-9._-]{3,}$/.test(pn);
+  const qtyOk=/^\d+(\.\d+)?$/.test(qty);
+  const nameOk=name.length>0;
+  return pnOk && qtyOk && nameOk;
+}
+function isLikelyCust(raw){
+  const s=sanitizeScan(raw);
+  const t=s.split("|");
+  if(t.length<3) return false;
+  const base=(t[1]||"").trim(), sfx=(t[2]||"").trim(), q3=(t[3]||"").trim(), q4=(t[4]||"").trim();
+  const pn=(base+sfx).trim();
+  const pnOk=/[A-Za-z0-9]/.test(pn)&&/^[A-Za-z0-9-._]{3,}$/.test(pn);
+  const hasQty=(/^\d+(\.\d+)?$/.test(q3))||(/^\d+(\.\d+)?$/.test(q4));
+  return pnOk && hasQty;
+}
+function classifyTag(raw){
+  const s=sanitizeScan(raw);
+  const p=isLikelyProd(s), c=isLikelyCust(s);
+  if(p && !c) return 'prod';
+  if(c && !p) return 'cust';
+  if(p && c){const parts=s.split("|");return parts.length>=5?'prod':'cust'}
+  return 'unknown';
+}
 
 /* ===== UI helpers ===== */
 function setBanner(ok,prefix=''){const b=$_(prefix?`${prefix}-banner`:'banner');b.className="result-banner "+(ok?"banner-ok":"banner-ng");b.textContent=ok?"OK":"NG";b.style.display="flex"}
@@ -350,7 +383,7 @@ function maybeResetBeforeProdScan(){if(SESSION_LOCK) hardReset()}
 async function parseProduction(){
   if(BUSY||SOUND_BUSY) return;if(!USER.code){notify("กรุณาเข้าสู่ระบบก่อนใช้งาน");return}if(EXPECT!=='prod'){notify("ต้องสแกน ‘แท็กผลิต’ ก่อน");enforceExpectUI();return}
   maybeResetBeforeProdScan();
-  const el=$_("in-prod"), raw=el.value.trim(), type=classifyTag(raw);
+  const el=$_("in-prod"), raw=sanitizeScan(el.value).trim(), type=classifyTag(raw);
   if(type!=='prod'){el.value="";await toastMp3Lock("Qr code ไม่ถูกต้อง: โปรดสแกนแท็ก ‘ผลิต’",audioInvalidProd,el);enforceExpectUI();return}
   BUSY=true;
   const t=raw.split("|").map(x=>x.trim());const name=t[0]||"",pn=t[1]||"",qty=t[2]||"",date=t[3]||"",op1=t[4]||"",op2=t[5]||"",op3=t[6]||"";
@@ -361,7 +394,7 @@ async function parseProduction(){
 }
 async function parseCustomer(){
   if(BUSY||SOUND_BUSY) return;if(!USER.code){notify("กรุณาเข้าสู่ระบบก่อนใช้งาน");return}if(EXPECT!=='cust'){notify("ต้องสแกน ‘แท็กลูกค้า’ ถัดจากแท็กผลิต");enforceExpectUI();return}
-  const el=$_("in-cust"), raw=el.value.trim(), type=classifyTag(raw);
+  const el=$_("in-cust"), raw=sanitizeScan(el.value).trim(), type=classifyTag(raw);
   if(type!=='cust'){el.value="";await toastMp3Lock("Qr code ไม่ถูกต้อง: โปรดสแกนแท็ก ‘ลูกค้า’",audioInvalidCust,el);enforceExpectUI();return}
   BUSY=true;const t=raw.split("|");const base=(t[1]||"").trim(),sfx=(t[2]||"").trim();const qty=(t[4]||"").trim()||(t[3]||"").trim();
   CUST.pn=norm(base+sfx);CUST.qty=toNum(qty);const det=mapPnToDetails(CUST.pn);CUST.name=det.name||"";CUST.mat=det.mat||"";
@@ -441,6 +474,7 @@ function showSupModal(step){
   s.style.display=(step==='scan')?'block':'none';
   if(step==='auth'){
     const sc=$_('sup-code'); if(sc){sc.value=""; sc.focus()}
+    const hint=$_('sup-hint'); if(hint){hint.textContent=""}
   }
   if(step==='scan'){
     RW_PROD={mat:"",pn:"",name:"",qty:null};
@@ -474,13 +508,15 @@ function parseEmployeePayload(raw){
 }
 async function supAuthProceed(){
   const raw=($_('sup-code').value||"").trim();const emp=parseEmployeePayload(raw);const code=emp.code;
-  if(!code){notify("สแกนบัตรหัวหน้างานไม่สำเร็จ");return}
-  if(!EMP_MAP.size){notify("ยังไม่พบไฟล์รายชื่อพนักงาน กรุณาโหลดก่อน");return}
+  const hint=$_('sup-hint'); const sc=$_('sup-code');
+  if(!code){if(hint) hint.textContent="สแกนบัตรหัวหน้างานไม่สำเร็จ"; if(sc){sc.value=""; sc.focus()} return}
+  if(!EMP_MAP.size){if(hint) hint.textContent="ยังไม่พบไฟล์รายชื่อพนักงาน กรุณาโหลดก่อน"; if(sc){sc.value=""; sc.focus()} return}
   if(!validateSupervisorAdmin(code)){
-    await toastMp3Lock("ไม่มีสิทธิ์เข้าใช้งาน (ต้องเป็น admin)",audioInvalidLogin,$_('sup-code'));
-    const sc=$_('sup-code'); if(sc){sc.value=""; sc.focus()}
+    if(hint) hint.textContent="ไม่มีสิทธิ์ปลดล็อค";
+    if(sc){sc.value=""; sc.focus()}
     return
   }
+  if(hint) hint.textContent="";
   SUP.code=code;SUP.role='admin';
   const all=await getAllLogs();const ngs=all.filter(r=>(r.result||"").toUpperCase()==="NG"&&!r.fixed);ngs.sort((a,b)=>b._key-a._key);
   if(!ngs.length){notify("ไม่พบรายการ NG ที่ต้องแก้ไข");SUP.active=false;setScanLock(false);hideSupModal();return}
@@ -488,13 +524,15 @@ async function supAuthProceed(){
 }
 function trySupAutoSupervisor(val){
   const emp=parseEmployeePayload(val);const code=emp.code;
-  if(!code||!EMP_MAP.size)return;
+  const hint=$_('sup-hint'); const sc=$_('sup-code');
+  if(!code||!EMP_MAP.size) return;
   if(validateSupervisorAdmin(code)){
-    const sc=$_('sup-code'); if(sc) sc.value=val;
+    if(sc) sc.value=val;
+    if(hint) hint.textContent="";
     supAuthProceed()
   }else{
-    const sc=$_('sup-code'); if(sc){sc.value=""; sc.focus()}
-    (async()=>{await toastMp3Lock("สิทธิ์ไม่ถูกต้อง: ต้องเป็น admin",audioInvalidLogin,$_('sup-code'))})()
+    if(hint) hint.textContent="ไม่มีสิทธิ์ปลดล็อค";
+    if(sc){sc.value=""; sc.focus()}
   }
 }
 
@@ -502,7 +540,7 @@ function trySupAutoSupervisor(val){
 function rwResetCmpUI(){$_("rw-banner").style.display="none";["rw-cmp-pn","rw-cmp-name","rw-cmp-qty","rw-cmp-mat"].forEach(id=>$_(id).classList.remove("ok-row","ng-row"));["rw-cmp-pn-prod","rw-cmp-name-prod","rw-cmp-qty-prod","rw-cmp-mat-prod","rw-cmp-pn-cust","rw-cmp-name-cust","rw-cmp-qty-cust","rw-cmp-mat-cust"].forEach(id=>setText(id,"—"))}
 async function rwParseProduction(){
   if(!RW_TARGET||SOUND_BUSY)return;if(RW_EXPECT!=='prod'){notify("โปรดสแกนแท็กลูกค้า");enforceRwUI();return}
-  const el=$_("rw-in-prod"),raw=el.value.trim(),type=classifyTag(raw);
+  const el=$_("rw-in-prod"),raw=sanitizeScan(el.value).trim(),type=classifyTag(raw);
   if(type!=='prod'){el.value="";await toastMp3Lock("รูปแบบแท็กผลิตไม่ถูกต้อง",audioInvalidProd,el);enforceRwUI();return}
   const t=raw.split("|").map(x=>x.trim());const name=t[0]||"",pn=t[1]||"",qty=t[2]||"";
   RW_PROD.pn=norm(pn);RW_PROD.name=norm(name);RW_PROD.qty=toNum(qty);const det=mapPnToDetails(RW_PROD.pn);RW_PROD.mat=det.mat||"";if(!RW_PROD.name) RW_PROD.name=det.name||"";
@@ -511,7 +549,7 @@ async function rwParseProduction(){
 }
 async function rwParseCustomer(){
   if(!RW_TARGET||SOUND_BUSY)return;if(RW_EXPECT!=='cust'){notify("โปรดสแกนแท็กผลิตก่อน");enforceRwUI();return}
-  const el=$_("rw-in-cust"),raw=el.value.trim(),type=classifyTag(raw);
+  const el=$_("rw-in-cust"),raw=sanitizeScan(el.value).trim(),type=classifyTag(raw);
   if(type!=='cust'){el.value="";await toastMp3Lock("รูปแบบแท็กลูกค้าไม่ถูกต้อง",audioInvalidCust,el);enforceRwUI();return}
   const t=raw.split("|").map(x=>x.trim());const base=(t[1]||""),sfx=(t[2]||""),qty=(t[4]||"")||(t[3]||"");
   RW_CUST.pn=norm(base+sfx);RW_CUST.qty=toNum(qty);const det=mapPnToDetails(RW_CUST.pn);RW_CUST.name=det.name||"";RW_CUST.mat=det.mat||"";
@@ -538,7 +576,6 @@ async function rwCompareAndCommit(){
 function supCancel(){hideSupModal();notify("ยุติกระบวนการยืนยัน หัวหน้างานต้องเริ่มใหม่")}
 
 /* ===== Keyboard ===== */
-/* helper: รองรับ Enter บนมือถือและสแกนเนอร์ */
 function bindScanEnter(el, handler){
   if(!el) return;
   el.addEventListener('keydown', e=>{ if(SOUND_BUSY) {e.preventDefault();return} if(e.key==='Enter'){ e.preventDefault(); handler() }});
@@ -609,6 +646,12 @@ function enableUI(on){$_("in-prod").readOnly=!on;$_("in-cust").readOnly=!on;if(o
   hookKeyboard();enforceExpectUI();try{await loadEmpMaster()}catch{}
   updateCsvUi();$_("login-raw").focus();toggleSidebar(true)
 })();
+
+/* ===== Mapping PN -> Details (placeholder) ===== */
+function mapPnToDetails(pn){
+  const row=(CSV_ROWS||[]).find(r=>normPN(r[PN_COL]||"")===normPN(pn))||{};
+  return {mat:row[MAT_COL]||"", name:row[NAME_COL]||""};
+}
 async function handleClearLogs(){const pwd=($_('admin-pass').value||"").trim();if(pwd!=="1234"){notify("รหัสผ่านไม่ถูกต้อง");return}await clearAllLogs();notify("ล้าง Logs แล้ว");renderLogsView()}
 </script>
 </body>
